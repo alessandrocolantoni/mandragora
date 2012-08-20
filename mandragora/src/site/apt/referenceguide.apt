@@ -1,0 +1,41 @@
+ -----
+ Refercence guide
+ -----
+ Alessandro Colantoni
+ -----
+
+Reference guide
+
+    * {{{referenceguide/bd-api-guide.html}The BD (Business Delegate) Apis Guide}}
+
+    * {{{referenceguide/dao-api-guide.html}The DAO (Data Access Object) Apis Guide}}
+
+    * {{{referenceguide/lookup-and-mapping.html}Lookup and mapping}}
+
+    * {{{referenceguide/logic-condition.html}Logic condition}}
+
+    * {{{referenceguide/implementations.html}Implementations}}
+
+    * {{{referenceguide/how-to-extend.html}How to extend}}
+
+    * {{{referenceguide/mandragora-properties.html}Mandragora.properties}}
+
+    * {{{referenceguide/queries-on-collections.html}Queries on collections}}
+
+        * {{{referenceguide/queries-on-collections.html#Select from collection}Select from collection}}
+
+        * {{{referenceguide/queries-on-collections.html#Delete from collection}Delete from collection}}
+
+    * {{{utilities}Utilities}}
+
+        * {{{referenceguide/utilities.html#Request utilities}Request utilities}}
+
+        * {{{referenceguide/utilities.html#Date time utilities}Date time utilities}}
+
+        * {{{referenceguide/utilities.html#Other utilities}Other utilities}}
+
+
+
+
+
+

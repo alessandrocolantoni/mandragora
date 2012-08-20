@@ -1,0 +1,1035 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+#/* Copyright 2002-2004 The Apache Software Foundation
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+-->
+<!-- This is a sample metadata repository for the
+     Apache ObJectRelationalBridge (OJB) System.
+     Use this file as a template for building your own mappings.
+-->
+
+<!-- doctype definition
+     By default we are using a local DTD that is expected to reside
+     in the same directory as this repository.xml file.
+     If you intend to validate your repository.xml against
+     the public dtd at the Apache site, please replace the string
+     "repository.dtd"
+     by the public adress
+     "http://db.apache.org/ojb/dtds/1.0/repository.dtd".
+     In this case validation will only work if the machine you
+     run your application on can connect to the internet!
+-->
+
+<!DOCTYPE descriptor-repository PUBLIC
+       "-//Apache Software Foundation//DTD OJB Repository//EN"
+        "repository.dtd"
+[
+
+<!ENTITY database SYSTEM "repository_database.xml">
+<!ENTITY database2 SYSTEM "repository_database2.xml">
+<!ENTITY database3 SYSTEM "repository_database3.xml">
+<!ENTITY database4 SYSTEM "repository_database4.xml">
+<!-- here the junit include files begin  -->
+
+]>
+
+
+<descriptor-repository version="1.0" isolation-level="read-uncommitted"
+        proxy-prefetching-limit="50">
+
+    <!-- include all used database connections -->
+    &database;
+
+    &database2;
+    &database3;
+    &database4;
+
+    
+
+    <!-- include user defined mappings here -->
+
+    <!--************ TABLE COMPANY_GROUP*************-->
+	<class-descriptor class="it.aco.mandragora.vo.CompanyGroupVO" table="COMPANY_GROUP">
+		<field-descriptor id="1" name="idCompanyGroup" column="ID_COMPANY_GROUP" jdbc-type="INTEGER" primarykey="true" autoincrement="false"/>
+		<field-descriptor id="2" name="name" column="NAME" jdbc-type="VARCHAR" />
+		<field-descriptor id="3" name="description" column="DESCRIPTION" jdbc-type="VARCHAR"/>
+        <collection-descriptor name="companyVOs" element-class-ref="it.aco.mandragora.vo.CompanyVO" orderby="idCompany" sort="ASC" auto-retrieve="false" auto-update="object" auto-delete="object" collection-class="org.apache.ojb.broker.util.collections.ManageableVector">
+			<inverse-foreignkey field-ref="idCompanyGroup"/>
+		</collection-descriptor>
+    </class-descriptor>
+    <!--************ TABLE COMPANY*************-->
+	<class-descriptor class="it.aco.mandragora.vo.CompanyVO" table="COMPANY">
+        <field-descriptor id="1" name="idCompanyGroup" column="ID_COMPANY_GROUP" jdbc-type="INTEGER" primarykey="true" autoincrement="false"/>
+		<field-descriptor id="2" name="idCompany" column="ID_COMPANY" jdbc-type="INTEGER" primarykey="true" autoincrement="false"/>
+		<field-descriptor id="3" name="name" column="NAME" jdbc-type="VARCHAR" />
+		<field-descriptor id="4" name="description" column="DESCRIPTION" jdbc-type="VARCHAR"/>
+	</class-descriptor>
+    <!--************ TABLE ROLE*************-->
+	<class-descriptor class="it.aco.mandragora.vo.RoleVO" table="ROLE">
+        <field-descriptor id="1" name="idRole" column="ID_ROLE" jdbc-type="INTEGER" primarykey="true" autoincrement="false"/>
+		<field-descriptor id="2" name="roleName" column="ROLENAME" jdbc-type="VARCHAR" />
+        <collection-descriptor name="rolePermissionVOs" element-class-ref="it.aco.mandragora.vo.RolePermissionVO" orderby="idPermission" sort="ASC" auto-retrieve="false" auto-update="object" auto-delete="object" collection-class="org.apache.ojb.broker.util.collections.ManageableVector">
+			<inverse-foreignkey field-ref="idRole"/>
+		</collection-descriptor>
+    </class-descriptor>
+    <!--************ TABLE PERSON_ROLE*************-->
+	<class-descriptor class="it.aco.mandragora.vo.PersonRoleVO" table="PERSON_ROLE">
+        <field-descriptor id="1" name="idPerson" column="ID_PERSON" jdbc-type="INTEGER" primarykey="true" autoincrement="false"/>
+		<field-descriptor id="2" name="idRole" column="ID_ROLE" jdbc-type="INTEGER" primarykey="true" autoincrement="false"/>
+		<field-descriptor id="3" name="note" column="NOTE" jdbc-type="VARCHAR" />
+        <reference-descriptor name="roleVO" class-ref="it.aco.mandragora.vo.RoleVO" auto-retrieve="false">
+			<foreignkey field-ref="idRole"/>
+		</reference-descriptor>
+    </class-descriptor>
+    <!--************ TABLE PERSON*************-->
+	<class-descriptor class="it.aco.mandragora.vo.PersonVO" table="PERSON">
+        <field-descriptor id="1" name="idPerson" column="ID_PERSON" jdbc-type="INTEGER" primarykey="true" autoincrement="false"/>
+		<field-descriptor id="2" name="firstName" column="FIRSTNAME" jdbc-type="VARCHAR" />
+		<field-descriptor id="3" name="lastName" column="LASTNAME" jdbc-type="VARCHAR" />
+        <collection-descriptor name="personRoleVOs" element-class-ref="it.aco.mandragora.vo.PersonRoleVO" orderby="idRole" sort="ASC" auto-retrieve="false" auto-update="object" auto-delete="object" collection-class="org.apache.ojb.broker.util.collections.ManageableVector">
+			<inverse-foreignkey field-ref="idPerson"/>
+		</collection-descriptor>
+    </class-descriptor>
+    <!--************ TABLE SUB_TASK*************-->
+	<class-descriptor class="it.aco.mandragora.vo.SubTaskVO" table="SUB_TASK">
+        <field-descriptor id="1" name="idTask" column="ID_TASK" jdbc-type="INTEGER" primarykey="true" autoincrement="false"/>
+		<field-descriptor id="2" name="idSubTask" column="ID_SUB_TASK" jdbc-type="INTEGER" primarykey="true" autoincrement="false"/>
+        <field-descriptor id="3" name="subTaskName" column="SUBTASKNAME" jdbc-type="VARCHAR" />
+	</class-descriptor>
+    <!--************ TABLE TASK*************-->
+	<class-descriptor class="it.aco.mandragora.vo.TaskVO" table="TASK">
+        <field-descriptor id="1" name="idTask" column="ID_TASK" jdbc-type="INTEGER" primarykey="true" autoincrement="false"/>
+        <field-descriptor id="2" name="idPerson" column="ID_PERSON" jdbc-type="INTEGER" />
+        <field-descriptor id="3" name="idProject" column="ID_PROJECT" jdbc-type="INTEGER" />
+		<field-descriptor id="4" name="taskName" column="TASKNAME" jdbc-type="VARCHAR" />
+		<collection-descriptor name="subTaskVOs" element-class-ref="it.aco.mandragora.vo.SubTaskVO" orderby="idSubTask" sort="ASC" auto-retrieve="false" auto-update="object" auto-delete="object" collection-class="org.apache.ojb.broker.util.collections.ManageableVector">
+			<inverse-foreignkey field-ref="idTask"/>
+		</collection-descriptor>
+    </class-descriptor>
+    <!--************ TABLE PERSON_PROJECT*************-->
+	<class-descriptor class="it.aco.mandragora.vo.PersonProjectVO" table="PERSON_PROJECT">
+        <field-descriptor id="1" name="idPerson" column="ID_PERSON" jdbc-type="INTEGER" primarykey="true" autoincrement="false"/>
+		<field-descriptor id="2" name="idProject" column="ID_PROJECT" jdbc-type="INTEGER" primarykey="true" autoincrement="false"/>
+		<field-descriptor id="3" name="idRole" column="ID_ROLE" jdbc-type="INTEGER" />
+		<reference-descriptor name="personVO" class-ref="it.aco.mandragora.vo.PersonVO" auto-retrieve="false">
+			<foreignkey field-ref="idPerson"/>
+		</reference-descriptor>
+        <reference-descriptor name="roleVO" class-ref="it.aco.mandragora.vo.RoleVO" auto-retrieve="false">
+			<foreignkey field-ref="idRole"/>
+		</reference-descriptor>
+        <collection-descriptor name="taskVOs" element-class-ref="it.aco.mandragora.vo.TaskVO" orderby="idTask" sort="ASC" auto-retrieve="false" auto-update="object" auto-delete="object" collection-class="org.apache.ojb.broker.util.collections.ManageableVector">
+			<inverse-foreignkey field-ref="idPerson"/>
+			<inverse-foreignkey field-ref="idProject"/>
+		</collection-descriptor>
+    </class-descriptor>
+    <!--************ TABLE PROJECT*************-->
+	<class-descriptor class="it.aco.mandragora.vo.ProjectVO" table="PROJECT">
+        <field-descriptor id="1" name="idProject" column="ID_PROJECT" jdbc-type="INTEGER" primarykey="true" autoincrement="false"/>
+		<field-descriptor id="2" name="title" column="TITLE" jdbc-type="VARCHAR" />
+		<field-descriptor id="3" name="description" column="DESCRIPTION" jdbc-type="VARCHAR" />
+		<collection-descriptor name="personProjectVOs" element-class-ref="it.aco.mandragora.vo.PersonProjectVO" orderby="idPerson" sort="ASC" auto-retrieve="false" auto-update="object" auto-delete="object" collection-class="org.apache.ojb.broker.util.collections.ManageableVector">
+			<inverse-foreignkey field-ref="idProject"/>
+		</collection-descriptor>
+    </class-descriptor>
+    <!--************ TABLE ACTOR*************-->
+	<class-descriptor class="it.aco.mandragora.vo.ActorVO" table="ACTOR">
+        <field-descriptor id="1" name="idActor" column="ID_ACTOR" jdbc-type="INTEGER" primarykey="true" autoincrement="false"/>
+		<field-descriptor id="2" name="firstName" column="FIRSTNAME" jdbc-type="VARCHAR" />
+		<field-descriptor id="3" name="lastName" column="LASTNAME" jdbc-type="VARCHAR" />
+    </class-descriptor>
+    <!--************ TABLE MOVIE*************-->
+	<class-descriptor class="it.aco.mandragora.vo.MovieVO" table="MOVIE">
+        <field-descriptor id="1" name="idProducer" column="ID_PRODUCER" jdbc-type="INTEGER" primarykey="true" autoincrement="false"/>
+        <field-descriptor id="2" name="idMovie" column="ID_MOVIE" jdbc-type="INTEGER" primarykey="true" autoincrement="false"/>
+		<field-descriptor id="3" name="title" column="TITLE" jdbc-type="VARCHAR" />
+		<field-descriptor id="4" name="description" column="DESCRIPTION" jdbc-type="VARCHAR" />
+		<collection-descriptor name="actorVOs" element-class-ref="it.aco.mandragora.vo.ActorVO" indirection-table="MOVIE_ACTOR" orderby="idActor" sort="ASC" auto-retrieve="false" auto-update="link" auto-delete="object" collection-class="org.apache.ojb.broker.util.collections.ManageableVector">
+			<fk-pointing-to-this-class column="ID_PRODUCER"/>
+			<fk-pointing-to-this-class column="ID_MOVIE"/>
+            <fk-pointing-to-element-class column="ID_ACTOR"/>
+		</collection-descriptor>
+    </class-descriptor>
+    <!--************ TABLE PRODUCER*************-->
+	<class-descriptor class="it.aco.mandragora.vo.ProducerVO" table="PRODUCER">
+        <field-descriptor id="1" name="idProducer" column="ID_PRODUCER" jdbc-type="INTEGER" primarykey="true" autoincrement="false"/>
+		<field-descriptor id="2" name="name" column="NAME" jdbc-type="VARCHAR" />
+		<collection-descriptor name="movieVOs" element-class-ref="it.aco.mandragora.vo.MovieVO" orderby="idMovie" sort="ASC" auto-retrieve="false" auto-update="object" auto-delete="object" collection-class="org.apache.ojb.broker.util.collections.ManageableVector">
+			<inverse-foreignkey field-ref="idProducer"/>
+		</collection-descriptor>
+    </class-descriptor>
+    <!--************ TABLE NODE111*************-->
+	<class-descriptor class="it.aco.mandragora.vo.Node111VO" table="NODE111">
+        <field-descriptor id="1" name="idNode111" column="ID_NODE111" jdbc-type="VARCHAR" primarykey="true" autoincrement="false"/>
+        <field-descriptor id="2" name="idNode11" column="ID_NODE11" jdbc-type="VARCHAR"/>
+		<field-descriptor id="3" name="description" column="DESCRIPTION" jdbc-type="VARCHAR" />
+		<field-descriptor id="4" name="note111" column="NOTE111" jdbc-type="VARCHAR" />
+    </class-descriptor>
+    <!--************ TABLE NODE11*************-->
+	<class-descriptor class="it.aco.mandragora.vo.Node11VO" table="NODE11">
+        <field-descriptor id="1" name="idNode11" column="ID_NODE11" jdbc-type="VARCHAR" primarykey="true"/>
+        <field-descriptor id="2" name="description" column="DESCRIPTION" jdbc-type="VARCHAR" />
+        <field-descriptor id="3" name="note11" column="NOTE11" jdbc-type="VARCHAR" />
+        <collection-descriptor name="node111VOs" element-class-ref="it.aco.mandragora.vo.Node111VO" orderby="idNode111" sort="ASC" auto-retrieve="true" auto-update="object" auto-delete="object" collection-class="org.apache.ojb.broker.util.collections.ManageableVector">
+			<inverse-foreignkey field-ref="idNode11"/>
+		</collection-descriptor>
+    </class-descriptor>
+    <!--************ TABLE NODE121*************-->
+	<class-descriptor class="it.aco.mandragora.vo.Node121VO" table="NODE121">
+        <field-descriptor id="1" name="idNode121" column="ID_NODE121" jdbc-type="VARCHAR" primarykey="true" autoincrement="false"/>
+        <field-descriptor id="2" name="description" column="DESCRIPTION" jdbc-type="VARCHAR" />
+        <field-descriptor id="3" name="note121" column="NOTE121" jdbc-type="VARCHAR" />
+    </class-descriptor>
+    <!--************ TABLE NODE122*************-->
+	<class-descriptor class="it.aco.mandragora.vo.Node122VO" table="NODE122">
+        <field-descriptor id="1" name="idNode122" column="ID_NODE122" jdbc-type="VARCHAR" primarykey="true" autoincrement="false"/>
+        <field-descriptor id="2" name="idNode12" column="ID_NODE12" jdbc-type="VARCHAR"/>
+        <field-descriptor id="3" name="description" column="DESCRIPTION" jdbc-type="VARCHAR" />
+        <field-descriptor id="4" name="note122" column="NOTE122" jdbc-type="VARCHAR" />
+    </class-descriptor>
+    <!--************ TABLE NODE12*************-->
+	<class-descriptor class="it.aco.mandragora.vo.Node12VO" table="NODE12">
+        <field-descriptor id="1" name="idNode12" column="ID_NODE12" jdbc-type="VARCHAR" primarykey="true"/>
+        <field-descriptor id="2" name="idNode1" column="ID_NODE1" jdbc-type="VARCHAR" />
+        <field-descriptor id="3" name="idNode121" column="ID_NODE121" jdbc-type="VARCHAR"/>
+        <field-descriptor id="4" name="description" column="DESCRIPTION" jdbc-type="VARCHAR" />
+        <field-descriptor id="5" name="note12" column="NOTE12" jdbc-type="VARCHAR" />
+        <reference-descriptor name="node121VO" class-ref="it.aco.mandragora.vo.Node121VO" auto-retrieve="true" auto-update="none" auto-delete="link">
+			<foreignkey field-ref="idNode121"/>
+		</reference-descriptor>
+        <collection-descriptor name="node122VOs" element-class-ref="it.aco.mandragora.vo.Node122VO" orderby="idNode122" sort="ASC" auto-retrieve="true" auto-update="object" auto-delete="link" collection-class="org.apache.ojb.broker.util.collections.ManageableVector">
+			<inverse-foreignkey field-ref="idNode12"/>
+		</collection-descriptor>
+    </class-descriptor>
+    <!--************ TABLE NODE1*************-->
+	<class-descriptor class="it.aco.mandragora.vo.Node1VO" table="NODE1">
+        <field-descriptor id="1" name="idNode1" column="ID_NODE1" jdbc-type="VARCHAR" primarykey="true"/>
+        <field-descriptor id="2" name="idRoot" column="ID_ROOT" jdbc-type="VARCHAR" />
+        <field-descriptor id="3" name="idNode11" column="ID_NODE11" jdbc-type="VARCHAR"/>
+        <field-descriptor id="4" name="description" column="DESCRIPTION" jdbc-type="VARCHAR" />
+        <field-descriptor id="5" name="note1" column="NOTE1" jdbc-type="VARCHAR" />
+        <reference-descriptor name="node11VO" class-ref="it.aco.mandragora.vo.Node11VO" auto-retrieve="true" auto-update="none" auto-delete="link">
+			<foreignkey field-ref="idNode11"/>
+		</reference-descriptor>
+        <collection-descriptor name="node12VOs" element-class-ref="it.aco.mandragora.vo.Node12VO" orderby="idNode12" sort="ASC" auto-retrieve="true" auto-update="none" auto-delete="none" collection-class="org.apache.ojb.broker.util.collections.ManageableVector">
+			<inverse-foreignkey field-ref="idNode1"/>
+		</collection-descriptor>
+    </class-descriptor>
+    <!--************ TABLE NODE211*************-->
+	<class-descriptor class="it.aco.mandragora.vo.Node211VO" table="NODE211">
+        <field-descriptor id="1" name="idNode211" column="ID_NODE211" jdbc-type="VARCHAR" primarykey="true" autoincrement="false"/>
+        <field-descriptor id="2" name="idNode21" column="ID_NODE21" jdbc-type="VARCHAR"/>
+        <field-descriptor id="3" name="description" column="DESCRIPTION" jdbc-type="VARCHAR" />
+        <field-descriptor id="4" name="note211" column="NOTE211" jdbc-type="VARCHAR" />
+    </class-descriptor>
+    <!--************ TABLE NODE221*************-->
+	<class-descriptor class="it.aco.mandragora.vo.Node221VO" table="NODE221">
+        <field-descriptor id="1" name="idNode221" column="ID_NODE221" jdbc-type="VARCHAR" primarykey="true" autoincrement="false"/>
+        <field-descriptor id="2" name="idNode22" column="ID_NODE22" jdbc-type="VARCHAR"/>
+        <field-descriptor id="3" name="description" column="DESCRIPTION" jdbc-type="VARCHAR" />
+        <field-descriptor id="4" name="note221" column="NOTE221" jdbc-type="VARCHAR" />
+    </class-descriptor>
+    <!--************ TABLE NODE21*************-->
+	<class-descriptor class="it.aco.mandragora.vo.Node21VO" table="NODE21">
+        <field-descriptor id="1" name="idNode21" column="ID_NODE21" jdbc-type="VARCHAR" primarykey="true" autoincrement="false"/>
+        <field-descriptor id="2" name="description" column="DESCRIPTION" jdbc-type="VARCHAR" />
+        <field-descriptor id="3" name="note21" column="NOTE21" jdbc-type="VARCHAR" />
+        <collection-descriptor name="node211VOs" element-class-ref="it.aco.mandragora.vo.Node211VO" orderby="idNode211" sort="ASC" auto-retrieve="true" auto-update="link" auto-delete="object" collection-class="org.apache.ojb.broker.util.collections.ManageableVector">
+			<inverse-foreignkey field-ref="idNode21"/>
+		</collection-descriptor>
+    </class-descriptor>
+    <!--************ TABLE NODE22*************-->
+	<class-descriptor class="it.aco.mandragora.vo.Node22VO" table="NODE22">
+        <field-descriptor id="1" name="idNode22" column="ID_NODE22" jdbc-type="VARCHAR" primarykey="true" autoincrement="false"/>
+        <field-descriptor id="2" name="description" column="DESCRIPTION" jdbc-type="VARCHAR" />
+        <field-descriptor id="3" name="note22" column="NOTE22" jdbc-type="VARCHAR" />
+        <collection-descriptor name="node221VOs" element-class-ref="it.aco.mandragora.vo.Node221VO" orderby="idNode221" sort="ASC" auto-retrieve="true" auto-update="link" auto-delete="link" collection-class="org.apache.ojb.broker.util.collections.ManageableVector">
+			<inverse-foreignkey field-ref="idNode22"/>
+		</collection-descriptor>
+    </class-descriptor>
+    <!--************ TABLE NODE2*************-->
+	<class-descriptor class="it.aco.mandragora.vo.Node2VO" table="NODE2">
+        <field-descriptor id="1" name="idNode2" column="ID_NODE2" jdbc-type="VARCHAR" primarykey="true"/>
+        <field-descriptor id="2" name="idNode21" column="ID_NODE21" jdbc-type="VARCHAR"/>
+        <field-descriptor id="3" name="description" column="DESCRIPTION" jdbc-type="VARCHAR" />
+        <field-descriptor id="4" name="note2" column="NOTE2" jdbc-type="VARCHAR" />
+        <reference-descriptor name="node21VO" class-ref="it.aco.mandragora.vo.Node21VO" auto-retrieve="true" auto-update="link" auto-delete="object">
+			<foreignkey field-ref="idNode21"/>
+		</reference-descriptor>
+        <collection-descriptor name="node22VOs" element-class-ref="it.aco.mandragora.vo.Node22VO" indirection-table="NODE2_NODE22" orderby="idNode22" sort="ASC" auto-retrieve="true" auto-update="link" auto-delete="object" collection-class="org.apache.ojb.broker.util.collections.ManageableVector">
+			<fk-pointing-to-this-class column="ID_NODE2"/>
+			<fk-pointing-to-element-class column="ID_NODE22"/>
+		</collection-descriptor>
+    </class-descriptor>
+    <!--************ TABLE NODE3111*************-->
+	<class-descriptor class="it.aco.mandragora.vo.Node3111VO" table="NODE3111">
+        <field-descriptor id="1" name="idNode3111" column="ID_NODE3111" jdbc-type="VARCHAR" primarykey="true" autoincrement="false"/>
+		<field-descriptor id="2" name="description" column="DESCRIPTION" jdbc-type="VARCHAR" />
+        <field-descriptor id="3" name="note3111" column="NOTE3111" jdbc-type="VARCHAR" />
+    </class-descriptor>
+    <!--************ TABLE NODE3112*************-->
+	<class-descriptor class="it.aco.mandragora.vo.Node3112VO" table="NODE3112">
+        <field-descriptor id="1" name="idNode3112" column="ID_NODE3112" jdbc-type="VARCHAR" primarykey="true" autoincrement="false"/>
+		<field-descriptor id="2" name="description" column="DESCRIPTION" jdbc-type="VARCHAR" />
+        <field-descriptor id="3" name="note3112" column="NOTE3112" jdbc-type="VARCHAR" />
+    </class-descriptor>
+    <!--************ TABLE NODE311*************-->
+	<class-descriptor class="it.aco.mandragora.vo.Node311VO" table="NODE311">
+        <field-descriptor id="1" name="idNode311" column="ID_NODE311" jdbc-type="VARCHAR" primarykey="true" autoincrement="false"/>
+        <field-descriptor id="2" name="idNode31" column="ID_NODE31" jdbc-type="VARCHAR"/>
+		<field-descriptor id="3" name="description" column="DESCRIPTION" jdbc-type="VARCHAR" />
+        <field-descriptor id="4" name="note311" column="NOTE311" jdbc-type="VARCHAR" />
+        <collection-descriptor name="node3111VOs" element-class-ref="it.aco.mandragora.vo.Node3111VO" indirection-table="NODE311_NODE3111" orderby="idNode3111" sort="ASC" auto-retrieve="true" auto-update="object" auto-delete="none" collection-class="org.apache.ojb.broker.util.collections.ManageableVector">
+			<fk-pointing-to-this-class column="ID_NODE311"/>
+			<fk-pointing-to-element-class column="ID_NODE3111"/>
+		</collection-descriptor>
+        <collection-descriptor name="node3112VOs" element-class-ref="it.aco.mandragora.vo.Node3112VO" indirection-table="NODE311_NODE3112" orderby="idNode3112" sort="ASC" auto-retrieve="true" auto-update="none" auto-delete="link" collection-class="org.apache.ojb.broker.util.collections.ManageableVector">
+			<fk-pointing-to-this-class column="ID_NODE311"/>
+			<fk-pointing-to-element-class column="ID_NODE3112"/>
+		</collection-descriptor>
+    </class-descriptor>
+    <!--************ TABLE NODE31*************-->
+	<class-descriptor class="it.aco.mandragora.vo.Node31VO" table="NODE31">
+        <field-descriptor id="1" name="idNode31" column="ID_NODE31" jdbc-type="VARCHAR" primarykey="true"/>
+        <field-descriptor id="2" name="idNode3" column="ID_NODE3" jdbc-type="VARCHAR"/>
+        <field-descriptor id="3" name="description" column="DESCRIPTION" jdbc-type="VARCHAR" />
+        <field-descriptor id="4" name="note31" column="NOTE31" jdbc-type="VARCHAR" />
+        <collection-descriptor name="node311VOs" element-class-ref="it.aco.mandragora.vo.Node311VO"  orderby="idNode311" sort="ASC" auto-retrieve="true" auto-update="object" auto-delete="object" collection-class="org.apache.ojb.broker.util.collections.ManageableVector">
+			<inverse-foreignkey field-ref="idNode31"/>
+		</collection-descriptor>
+    </class-descriptor>
+    <!--************ TABLE NODE321*************-->
+	<class-descriptor class="it.aco.mandragora.vo.Node321VO" table="NODE321">
+        <field-descriptor id="1" name="idNode321" column="ID_NODE321" jdbc-type="VARCHAR" primarykey="true" autoincrement="false"/>
+		<field-descriptor id="2" name="description" column="DESCRIPTION" jdbc-type="VARCHAR" />
+        <field-descriptor id="3" name="note321" column="NOTE321" jdbc-type="VARCHAR" />
+    </class-descriptor>
+    <!--************ TABLE NODE322*************-->
+	<class-descriptor class="it.aco.mandragora.vo.Node322VO" table="NODE322">
+        <field-descriptor id="1" name="idNode322" column="ID_NODE322" jdbc-type="VARCHAR" primarykey="true" autoincrement="false"/>
+        <field-descriptor id="2" name="idNode32" column="ID_NODE32" jdbc-type="VARCHAR"/>
+		<field-descriptor id="3" name="description" column="DESCRIPTION" jdbc-type="VARCHAR" />
+        <field-descriptor id="4" name="note322" column="NOTE322" jdbc-type="VARCHAR" />
+    </class-descriptor>
+    <!--************ TABLE NODE32*************-->
+	<class-descriptor class="it.aco.mandragora.vo.Node32VO" table="NODE32">
+        <field-descriptor id="1" name="idNode32" column="ID_NODE32" jdbc-type="VARCHAR" primarykey="true"/>
+        <field-descriptor id="2" name="idNode321" column="ID_NODE321" jdbc-type="VARCHAR"/>
+        <field-descriptor id="3" name="description" column="DESCRIPTION" jdbc-type="VARCHAR" />
+        <field-descriptor id="4" name="note32" column="NOTE32" jdbc-type="VARCHAR" />
+        <reference-descriptor name="node321VO" class-ref="it.aco.mandragora.vo.Node321VO" auto-retrieve="true" auto-update="link" auto-delete="link">
+			<foreignkey field-ref="idNode321"/>
+		</reference-descriptor>
+        <collection-descriptor name="node322VOs" element-class-ref="it.aco.mandragora.vo.Node322VO" orderby="idNode322" sort="ASC" auto-retrieve="true" auto-update="none" auto-delete="none" collection-class="org.apache.ojb.broker.util.collections.ManageableVector">
+			<inverse-foreignkey field-ref="idNode32"/>
+		</collection-descriptor>
+    </class-descriptor>
+    <!--************ TABLE NODE33*************-->
+	<class-descriptor class="it.aco.mandragora.vo.Node33VO" table="NODE33">
+        <field-descriptor id="1" name="idNode33" column="ID_NODE33" jdbc-type="VARCHAR" primarykey="true" autoincrement="false"/>
+		<field-descriptor id="2" name="description" column="DESCRIPTION" jdbc-type="VARCHAR" />
+        <field-descriptor id="3" name="note33" column="NOTE33" jdbc-type="VARCHAR" />
+    </class-descriptor>
+    <!--************ TABLE NODE3*************-->
+	<class-descriptor class="it.aco.mandragora.vo.Node3VO" table="NODE3">
+        <field-descriptor id="1" name="idNode3" column="ID_NODE3" jdbc-type="VARCHAR" primarykey="true"/>
+        <field-descriptor id="2" name="idNode33" column="ID_NODE33" jdbc-type="VARCHAR"/>
+        <field-descriptor id="3" name="description" column="DESCRIPTION" jdbc-type="VARCHAR" />
+        <field-descriptor id="4" name="note3" column="NOTE3" jdbc-type="VARCHAR" />
+        <reference-descriptor name="node33VO" class-ref="it.aco.mandragora.vo.Node33VO" auto-retrieve="true" auto-update="object" auto-delete="none">
+			<foreignkey field-ref="idNode33"/>
+		</reference-descriptor>
+        <collection-descriptor name="node31VOs" element-class-ref="it.aco.mandragora.vo.Node31VO" orderby="idNode31" sort="ASC" auto-retrieve="true" auto-update="object" auto-delete="none" collection-class="org.apache.ojb.broker.util.collections.ManageableVector">
+			<inverse-foreignkey field-ref="idNode3"/>
+		</collection-descriptor>
+        <collection-descriptor name="node32VOs" element-class-ref="it.aco.mandragora.vo.Node32VO" indirection-table="NODE3_NODE32" orderby="idNode32" sort="ASC" auto-retrieve="true" auto-update="none" auto-delete="object" collection-class="org.apache.ojb.broker.util.collections.ManageableVector">
+			<fk-pointing-to-this-class column="ID_NODE3"/>
+			<fk-pointing-to-element-class column="ID_NODE32"/>
+		</collection-descriptor>
+    </class-descriptor>
+    <!--************ TABLE ROOT*************-->
+	<class-descriptor class="it.aco.mandragora.vo.RootVO" table="ROOT">
+        <field-descriptor id="1" name="idRoot" column="ID_ROOT" jdbc-type="VARCHAR" primarykey="true"/>
+        <field-descriptor id="2" name="idNode3" column="ID_NODE3" jdbc-type="VARCHAR"/>
+        <field-descriptor id="3" name="description" column="DESCRIPTION" jdbc-type="VARCHAR" />
+        <field-descriptor id="4" name="noteRoot" column="NOTEROOT" jdbc-type="VARCHAR" />
+        <reference-descriptor name="node3VO" class-ref="it.aco.mandragora.vo.Node3VO" auto-retrieve="true" auto-update="object" auto-delete="none">
+			<foreignkey field-ref="idNode3"/>
+		</reference-descriptor>
+        <collection-descriptor name="node1VOs" element-class-ref="it.aco.mandragora.vo.Node1VO" orderby="idNode1" sort="ASC" auto-retrieve="true" auto-update="object" auto-delete="object" collection-class="org.apache.ojb.broker.util.collections.ManageableVector">
+			<inverse-foreignkey field-ref="idRoot"/>
+		</collection-descriptor>
+        <collection-descriptor name="node2VOs" element-class-ref="it.aco.mandragora.vo.Node2VO" indirection-table="ROOT_NODE2" orderby="idNode2" sort="ASC" auto-retrieve="true" auto-update="object" auto-delete="object" collection-class="org.apache.ojb.broker.util.collections.ManageableVector">
+			<fk-pointing-to-this-class column="ID_ROOT"/>
+			<fk-pointing-to-element-class column="ID_NODE2"/>
+		</collection-descriptor>
+    </class-descriptor>
+    <!--************ TABLE MAIN*************-->
+	<class-descriptor class="it.aco.mandragora.vo.MainVO" table="MAIN">
+        <field-descriptor id="1" name="idMain" column="ID_MAIN" jdbc-type="VARCHAR" primarykey="true"/>
+        <field-descriptor id="2" name="description" column="DESCRIPTION" jdbc-type="VARCHAR" />
+        <collection-descriptor name="reference1VOs" element-class-ref="it.aco.mandragora.vo.Reference1VO" orderby="idReference1" sort="ASC" auto-retrieve="true" auto-update="object" auto-delete="object" collection-class="org.apache.ojb.broker.util.collections.ManageableVector">
+			<inverse-foreignkey field-ref="idMain"/>
+		</collection-descriptor>
+        <collection-descriptor name="reference2VOs" element-class-ref="it.aco.mandragora.vo.Reference2VO" orderby="idReference2" sort="ASC" auto-retrieve="true" auto-update="none" auto-delete="object" collection-class="org.apache.ojb.broker.util.collections.ManageableVector">
+			<inverse-foreignkey field-ref="idMain"/>
+		</collection-descriptor>
+        <collection-descriptor name="reference3VOs" element-class-ref="it.aco.mandragora.vo.Reference3VO" orderby="idReference3" sort="ASC" auto-retrieve="true" auto-update="link" auto-delete="object" collection-class="org.apache.ojb.broker.util.collections.ManageableVector">
+			<inverse-foreignkey field-ref="idMain"/>
+		</collection-descriptor>
+        <collection-descriptor name="reference4VOs" element-class-ref="it.aco.mandragora.vo.Reference4VO" indirection-table="MAIN_REFERENCE4" orderby="idReference4" sort="ASC" auto-retrieve="true" auto-update="object" auto-delete="object" collection-class="org.apache.ojb.broker.util.collections.ManageableVector">
+			<fk-pointing-to-this-class column="ID_MAIN"/>
+			<fk-pointing-to-element-class column="ID_REFERENCE4"/>
+		</collection-descriptor>
+        <collection-descriptor name="reference5VOs" element-class-ref="it.aco.mandragora.vo.Reference5VO" indirection-table="MAIN_REFERENCE5" orderby="idReference5" sort="ASC" auto-retrieve="true" auto-update="none" auto-delete="object" collection-class="org.apache.ojb.broker.util.collections.ManageableVector">
+			<fk-pointing-to-this-class column="ID_MAIN"/>
+			<fk-pointing-to-element-class column="ID_REFERENCE5"/>
+		</collection-descriptor>
+        <collection-descriptor name="reference6VOs" element-class-ref="it.aco.mandragora.vo.Reference6VO" indirection-table="MAIN_REFERENCE6" orderby="idReference6" sort="ASC" auto-retrieve="true" auto-update="link" auto-delete="object" collection-class="org.apache.ojb.broker.util.collections.ManageableVector">
+			<fk-pointing-to-this-class column="ID_MAIN"/>
+			<fk-pointing-to-element-class column="ID_REFERENCE6"/>
+		</collection-descriptor>
+    </class-descriptor>
+    <!--************ TABLE REFERENCE1*************-->
+	<class-descriptor class="it.aco.mandragora.vo.Reference1VO" table="REFERENCE1">
+        <field-descriptor id="1" name="idReference1" column="ID_REFERENCE1" jdbc-type="VARCHAR" primarykey="true"/>
+        <field-descriptor id="2" name="idMain" column="ID_MAIN" jdbc-type="VARCHAR"/>
+        <field-descriptor id="3" name="description" column="DESCRIPTION" jdbc-type="VARCHAR" />
+    </class-descriptor>
+    <!--************ TABLE REFERENCE2*************-->
+	<class-descriptor class="it.aco.mandragora.vo.Reference2VO" table="REFERENCE2">
+        <field-descriptor id="1" name="idReference2" column="ID_REFERENCE2" jdbc-type="VARCHAR" primarykey="true"/>
+        <field-descriptor id="2" name="idMain" column="ID_MAIN" jdbc-type="VARCHAR"/>
+        <field-descriptor id="3" name="description" column="DESCRIPTION" jdbc-type="VARCHAR" />
+    </class-descriptor>
+    <!--************ TABLE REFERENCE3*************-->
+	<class-descriptor class="it.aco.mandragora.vo.Reference3VO" table="REFERENCE3">
+        <field-descriptor id="1" name="idReference3" column="ID_REFERENCE3" jdbc-type="VARCHAR" primarykey="true"/>
+        <field-descriptor id="2" name="idMain" column="ID_MAIN" jdbc-type="VARCHAR"/>
+        <field-descriptor id="3" name="description" column="DESCRIPTION" jdbc-type="VARCHAR" />
+    </class-descriptor>
+    <!--************ TABLE REFERENCE4*************-->
+	<class-descriptor class="it.aco.mandragora.vo.Reference4VO" table="REFERENCE4">
+        <field-descriptor id="1" name="idReference4" column="ID_REFERENCE4" jdbc-type="VARCHAR" primarykey="true"/>
+        <field-descriptor id="2" name="description" column="DESCRIPTION" jdbc-type="VARCHAR" />
+    </class-descriptor>
+    <!--************ TABLE REFERENCE5*************-->
+	<class-descriptor class="it.aco.mandragora.vo.Reference5VO" table="REFERENCE5">
+        <field-descriptor id="1" name="idReference5" column="ID_REFERENCE5" jdbc-type="VARCHAR" primarykey="true"/>
+        <field-descriptor id="2" name="description" column="DESCRIPTION" jdbc-type="VARCHAR" />
+    </class-descriptor>
+    <!--************ TABLE REFERENCE6*************-->
+	<class-descriptor class="it.aco.mandragora.vo.Reference6VO" table="REFERENCE6">
+        <field-descriptor id="1" name="idReference6" column="ID_REFERENCE6" jdbc-type="VARCHAR" primarykey="true"/>
+        <field-descriptor id="2" name="description" column="DESCRIPTION" jdbc-type="VARCHAR" />
+    </class-descriptor>
+    <!--************ TABLE PATH0*************-->
+	<class-descriptor class="it.aco.mandragora.vo.Path0VO" table="PATH0">
+        <field-descriptor id="1" name="idPath0" column="ID_PATH0" jdbc-type="VARCHAR" primarykey="true"/>
+        <field-descriptor id="2" name="idPath1" column="ID_PATH1" jdbc-type="VARCHAR"/>
+        <field-descriptor id="3" name="description" column="DESCRIPTION" jdbc-type="VARCHAR" />
+        <reference-descriptor name="path1VO" class-ref="it.aco.mandragora.vo.Path1VO" auto-retrieve="true" auto-update="object" auto-delete="object">
+			<foreignkey field-ref="idPath1"/>
+		</reference-descriptor>
+    </class-descriptor>
+    <!--************ TABLE PATH1*************-->
+	<class-descriptor class="it.aco.mandragora.vo.Path1VO" table="PATH1">
+        <field-descriptor id="1" name="idPath1" column="ID_PATH1" jdbc-type="VARCHAR" primarykey="true"/>
+        <field-descriptor id="2" name="description" column="DESCRIPTION" jdbc-type="VARCHAR" />
+        <collection-descriptor name="path2VOs" element-class-ref="it.aco.mandragora.vo.Path2VO" orderby="idPath2" sort="ASC" auto-retrieve="true" auto-update="object" auto-delete="object" collection-class="org.apache.ojb.broker.util.collections.ManageableVector">
+			<inverse-foreignkey field-ref="idPath1"/>
+		</collection-descriptor>
+    </class-descriptor>
+    <!--************ TABLE PATH2*************-->
+	<class-descriptor class="it.aco.mandragora.vo.Path2VO" table="PATH2">
+        <field-descriptor id="1" name="idPath2" column="ID_PATH2" jdbc-type="VARCHAR" primarykey="true"/>
+        <field-descriptor id="2" name="idPath1" column="ID_PATH1" jdbc-type="VARCHAR"/>
+        <field-descriptor id="3" name="description" column="DESCRIPTION" jdbc-type="VARCHAR" />
+        <collection-descriptor name="path3VOs" element-class-ref="it.aco.mandragora.vo.Path3VO" indirection-table="PATH2_PATH3" orderby="idPath3" sort="ASC" auto-retrieve="true" auto-update="object" auto-delete="link" collection-class="org.apache.ojb.broker.util.collections.ManageableVector">
+			<fk-pointing-to-this-class column="ID_PATH2"/>
+			<fk-pointing-to-element-class column="ID_PATH3"/>
+		</collection-descriptor>
+    </class-descriptor>
+    <!--************ TABLE PATH3*************-->
+	<class-descriptor class="it.aco.mandragora.vo.Path3VO" table="PATH3">
+        <field-descriptor id="1" name="idPath3" column="ID_PATH3" jdbc-type="VARCHAR" primarykey="true"/>
+        <field-descriptor id="2" name="description" column="DESCRIPTION" jdbc-type="VARCHAR" />
+        <collection-descriptor name="path4VOs" element-class-ref="it.aco.mandragora.vo.Path4VO" indirection-table="PATH3_PATH4" orderby="idPath4" sort="ASC" auto-retrieve="true" auto-update="none" auto-delete="object" collection-class="org.apache.ojb.broker.util.collections.ManageableVector">
+			<fk-pointing-to-this-class column="ID_PATH3"/>
+			<fk-pointing-to-element-class column="ID_PATH4"/>
+		</collection-descriptor>
+    </class-descriptor>
+    <!--************ TABLE PATH4*************-->
+	<class-descriptor class="it.aco.mandragora.vo.Path4VO" table="PATH4">
+        <field-descriptor id="1" name="idPath4" column="ID_PATH4" jdbc-type="VARCHAR" primarykey="true"/>
+        <field-descriptor id="2" name="idPath5" column="ID_PATH5" jdbc-type="VARCHAR"/>
+        <field-descriptor id="3" name="description" column="DESCRIPTION" jdbc-type="VARCHAR" />
+        <reference-descriptor name="path5VO" class-ref="it.aco.mandragora.vo.Path5VO" auto-retrieve="true" auto-update="link" auto-delete="none">
+			<foreignkey field-ref="idPath5"/>
+		</reference-descriptor>
+    </class-descriptor>
+    <!--************ TABLE PATH5*************-->
+	<class-descriptor class="it.aco.mandragora.vo.Path5VO" table="PATH5">
+        <field-descriptor id="1" name="idPath5" column="ID_PATH5" jdbc-type="VARCHAR" primarykey="true"/>
+        <field-descriptor id="2" name="idPath6" column="ID_PATH6" jdbc-type="VARCHAR"/>
+        <field-descriptor id="3" name="description" column="DESCRIPTION" jdbc-type="VARCHAR" />
+        <reference-descriptor name="path6VO" class-ref="it.aco.mandragora.vo.Path6VO" auto-retrieve="true" auto-update="none" auto-delete="link">
+			<foreignkey field-ref="idPath6"/>
+		</reference-descriptor>
+    </class-descriptor>
+    <!--************ TABLE PATH6*************-->
+	<class-descriptor class="it.aco.mandragora.vo.Path6VO" table="PATH6">
+        <field-descriptor id="1" name="idPath6" column="ID_PATH6" jdbc-type="VARCHAR" primarykey="true"/>
+        <field-descriptor id="2" name="description" column="DESCRIPTION" jdbc-type="VARCHAR" />
+        <collection-descriptor name="path7VOs" element-class-ref="it.aco.mandragora.vo.Path7VO" orderby="idPath7" sort="ASC" auto-retrieve="true" auto-update="link" auto-delete="none" collection-class="org.apache.ojb.broker.util.collections.ManageableVector">
+			<inverse-foreignkey field-ref="idPath6"/>
+		</collection-descriptor>
+    </class-descriptor>
+    <!--************ TABLE PATH7*************-->
+	<class-descriptor class="it.aco.mandragora.vo.Path7VO" table="PATH7">
+        <field-descriptor id="1" name="idPath7" column="ID_PATH7" jdbc-type="VARCHAR" primarykey="true"/>
+        <field-descriptor id="2" name="idPath6" column="ID_PATH6" jdbc-type="VARCHAR"/>
+        <field-descriptor id="3" name="description" column="DESCRIPTION" jdbc-type="VARCHAR" />
+        <collection-descriptor name="path8VOs" element-class-ref="it.aco.mandragora.vo.Path8VO" indirection-table="PATH7_PATH8" orderby="idPath8" sort="ASC" auto-retrieve="true" auto-update="link" auto-delete="none" collection-class="org.apache.ojb.broker.util.collections.ManageableVector">
+			<fk-pointing-to-this-class column="ID_PATH7"/>
+			<fk-pointing-to-element-class column="ID_PATH8"/>
+		</collection-descriptor>
+    </class-descriptor>
+    <!--************ TABLE PATH8*************-->
+	<class-descriptor class="it.aco.mandragora.vo.Path8VO" table="PATH8">
+        <field-descriptor id="1" name="idPath8" column="ID_PATH8" jdbc-type="VARCHAR" primarykey="true"/>
+        <field-descriptor id="2" name="description" column="DESCRIPTION" jdbc-type="VARCHAR" />
+        <collection-descriptor name="path9VOs" element-class-ref="it.aco.mandragora.vo.Path9VO" orderby="idPath9" sort="ASC" auto-retrieve="true" auto-update="none" auto-delete="link" collection-class="org.apache.ojb.broker.util.collections.ManageableVector">
+			<inverse-foreignkey field-ref="idPath8"/>
+		</collection-descriptor>
+    </class-descriptor>
+    <!--************ TABLE PATH9*************-->
+	<class-descriptor class="it.aco.mandragora.vo.Path9VO" table="PATH9">
+        <field-descriptor id="1" name="idPath9" column="ID_PATH9" jdbc-type="VARCHAR" primarykey="true"/>
+        <field-descriptor id="2" name="idPath8" column="ID_PATH8" jdbc-type="VARCHAR" />
+        <field-descriptor id="3" name="idPath10" column="ID_PATH10" jdbc-type="VARCHAR" />
+        <field-descriptor id="4" name="description" column="DESCRIPTION" jdbc-type="VARCHAR" />
+        <reference-descriptor name="path10VO" class-ref="it.aco.mandragora.vo.Path10VO" auto-retrieve="true" auto-update="none" auto-delete="link">
+			<foreignkey field-ref="idPath10"/>
+		</reference-descriptor>
+    </class-descriptor>
+    <!--************ TABLE PATH10*************-->
+	<class-descriptor class="it.aco.mandragora.vo.Path10VO" table="PATH10">
+        <field-descriptor id="1" name="idPath10" column="ID_PATH10" jdbc-type="VARCHAR" primarykey="true"/>
+        <field-descriptor id="2" name="idPath11" column="ID_PATH11" jdbc-type="VARCHAR" />
+        <field-descriptor id="3" name="description" column="DESCRIPTION" jdbc-type="VARCHAR" />
+        <reference-descriptor name="path11VO" class-ref="it.aco.mandragora.vo.Path11VO" auto-retrieve="true" auto-update="object" auto-delete="object">
+			<foreignkey field-ref="idPath11"/>
+		</reference-descriptor>
+    </class-descriptor>
+    <!--************ TABLE PATH11*************-->
+	<class-descriptor class="it.aco.mandragora.vo.Path11VO" table="PATH11">
+        <field-descriptor id="1" name="idPath11" column="ID_PATH11" jdbc-type="VARCHAR" primarykey="true"/>
+        <field-descriptor id="2" name="description" column="DESCRIPTION" jdbc-type="VARCHAR" />
+    </class-descriptor>
+    <!--************ TABLE TREENODE0*************-->
+	<class-descriptor class="it.aco.mandragora.vo.TreeNode0VO" table="TREENODE0">
+        <field-descriptor id="1" name="idTreeNode0" column="ID_TREENODE0" jdbc-type="VARCHAR" primarykey="true"/>
+        <field-descriptor id="2" name="description" column="DESCRIPTION" jdbc-type="VARCHAR" />
+        <collection-descriptor name="treeNode1VOs" element-class-ref="it.aco.mandragora.vo.TreeNode1VO" orderby="idTreeNode1" sort="ASC" auto-retrieve="true" auto-update="none" auto-delete="link" collection-class="org.apache.ojb.broker.util.collections.ManageableVector">
+			<inverse-foreignkey field-ref="idTreeNode0"/>
+		</collection-descriptor>
+    </class-descriptor>
+    <!--************ TABLE TREENODE1*************-->
+	<class-descriptor class="it.aco.mandragora.vo.TreeNode1VO" table="TREENODE1">
+        <field-descriptor id="1" name="idTreeNode1" column="ID_TREENODE1" jdbc-type="VARCHAR" primarykey="true"/>
+        <field-descriptor id="2" name="idTreeNode0" column="ID_TREENODE0" jdbc-type="VARCHAR"/>
+        <field-descriptor id="3" name="description" column="DESCRIPTION" jdbc-type="VARCHAR" />
+        <collection-descriptor name="treeNode11VOs" element-class-ref="it.aco.mandragora.vo.TreeNode11VO" orderby="idTreeNode11" sort="ASC" auto-retrieve="true" auto-update="link" auto-delete="object" collection-class="org.apache.ojb.broker.util.collections.ManageableVector">
+			<inverse-foreignkey field-ref="idTreeNode1"/>
+		</collection-descriptor>
+    </class-descriptor>
+    <!--************ TABLE TREENODE11*************-->
+	<class-descriptor class="it.aco.mandragora.vo.TreeNode11VO" table="TREENODE11">
+        <field-descriptor id="1" name="idTreeNode11" column="ID_TREENODE11" jdbc-type="VARCHAR" primarykey="true"/>
+        <field-descriptor id="2" name="idTreeNode1" column="ID_TREENODE1" jdbc-type="VARCHAR"/>
+        <field-descriptor id="2" name="idTreeNode114" column="ID_TREENODE114" jdbc-type="VARCHAR"/>
+        <field-descriptor id="2" name="idTreeNode115" column="ID_TREENODE115" jdbc-type="VARCHAR"/>
+        <field-descriptor id="2" name="idTreeNode116" column="ID_TREENODE116" jdbc-type="VARCHAR"/>
+        <field-descriptor id="3" name="description" column="DESCRIPTION" jdbc-type="VARCHAR" />
+        <reference-descriptor name="treeNode114VO" class-ref="it.aco.mandragora.vo.TreeNode114VO" auto-retrieve="true" auto-update="object" auto-delete="none">
+			<foreignkey field-ref="idTreeNode114"/>
+		</reference-descriptor>
+        <reference-descriptor name="treeNode115VO" class-ref="it.aco.mandragora.vo.TreeNode115VO" auto-retrieve="true" auto-update="link" auto-delete="object">
+			<foreignkey field-ref="idTreeNode115"/>
+		</reference-descriptor>
+        <reference-descriptor name="treeNode116VO" class-ref="it.aco.mandragora.vo.TreeNode116VO" auto-retrieve="true" auto-update="none" auto-delete="link">
+			<foreignkey field-ref="idTreeNode116"/>
+		</reference-descriptor>
+        <collection-descriptor name="treeNode111VOs" element-class-ref="it.aco.mandragora.vo.TreeNode111VO" indirection-table="TREENODE11_TREENODE111" orderby="idTreeNode111" sort="ASC" auto-retrieve="true" auto-update="link" auto-delete="none" collection-class="org.apache.ojb.broker.util.collections.ManageableVector">
+			<fk-pointing-to-this-class column="ID_TREENODE11"/>
+			<fk-pointing-to-element-class column="ID_TREENODE111"/>
+		</collection-descriptor>
+        <collection-descriptor name="treeNode112VOs" element-class-ref="it.aco.mandragora.vo.TreeNode112VO" indirection-table="TREENODE11_TREENODE112" orderby="idTreeNode112" sort="ASC" auto-retrieve="true" auto-update="object" auto-delete="link" collection-class="org.apache.ojb.broker.util.collections.ManageableVector">
+			<fk-pointing-to-this-class column="ID_TREENODE11"/>
+			<fk-pointing-to-element-class column="ID_TREENODE112"/>
+		</collection-descriptor>
+        <collection-descriptor name="treeNode113VOs" element-class-ref="it.aco.mandragora.vo.TreeNode113VO" indirection-table="TREENODE11_TREENODE113" orderby="idTreeNode113" sort="ASC" auto-retrieve="true" auto-update="none" auto-delete="object" collection-class="org.apache.ojb.broker.util.collections.ManageableVector">
+			<fk-pointing-to-this-class column="ID_TREENODE11"/>
+			<fk-pointing-to-element-class column="ID_TREENODE113"/>
+		</collection-descriptor>
+    </class-descriptor>
+    <!--************ TABLE TREENODE111*************-->
+	<class-descriptor class="it.aco.mandragora.vo.TreeNode111VO" table="TREENODE111">
+        <field-descriptor id="1" name="idTreeNode111" column="ID_TREENODE111" jdbc-type="VARCHAR" primarykey="true"/>
+        <field-descriptor id="2" name="description" column="DESCRIPTION" jdbc-type="VARCHAR" />
+        <collection-descriptor name="treeNode1111VOs" element-class-ref="it.aco.mandragora.vo.TreeNode1111VO" orderby="idTreeNode1111" sort="ASC" auto-retrieve="true" auto-update="none" auto-delete="link" collection-class="org.apache.ojb.broker.util.collections.ManageableVector">
+			<inverse-foreignkey field-ref="idTreeNode111"/>
+		</collection-descriptor>
+    </class-descriptor>
+    <!--************ TABLE TREENODE1111*************-->
+	<class-descriptor class="it.aco.mandragora.vo.TreeNode1111VO" table="TREENODE1111">
+        <field-descriptor id="1" name="idTreeNode1111" column="ID_TREENODE1111" jdbc-type="VARCHAR" primarykey="true"/>
+        <field-descriptor id="2" name="idTreeNode111" column="ID_TREENODE111" jdbc-type="VARCHAR"/>
+        <field-descriptor id="3" name="description" column="DESCRIPTION" jdbc-type="VARCHAR" />
+    </class-descriptor>
+    <!--************ TABLE TREENODE112*************-->
+	<class-descriptor class="it.aco.mandragora.vo.TreeNode112VO" table="TREENODE112">
+        <field-descriptor id="1" name="idTreeNode112" column="ID_TREENODE112" jdbc-type="VARCHAR" primarykey="true"/>
+        <field-descriptor id="2" name="description" column="DESCRIPTION" jdbc-type="VARCHAR" />
+        <collection-descriptor name="treeNode1121VOs" element-class-ref="it.aco.mandragora.vo.TreeNode1121VO" orderby="idTreeNode1121" sort="ASC" auto-retrieve="true" auto-update="link" auto-delete="object" collection-class="org.apache.ojb.broker.util.collections.ManageableVector">
+			<inverse-foreignkey field-ref="idTreeNode112"/>
+		</collection-descriptor>
+    </class-descriptor>
+    <!--************ TABLE TREENODE1121*************-->
+	<class-descriptor class="it.aco.mandragora.vo.TreeNode1121VO" table="TREENODE1121">
+        <field-descriptor id="1" name="idTreeNode1121" column="ID_TREENODE1121" jdbc-type="VARCHAR" primarykey="true"/>
+        <field-descriptor id="2" name="idTreeNode112" column="ID_TREENODE112" jdbc-type="VARCHAR"/>
+        <field-descriptor id="3" name="description" column="DESCRIPTION" jdbc-type="VARCHAR" />
+    </class-descriptor>
+    <!--************ TABLE TREENODE113*************-->
+	<class-descriptor class="it.aco.mandragora.vo.TreeNode113VO" table="TREENODE113">
+        <field-descriptor id="1" name="idTreeNode113" column="ID_TREENODE113" jdbc-type="VARCHAR" primarykey="true"/>
+        <field-descriptor id="2" name="description" column="DESCRIPTION" jdbc-type="VARCHAR" />
+        <collection-descriptor name="treeNode1131VOs" element-class-ref="it.aco.mandragora.vo.TreeNode1131VO" orderby="idTreeNode1131" sort="ASC" auto-retrieve="true" auto-update="none" auto-delete="none" collection-class="org.apache.ojb.broker.util.collections.ManageableVector">
+			<inverse-foreignkey field-ref="idTreeNode113"/>
+		</collection-descriptor>
+    </class-descriptor>
+    <!--************ TABLE TREENODE1131*************-->
+	<class-descriptor class="it.aco.mandragora.vo.TreeNode1131VO" table="TREENODE1131">
+        <field-descriptor id="1" name="idTreeNode1131" column="ID_TREENODE1131" jdbc-type="VARCHAR" primarykey="true"/>
+        <field-descriptor id="2" name="idTreeNode113" column="ID_TREENODE113" jdbc-type="VARCHAR"/>
+        <field-descriptor id="3" name="description" column="DESCRIPTION" jdbc-type="VARCHAR" />
+    </class-descriptor>
+    <!--************ TABLE TREENODE114*************-->
+	<class-descriptor class="it.aco.mandragora.vo.TreeNode114VO" table="TREENODE114">
+        <field-descriptor id="1" name="idTreeNode114" column="ID_TREENODE114" jdbc-type="VARCHAR" primarykey="true"/>
+        <field-descriptor id="2" name="description" column="DESCRIPTION" jdbc-type="VARCHAR" />
+        <collection-descriptor name="treeNode1141VOs" element-class-ref="it.aco.mandragora.vo.TreeNode1141VO" orderby="idTreeNode1141" sort="ASC" auto-retrieve="true" auto-update="object" auto-delete="link" collection-class="org.apache.ojb.broker.util.collections.ManageableVector">
+			<inverse-foreignkey field-ref="idTreeNode114"/>
+		</collection-descriptor>
+    </class-descriptor>
+    <!--************ TABLE TREENODE1141*************-->
+	<class-descriptor class="it.aco.mandragora.vo.TreeNode1141VO" table="TREENODE1141">
+        <field-descriptor id="1" name="idTreeNode1141" column="ID_TREENODE1141" jdbc-type="VARCHAR" primarykey="true"/>
+        <field-descriptor id="2" name="idTreeNode114" column="ID_TREENODE114" jdbc-type="VARCHAR"/>
+        <field-descriptor id="3" name="description" column="DESCRIPTION" jdbc-type="VARCHAR" />
+    </class-descriptor>
+    <!--************ TABLE TREENODE115*************-->
+	<class-descriptor class="it.aco.mandragora.vo.TreeNode115VO" table="TREENODE115">
+        <field-descriptor id="1" name="idTreeNode115" column="ID_TREENODE115" jdbc-type="VARCHAR" primarykey="true"/>
+        <field-descriptor id="2" name="description" column="DESCRIPTION" jdbc-type="VARCHAR" />
+        <collection-descriptor name="treeNode1151VOs" element-class-ref="it.aco.mandragora.vo.TreeNode1151VO" orderby="idTreeNode1151" sort="ASC" auto-retrieve="true" auto-update="none" auto-delete="object" collection-class="org.apache.ojb.broker.util.collections.ManageableVector">
+			<inverse-foreignkey field-ref="idTreeNode115"/>
+		</collection-descriptor>
+    </class-descriptor>
+    <!--************ TABLE TREENODE1151*************-->
+	<class-descriptor class="it.aco.mandragora.vo.TreeNode1151VO" table="TREENODE1151">
+        <field-descriptor id="1" name="idTreeNode1151" column="ID_TREENODE1151" jdbc-type="VARCHAR" primarykey="true"/>
+        <field-descriptor id="2" name="idTreeNode115" column="ID_TREENODE115" jdbc-type="VARCHAR"/>
+        <field-descriptor id="3" name="description" column="DESCRIPTION" jdbc-type="VARCHAR" />
+    </class-descriptor>
+    <!--************ TABLE TREENODE116*************-->
+	<class-descriptor class="it.aco.mandragora.vo.TreeNode116VO" table="TREENODE116">
+        <field-descriptor id="1" name="idTreeNode116" column="ID_TREENODE116" jdbc-type="VARCHAR" primarykey="true"/>
+        <field-descriptor id="2" name="description" column="DESCRIPTION" jdbc-type="VARCHAR" />
+        <collection-descriptor name="treeNode1161VOs" element-class-ref="it.aco.mandragora.vo.TreeNode1161VO" orderby="idTreeNode1161" sort="ASC" auto-retrieve="true" auto-update="link" auto-delete="none" collection-class="org.apache.ojb.broker.util.collections.ManageableVector">
+			<inverse-foreignkey field-ref="idTreeNode116"/>
+		</collection-descriptor>
+    </class-descriptor>
+    <!--************ TABLE TREENODE1161*************-->
+	<class-descriptor class="it.aco.mandragora.vo.TreeNode1161VO" table="TREENODE1161">
+        <field-descriptor id="1" name="idTreeNode1161" column="ID_TREENODE1161" jdbc-type="VARCHAR" primarykey="true"/>
+        <field-descriptor id="2" name="idTreeNode116" column="ID_TREENODE116" jdbc-type="VARCHAR"/>
+        <field-descriptor id="3" name="description" column="DESCRIPTION" jdbc-type="VARCHAR" />
+    </class-descriptor>
+    <!--************ TABLE STORE*************-->
+	<class-descriptor class="it.aco.mandragora.vo.StoreVO" table="STORE">
+        <field-descriptor id="1" name="idStore" column="ID_STORE" jdbc-type="VARCHAR" primarykey="true"/>
+        <field-descriptor id="2" name="idAdministration" column="ID_ADMINISTRATION" jdbc-type="VARCHAR" />
+        <field-descriptor id="3" name="description" column="DESCRIPTION" jdbc-type="VARCHAR" />
+        <reference-descriptor name="administrationVO" class-ref="it.aco.mandragora.vo.AdministrationVO" auto-retrieve="true" auto-update="none" auto-delete="none">
+			<foreignkey field-ref="idAdministration"/>
+		</reference-descriptor>
+        <collection-descriptor name="categoryVOs" element-class-ref="it.aco.mandragora.vo.CategoryVO" indirection-table="STORE_CATEGORY" orderby="idCategory" sort="ASC" auto-retrieve="false" auto-update="none" auto-delete="object" collection-class="org.apache.ojb.broker.util.collections.ManageableVector">
+			<fk-pointing-to-this-class column="ID_STORE"/>
+			<fk-pointing-to-element-class column="ID_CATEGORY"/>
+		</collection-descriptor>
+    </class-descriptor>
+    <!--************ TABLE ADMINISTRATION*************-->
+	<class-descriptor class="it.aco.mandragora.vo.AdministrationVO" table="ADMINISTRATION">
+        <field-descriptor id="1" name="idAdministration" column="ID_ADMINISTRATION" jdbc-type="VARCHAR" primarykey="true"/>
+        <field-descriptor id="2" name="description" column="DESCRIPTION" jdbc-type="VARCHAR" />
+        <collection-descriptor name="orderVOs" element-class-ref="it.aco.mandragora.vo.OrderVO" orderby="idCategory" sort="ASC" auto-retrieve="true" auto-update="object" auto-delete="none" collection-class="org.apache.ojb.broker.util.collections.ManageableVector">
+			<inverse-foreignkey field-ref="idAdministration"/>
+		</collection-descriptor>
+        <collection-descriptor name="productVOs" element-class-ref="it.aco.mandragora.vo.ProductVO" indirection-table="ADMINISTRATION_PRODUCT" orderby="idCategory" sort="ASC" auto-retrieve="true" auto-update="none" auto-delete="object" collection-class="org.apache.ojb.broker.util.collections.ManageableVector">
+			<fk-pointing-to-this-class column="ID_ADMINISTRATION"/>
+			<fk-pointing-to-element-class column="ID_CATEGORY"/>
+			<fk-pointing-to-element-class column="ID_SUBCATEGORY"/>
+			<fk-pointing-to-element-class column="ID_PRODUCT"/>
+		</collection-descriptor>
+    </class-descriptor>
+    <!--************ TABLE ORDERED*************-->
+	<class-descriptor class="it.aco.mandragora.vo.OrderVO" table="ORDERED">
+        <field-descriptor id="1" name="idAdministration" column="ID_ADMINISTRATION" jdbc-type="VARCHAR" primarykey="true"/>
+        <field-descriptor id="2" name="idCategory" column="ID_CATEGORY" jdbc-type="VARCHAR" primarykey="true"/>
+        <field-descriptor id="3" name="idSubCategory" column="ID_SUBCATEGORY" jdbc-type="VARCHAR" primarykey="true"/>
+        <field-descriptor id="4" name="idProduct" column="ID_PRODUCT" jdbc-type="VARCHAR" primarykey="true"/>
+        <field-descriptor id="5" name="description" column="DESCRIPTION" jdbc-type="VARCHAR" />
+        <field-descriptor id="6" name="orderDescription" column="ORDERDESCRIPTION" jdbc-type="VARCHAR"/>
+        <field-descriptor id="7" name="note" column="NOTE" jdbc-type="VARCHAR"/>
+    </class-descriptor>
+    <!--************ TABLE CATEGORY*************-->
+	<class-descriptor class="it.aco.mandragora.vo.CategoryVO" table="CATEGORY">
+        <field-descriptor id="1" name="idCategory" column="ID_CATEGORY" jdbc-type="VARCHAR" primarykey="true"/>
+        <field-descriptor id="2" name="description" column="DESCRIPTION" jdbc-type="VARCHAR" />
+        <collection-descriptor name="subCategoryVOs" element-class-ref="it.aco.mandragora.vo.SubCategoryVO" orderby="idSubCategory" sort="ASC" auto-retrieve="false" auto-update="none" auto-delete="link" collection-class="org.apache.ojb.broker.util.collections.ManageableVector">
+			<inverse-foreignkey field-ref="idCategory"/>
+		</collection-descriptor>
+    </class-descriptor>
+    <!--************ TABLE SUBCATEGORY*************-->
+	<class-descriptor class="it.aco.mandragora.vo.SubCategoryVO" table="SUBCATEGORY">
+        <field-descriptor id="1" name="idCategory" column="ID_CATEGORY" jdbc-type="VARCHAR" primarykey="true"/>
+        <field-descriptor id="2" name="idSubCategory" column="ID_SUBCATEGORY" jdbc-type="VARCHAR" primarykey="true"/>
+        <field-descriptor id="3" name="description" column="DESCRIPTION" jdbc-type="VARCHAR" />
+        <collection-descriptor name="productVOs" element-class-ref="it.aco.mandragora.vo.ProductVO" orderby="idProduct" sort="ASC" auto-retrieve="false" auto-update="none" auto-delete="none" collection-class="org.apache.ojb.broker.util.collections.ManageableVector">
+			<inverse-foreignkey field-ref="idCategory"/>
+			<inverse-foreignkey field-ref="idSubCategory"/>
+		</collection-descriptor>
+    </class-descriptor>
+    <!--************ TABLE PRODUCT*************-->
+	<class-descriptor class="it.aco.mandragora.vo.ProductVO" table="PRODUCT">
+        <field-descriptor id="1" name="idCategory" column="ID_CATEGORY" jdbc-type="VARCHAR" primarykey="true"/>
+        <field-descriptor id="2" name="idSubCategory" column="ID_SUBCATEGORY" jdbc-type="VARCHAR" primarykey="true"/>
+        <field-descriptor id="3" name="idProduct" column="ID_PRODUCT" jdbc-type="VARCHAR" primarykey="true"/>
+        <field-descriptor id="4" name="description" column="DESCRIPTION" jdbc-type="VARCHAR" />
+        <field-descriptor id="5" name="productDescription" column="PRODUCTDESCRIPTION" jdbc-type="VARCHAR"/>
+    </class-descriptor>
+    <!--************ TABLE DIRECTOR*************-->
+	<class-descriptor class="it.aco.mandragora.vo.DirectorVO" table="DIRECTOR">
+        <field-descriptor id="1" name="idDirector" column="ID_DIRECTOR" jdbc-type="VARCHAR" primarykey="true"/>
+        <field-descriptor id="2" name="idSalesManager" column="ID_SALESMANAGER" jdbc-type="VARCHAR" />
+        <field-descriptor id="3" name="directorDescription1" column="DIRECTORDESCRIPTION1" jdbc-type="VARCHAR"/>
+        <field-descriptor id="4" name="directorDescription2" column="DIRECTORDESCRIPTION2" jdbc-type="VARCHAR"/>
+        <reference-descriptor name="salesManagerVO" class-ref="it.aco.mandragora.vo.SalesManagerVO" auto-retrieve="false" auto-update="none" auto-delete="object">
+			<foreignkey field-ref="idSalesManager"/>
+		</reference-descriptor>
+        <collection-descriptor name="directorClerkVOs" element-class-ref="it.aco.mandragora.vo.DirectorClerkVO" orderby="idSalesManager" sort="ASC" auto-retrieve="false" auto-update="link" auto-delete="none" collection-class="org.apache.ojb.broker.util.collections.ManageableVector">
+			<inverse-foreignkey field-ref="idDirector"/>
+		</collection-descriptor>
+    </class-descriptor>
+    <!--************ TABLE SALESMANAGER*************-->
+	<class-descriptor class="it.aco.mandragora.vo.SalesManagerVO" table="SALESMANAGER">
+        <field-descriptor id="1" name="idSalesManager" column="ID_SALESMANAGER" jdbc-type="VARCHAR" primarykey="true"/>
+        <field-descriptor id="2" name="salesManagerDescription1" column="SALESMANAGERDESCRIPTION1" jdbc-type="VARCHAR"/>
+        <field-descriptor id="3" name="salesManagerDescription2" column="SALESMANAGERDESCRIPTION2" jdbc-type="VARCHAR"/>
+        <collection-descriptor name="salesDivisionVOs" element-class-ref="it.aco.mandragora.vo.SalesDivisionVO" orderby="idSalesDivision" sort="ASC" auto-retrieve="false" auto-update="link" auto-delete="none" collection-class="org.apache.ojb.broker.util.collections.ManageableVector">
+			<inverse-foreignkey field-ref="idSalesManager"/>
+		</collection-descriptor>
+    </class-descriptor>
+    <!--************ TABLE SALESDIVISION*************-->
+	<class-descriptor class="it.aco.mandragora.vo.SalesDivisionVO" table="SALESDIVISION">
+        <field-descriptor id="1" name="idSalesManager" column="ID_SALESMANAGER" jdbc-type="VARCHAR" primarykey="true"/>
+        <field-descriptor id="2" name="idSalesDivision" column="ID_SALESDIVISION" jdbc-type="VARCHAR" primarykey="true"/>
+        <field-descriptor id="3" name="salesDivisionDescription1" column="SALESDIVISIONDESCRIPTION1" jdbc-type="VARCHAR"/>
+        <field-descriptor id="4" name="salesDivisionDescription2" column="SALESDIVISIONDESCRIPTION2" jdbc-type="VARCHAR"/>
+        <collection-descriptor name="salesAssistantVOs" element-class-ref="it.aco.mandragora.vo.SalesAssistantVO" indirection-table="SALESDIVISION_SALESASSISTANT" orderby="idSalesAssistant" sort="ASC" auto-retrieve="false" auto-update="object" auto-delete="none" collection-class="org.apache.ojb.broker.util.collections.ManageableVector">
+			<fk-pointing-to-this-class column="ID_SALESMANAGER"/>
+			<fk-pointing-to-this-class column="ID_SALESDIVISION"/>
+			<fk-pointing-to-element-class column="ID_SALESASSISTANT"/>
+		</collection-descriptor>
+    </class-descriptor>
+    <!--************ TABLE SALESASSISTANT*************-->
+        <class-descriptor class="it.aco.mandragora.vo.SalesAssistantVO" table="SALESASSISTANT">
+            <field-descriptor id="1" name="idSalesAssistant" column="ID_SALESASSISTANT" jdbc-type="VARCHAR" primarykey="true"/>
+            <field-descriptor id="2" name="salesAssistantDescription1" column="SALESASSISTANTDESCRIPTION1" jdbc-type="VARCHAR"/>
+            <field-descriptor id="3" name="salesAssistantDescription2" column="SALESASSISTANTDESCRIPTION2" jdbc-type="VARCHAR"/>
+            <collection-descriptor name="clerkVOs" element-class-ref="it.aco.mandragora.vo.ClerkVO" orderby="idClerk" sort="ASC" auto-retrieve="false" auto-update="link" auto-delete="none" collection-class="org.apache.ojb.broker.util.collections.ManageableVector">
+                <inverse-foreignkey field-ref="idSalesAssistant"/>
+            </collection-descriptor>
+        </class-descriptor>
+    <!--************ TABLE DIRECTORCLERK*************-->
+	<class-descriptor class="it.aco.mandragora.vo.DirectorClerkVO" table="DIRECTORCLERK">
+        <field-descriptor id="1" name="idDirector" column="ID_DIRECTOR" jdbc-type="VARCHAR" primarykey="true"/>
+        <field-descriptor id="2" name="idSalesManager" column="ID_SALESMANAGER" jdbc-type="VARCHAR" primarykey="true"/>
+        <field-descriptor id="3" name="idSalesDivision" column="ID_SALESDIVISION" jdbc-type="VARCHAR" primarykey="true"/>
+        <field-descriptor id="4" name="idSalesAssistant" column="ID_SALESASSISTANT" jdbc-type="VARCHAR" primarykey="true"/>
+        <field-descriptor id="5" name="idClerk" column="ID_CLERK" jdbc-type="VARCHAR" primarykey="true"/>
+        <field-descriptor id="6" name="directorClerkDescription1" column="DIRECTORCLERKDESCRIPTION1" jdbc-type="VARCHAR"/>
+        <field-descriptor id="7" name="directorDescription2" column="DIRECTORDESCRIPTION2" jdbc-type="VARCHAR"/>
+        <field-descriptor id="8" name="directorClerkDescription2" column="DIRECTORCLERKDESCRIPTION2" jdbc-type="VARCHAR"/>
+        <field-descriptor id="9" name="salesManagerDescription2" column="SALESMANAGERDESCRIPTION2" jdbc-type="VARCHAR"/>
+        <field-descriptor id="10" name="directorClerkDescription3" column="DIRECTORCLERKDESCRIPTION3" jdbc-type="VARCHAR"/>
+        <field-descriptor id="11" name="salesDivisionDescription2" column="SALESDIVISIONDESCRIPTION2" jdbc-type="VARCHAR"/>
+        <field-descriptor id="12" name="directorClerkDescription4" column="DIRECTORCLERKDESCRIPTION4" jdbc-type="VARCHAR"/>
+        <field-descriptor id="13" name="salesAssistantDescription2" column="SALESASSISTANTDESCRIPTION2" jdbc-type="VARCHAR"/>
+        <field-descriptor id="14" name="directorClerkDescription5" column="DIRECTORCLERKDESCRIPTION5" jdbc-type="VARCHAR"/>
+        <field-descriptor id="15" name="clerkDescription2" column="CLERKDESCRIPTION2" jdbc-type="VARCHAR"/>
+        <field-descriptor id="16" name="note1" column="NOTE1" jdbc-type="VARCHAR"/>
+        <field-descriptor id="17" name="note2" column="NOTE2" jdbc-type="VARCHAR"/>
+    </class-descriptor>
+    <!--************ TABLE CLERK*************-->
+	<class-descriptor class="it.aco.mandragora.vo.ClerkVO" table="CLERK">
+        <field-descriptor id="1" name="idSalesAssistant" column="ID_SALESASSISTANT" jdbc-type="VARCHAR" primarykey="true"/>
+        <field-descriptor id="2" name="idClerk" column="ID_CLERK" jdbc-type="VARCHAR" primarykey="true"/>
+        <field-descriptor id="3" name="clerkDescription1" column="CLERKDESCRIPTION1" jdbc-type="VARCHAR"/>
+        <field-descriptor id="4" name="clerkDescription2" column="CLERKDESCRIPTION2" jdbc-type="VARCHAR"/>
+    </class-descriptor>
+
+    <!--************ TABLE COPYNODE111*************-->
+	<class-descriptor class="it.aco.mandragora.vo.CopyNode111VO" table="COPYNODE111">
+        <field-descriptor id="1" name="idCopyNode111" column="ID_COPYNODE111" jdbc-type="VARCHAR" primarykey="true" autoincrement="false"/>
+        <field-descriptor id="2" name="idCopyNode11" column="ID_COPYNODE11" jdbc-type="VARCHAR"/>
+		<field-descriptor id="3" name="description" column="DESCRIPTION" jdbc-type="VARCHAR" />
+    </class-descriptor>
+    <!--************ TABLE COPYNODE11*************-->
+	<class-descriptor class="it.aco.mandragora.vo.CopyNode11VO" table="COPYNODE11">
+        <field-descriptor id="1" name="idCopyNode11" column="ID_COPYNODE11" jdbc-type="VARCHAR" primarykey="true"/>
+        <field-descriptor id="2" name="description" column="DESCRIPTION" jdbc-type="VARCHAR" />
+        <collection-descriptor name="copyNode111VOs" element-class-ref="it.aco.mandragora.vo.CopyNode111VO" orderby="idCopyNode111" sort="ASC" auto-retrieve="true" auto-update="object" auto-delete="object" collection-class="org.apache.ojb.broker.util.collections.ManageableVector">
+			<inverse-foreignkey field-ref="idCopyNode11"/>
+		</collection-descriptor>
+    </class-descriptor>
+    <!--************ TABLE COPYNODE121*************-->
+	<class-descriptor class="it.aco.mandragora.vo.CopyNode121VO" table="COPYNODE121">
+        <field-descriptor id="1" name="idCopyNode121" column="ID_COPYNODE121" jdbc-type="VARCHAR" primarykey="true" autoincrement="false"/>
+        <field-descriptor id="2" name="description" column="DESCRIPTION" jdbc-type="VARCHAR" />
+    </class-descriptor>
+    <!--************ TABLE COPYNODE122*************-->
+	<class-descriptor class="it.aco.mandragora.vo.CopyNode122VO" table="COPYNODE122">
+        <field-descriptor id="1" name="idCopyNode122" column="ID_COPYNODE122" jdbc-type="VARCHAR" primarykey="true" autoincrement="false"/>
+        <field-descriptor id="2" name="idCopyNode12" column="ID_COPYNODE12" jdbc-type="VARCHAR"/>
+        <field-descriptor id="3" name="description" column="DESCRIPTION" jdbc-type="VARCHAR" />
+    </class-descriptor>
+    <!--************ TABLE COPYNODE12*************-->
+	<class-descriptor class="it.aco.mandragora.vo.CopyNode12VO" table="COPYNODE12">
+        <field-descriptor id="1" name="idCopyNode12" column="ID_COPYNODE12" jdbc-type="VARCHAR" primarykey="true"/>
+        <field-descriptor id="2" name="idCopyNode1" column="ID_COPYNODE1" jdbc-type="VARCHAR" />
+        <field-descriptor id="3" name="idCopyNode121" column="ID_COPYNODE121" jdbc-type="VARCHAR"/>
+        <field-descriptor id="4" name="description" column="DESCRIPTION" jdbc-type="VARCHAR" />
+        <reference-descriptor name="copyNode121VO" class-ref="it.aco.mandragora.vo.CopyNode121VO" auto-retrieve="true" auto-update="none" auto-delete="link">
+			<foreignkey field-ref="idCopyNode121"/>
+		</reference-descriptor>
+        <collection-descriptor name="copyNode122VOs" element-class-ref="it.aco.mandragora.vo.CopyNode122VO" orderby="idCopyNode122" sort="ASC" auto-retrieve="true" auto-update="object" auto-delete="link" collection-class="org.apache.ojb.broker.util.collections.ManageableVector">
+			<inverse-foreignkey field-ref="idCopyNode12"/>
+		</collection-descriptor>
+    </class-descriptor>
+    <!--************ TABLE COPYNODE1*************-->
+	<class-descriptor class="it.aco.mandragora.vo.CopyNode1VO" table="COPYNODE1">
+        <field-descriptor id="1" name="idCopyNode1" column="ID_COPYNODE1" jdbc-type="VARCHAR" primarykey="true"/>
+        <field-descriptor id="2" name="idCopyRoot" column="ID_COPYROOT" jdbc-type="VARCHAR" />
+        <field-descriptor id="3" name="idCopyNode11" column="ID_COPYNODE11" jdbc-type="VARCHAR"/>
+        <field-descriptor id="4" name="description" column="DESCRIPTION" jdbc-type="VARCHAR" />
+        <reference-descriptor name="copyNode11VO" class-ref="it.aco.mandragora.vo.CopyNode11VO" auto-retrieve="true" auto-update="none" auto-delete="link">
+			<foreignkey field-ref="idCopyNode11"/>
+		</reference-descriptor>
+        <collection-descriptor name="copyNode12VOs" element-class-ref="it.aco.mandragora.vo.CopyNode12VO" orderby="idCopyNode12" sort="ASC" auto-retrieve="true" auto-update="none" auto-delete="none" collection-class="org.apache.ojb.broker.util.collections.ManageableVector">
+			<inverse-foreignkey field-ref="idCopyNode1"/>
+		</collection-descriptor>
+    </class-descriptor>
+    <!--************ TABLE COPYNODE211*************-->
+	<class-descriptor class="it.aco.mandragora.vo.CopyNode211VO" table="COPYNODE211">
+        <field-descriptor id="1" name="idCopyNode211" column="ID_COPYNODE211" jdbc-type="VARCHAR" primarykey="true" autoincrement="false"/>
+        <field-descriptor id="2" name="idCopyNode21" column="ID_COPYNODE21" jdbc-type="VARCHAR"/>
+        <field-descriptor id="3" name="description" column="DESCRIPTION" jdbc-type="VARCHAR" />
+    </class-descriptor>
+    <!--************ TABLE COPYNODE221*************-->
+	<class-descriptor class="it.aco.mandragora.vo.CopyNode221VO" table="COPYNODE221">
+        <field-descriptor id="1" name="idCopyNode221" column="ID_COPYNODE221" jdbc-type="VARCHAR" primarykey="true" autoincrement="false"/>
+        <field-descriptor id="2" name="idCopyNode22" column="ID_COPYNODE22" jdbc-type="VARCHAR"/>
+        <field-descriptor id="3" name="description" column="DESCRIPTION" jdbc-type="VARCHAR" />
+    </class-descriptor>
+    <!--************ TABLE COPYNODE21*************-->
+	<class-descriptor class="it.aco.mandragora.vo.CopyNode21VO" table="COPYNODE21">
+        <field-descriptor id="1" name="idCopyNode21" column="ID_COPYNODE21" jdbc-type="VARCHAR" primarykey="true" autoincrement="false"/>
+        <field-descriptor id="2" name="description" column="DESCRIPTION" jdbc-type="VARCHAR" />
+        <collection-descriptor name="copyNode211VOs" element-class-ref="it.aco.mandragora.vo.CopyNode211VO" orderby="idCopyNode211" sort="ASC" auto-retrieve="true" auto-update="link" auto-delete="object" collection-class="org.apache.ojb.broker.util.collections.ManageableVector">
+			<inverse-foreignkey field-ref="idCopyNode21"/>
+		</collection-descriptor>
+    </class-descriptor>
+    <!--************ TABLE COPYNODE22*************-->
+	<class-descriptor class="it.aco.mandragora.vo.CopyNode22VO" table="COPYNODE22">
+        <field-descriptor id="1" name="idCopyNode22" column="ID_COPYNODE22" jdbc-type="VARCHAR" primarykey="true" autoincrement="false"/>
+        <field-descriptor id="2" name="description" column="DESCRIPTION" jdbc-type="VARCHAR" />
+        <collection-descriptor name="copyNode221VOs" element-class-ref="it.aco.mandragora.vo.CopyNode221VO" orderby="idCopyNode221" sort="ASC" auto-retrieve="true" auto-update="link" auto-delete="link" collection-class="org.apache.ojb.broker.util.collections.ManageableVector">
+			<inverse-foreignkey field-ref="idCopyNode22"/>
+		</collection-descriptor>
+    </class-descriptor>
+    <!--************ TABLE COPYNODE2*************-->
+	<class-descriptor class="it.aco.mandragora.vo.CopyNode2VO" table="COPYNODE2">
+        <field-descriptor id="1" name="idCopyNode2" column="ID_COPYNODE2" jdbc-type="VARCHAR" primarykey="true"/>
+        <field-descriptor id="2" name="idCopyNode21" column="ID_COPYNODE21" jdbc-type="VARCHAR"/>
+        <field-descriptor id="3" name="description" column="DESCRIPTION" jdbc-type="VARCHAR" />
+        <reference-descriptor name="copyNode21VO" class-ref="it.aco.mandragora.vo.CopyNode21VO" auto-retrieve="true" auto-update="link" auto-delete="object">
+			<foreignkey field-ref="idCopyNode21"/>
+		</reference-descriptor>
+        <collection-descriptor name="copyNode22VOs" element-class-ref="it.aco.mandragora.vo.CopyNode22VO" indirection-table="COPYNODE2_COPYNODE22" orderby="idCopyNode22" sort="ASC" auto-retrieve="true" auto-update="link" auto-delete="object" collection-class="org.apache.ojb.broker.util.collections.ManageableVector">
+			<fk-pointing-to-this-class column="ID_COPYNODE2"/>
+			<fk-pointing-to-element-class column="ID_COPYNODE22"/>
+		</collection-descriptor>
+    </class-descriptor>
+    <!--************ TABLE COPYNODE3111*************-->
+	<class-descriptor class="it.aco.mandragora.vo.CopyNode3111VO" table="COPYNODE3111">
+        <field-descriptor id="1" name="idCopyNode3111" column="ID_COPYNODE3111" jdbc-type="VARCHAR" primarykey="true" autoincrement="false"/>
+		<field-descriptor id="2" name="description" column="DESCRIPTION" jdbc-type="VARCHAR" />
+    </class-descriptor>
+    <!--************ TABLE COPYNODE3112*************-->
+	<class-descriptor class="it.aco.mandragora.vo.CopyNode3112VO" table="COPYNODE3112">
+        <field-descriptor id="1" name="idCopyNode3112" column="ID_COPYNODE3112" jdbc-type="VARCHAR" primarykey="true" autoincrement="false"/>
+		<field-descriptor id="2" name="description" column="DESCRIPTION" jdbc-type="VARCHAR" />
+    </class-descriptor>
+    <!--************ TABLE COPYNODE311*************-->
+	<class-descriptor class="it.aco.mandragora.vo.CopyNode311VO" table="COPYNODE311">
+        <field-descriptor id="1" name="idCopyNode311" column="ID_COPYNODE311" jdbc-type="VARCHAR" primarykey="true" autoincrement="false"/>
+        <field-descriptor id="2" name="idCopyNode31" column="ID_COPYNODE31" jdbc-type="VARCHAR"/>
+		<field-descriptor id="3" name="description" column="DESCRIPTION" jdbc-type="VARCHAR" />
+        <collection-descriptor name="copyNode3111VOs" element-class-ref="it.aco.mandragora.vo.CopyNode3111VO" indirection-table="COPYNODE311_COPYNODE3111" orderby="idCopyNode3111" sort="ASC" auto-retrieve="true" auto-update="object" auto-delete="none" collection-class="org.apache.ojb.broker.util.collections.ManageableVector">
+			<fk-pointing-to-this-class column="ID_COPYNODE311"/>
+			<fk-pointing-to-element-class column="ID_COPYNODE3111"/>
+		</collection-descriptor>
+        <collection-descriptor name="copyNode3112VOs" element-class-ref="it.aco.mandragora.vo.CopyNode3112VO" indirection-table="COPYNODE311_COPYNODE3112" orderby="idCopyNode3112" sort="ASC" auto-retrieve="true" auto-update="none" auto-delete="link" collection-class="org.apache.ojb.broker.util.collections.ManageableVector">
+			<fk-pointing-to-this-class column="ID_COPYNODE311"/>
+			<fk-pointing-to-element-class column="ID_COPYNODE3112"/>
+		</collection-descriptor>
+    </class-descriptor>
+    <!--************ TABLE COPYNODE31*************-->
+	<class-descriptor class="it.aco.mandragora.vo.CopyNode31VO" table="COPYNODE31">
+        <field-descriptor id="1" name="idCopyNode31" column="ID_COPYNODE31" jdbc-type="VARCHAR" primarykey="true"/>
+        <field-descriptor id="2" name="idCopyNode3" column="ID_COPYNODE3" jdbc-type="VARCHAR"/>
+        <field-descriptor id="3" name="description" column="DESCRIPTION" jdbc-type="VARCHAR" />
+        <collection-descriptor name="copyNode311VOs" element-class-ref="it.aco.mandragora.vo.CopyNode311VO"  orderby="idCopyNode311" sort="ASC" auto-retrieve="true" auto-update="object" auto-delete="object" collection-class="org.apache.ojb.broker.util.collections.ManageableVector">
+			<inverse-foreignkey field-ref="idCopyNode31"/>
+		</collection-descriptor>
+    </class-descriptor>
+    <!--************ TABLE COPYNODE321*************-->
+	<class-descriptor class="it.aco.mandragora.vo.CopyNode321VO" table="COPYNODE321">
+        <field-descriptor id="1" name="idCopyNode321" column="ID_COPYNODE321" jdbc-type="VARCHAR" primarykey="true" autoincrement="false"/>
+		<field-descriptor id="2" name="description" column="DESCRIPTION" jdbc-type="VARCHAR" />
+    </class-descriptor>
+    <!--************ TABLE COPYNODE322*************-->
+	<class-descriptor class="it.aco.mandragora.vo.CopyNode322VO" table="COPYNODE322">
+        <field-descriptor id="1" name="idCopyNode322" column="ID_COPYNODE322" jdbc-type="VARCHAR" primarykey="true" autoincrement="false"/>
+        <field-descriptor id="2" name="idCopyNode32" column="ID_COPYNODE32" jdbc-type="VARCHAR"/>
+		<field-descriptor id="3" name="description" column="DESCRIPTION" jdbc-type="VARCHAR" />
+    </class-descriptor>
+    <!--************ TABLE COPYNODE32*************-->
+	<class-descriptor class="it.aco.mandragora.vo.CopyNode32VO" table="COPYNODE32">
+        <field-descriptor id="1" name="idCopyNode32" column="ID_COPYNODE32" jdbc-type="VARCHAR" primarykey="true"/>
+        <field-descriptor id="2" name="idCopyNode321" column="ID_COPYNODE321" jdbc-type="VARCHAR"/>
+        <field-descriptor id="3" name="description" column="DESCRIPTION" jdbc-type="VARCHAR" />
+        <reference-descriptor name="copyNode321VO" class-ref="it.aco.mandragora.vo.CopyNode321VO" auto-retrieve="true" auto-update="link" auto-delete="link">
+			<foreignkey field-ref="idCopyNode321"/>
+		</reference-descriptor>
+        <collection-descriptor name="copyNode322VOs" element-class-ref="it.aco.mandragora.vo.CopyNode322VO" orderby="idCopyNode322" sort="ASC" auto-retrieve="true" auto-update="none" auto-delete="none" collection-class="org.apache.ojb.broker.util.collections.ManageableVector">
+			<inverse-foreignkey field-ref="idCopyNode32"/>
+		</collection-descriptor>
+    </class-descriptor>
+    <!--************ TABLE COPYNODE33*************-->
+	<class-descriptor class="it.aco.mandragora.vo.CopyNode33VO" table="COPYNODE33">
+        <field-descriptor id="1" name="idCopyNode33" column="ID_COPYNODE33" jdbc-type="VARCHAR" primarykey="true" autoincrement="false"/>
+		<field-descriptor id="2" name="description" column="DESCRIPTION" jdbc-type="VARCHAR" />
+    </class-descriptor>
+    <!--************ TABLE COPYNODE3*************-->
+	<class-descriptor class="it.aco.mandragora.vo.CopyNode3VO" table="COPYNODE3">
+        <field-descriptor id="1" name="idCopyNode3" column="ID_COPYNODE3" jdbc-type="VARCHAR" primarykey="true"/>
+        <field-descriptor id="2" name="idCopyNode33" column="ID_COPYNODE33" jdbc-type="VARCHAR"/>
+        <field-descriptor id="3" name="description" column="DESCRIPTION" jdbc-type="VARCHAR" />
+        <reference-descriptor name="copyNode33VO" class-ref="it.aco.mandragora.vo.CopyNode33VO" auto-retrieve="true" auto-update="object" auto-delete="none">
+			<foreignkey field-ref="idCopyNode33"/>
+		</reference-descriptor>
+        <collection-descriptor name="copyNode31VOs" element-class-ref="it.aco.mandragora.vo.CopyNode31VO" orderby="idCopyNode31" sort="ASC" auto-retrieve="true" auto-update="object" auto-delete="none" collection-class="org.apache.ojb.broker.util.collections.ManageableVector">
+			<inverse-foreignkey field-ref="idCopyNode3"/>
+		</collection-descriptor>
+        <collection-descriptor name="copyNode32VOs" element-class-ref="it.aco.mandragora.vo.CopyNode32VO" indirection-table="COPYNODE3_COPYNODE32" orderby="idCopyNode32" sort="ASC" auto-retrieve="true" auto-update="none" auto-delete="object" collection-class="org.apache.ojb.broker.util.collections.ManageableVector">
+			<fk-pointing-to-this-class column="ID_COPYNODE3"/>
+			<fk-pointing-to-element-class column="ID_COPYNODE32"/>
+		</collection-descriptor>
+    </class-descriptor>
+    <!--************ TABLE COPYROOT*************-->
+	<class-descriptor class="it.aco.mandragora.vo.CopyRootVO" table="COPYROOT">
+        <field-descriptor id="1" name="idCopyRoot" column="ID_COPYROOT" jdbc-type="VARCHAR" primarykey="true"/>
+        <field-descriptor id="2" name="idCopyNode3" column="ID_COPYNODE3" jdbc-type="VARCHAR"/>
+        <field-descriptor id="3" name="description" column="DESCRIPTION" jdbc-type="VARCHAR" />
+        <reference-descriptor name="copyNode3VO" class-ref="it.aco.mandragora.vo.CopyNode3VO" auto-retrieve="true" auto-update="object" auto-delete="none">
+			<foreignkey field-ref="idCopyNode3"/>
+		</reference-descriptor>
+        <collection-descriptor name="copyNode1VOs" element-class-ref="it.aco.mandragora.vo.CopyNode1VO" orderby="idCopyNode1" sort="ASC" auto-retrieve="true" auto-update="object" auto-delete="object" collection-class="org.apache.ojb.broker.util.collections.ManageableVector">
+			<inverse-foreignkey field-ref="idCopyRoot"/>
+		</collection-descriptor>
+        <collection-descriptor name="copyNode2VOs" element-class-ref="it.aco.mandragora.vo.CopyNode2VO" indirection-table="COPYROOT_COPYNODE2" orderby="idCopyNode2" sort="ASC" auto-retrieve="true" auto-update="object" auto-delete="object" collection-class="org.apache.ojb.broker.util.collections.ManageableVector">
+			<fk-pointing-to-this-class column="ID_COPYROOT"/>
+			<fk-pointing-to-element-class column="ID_COPYNODE2"/>
+		</collection-descriptor>
+    </class-descriptor>
+    <!--************ TABLE PERMISSION*************-->
+	<class-descriptor class="it.aco.mandragora.vo.PermissionVO" table="PERMISSION">
+        <field-descriptor id="1" name="idPermission" column="ID_PERMISSION" jdbc-type="VARCHAR" primarykey="true"/>
+        <field-descriptor id="2" name="description" column="DESCRIPTION" jdbc-type="VARCHAR" />
+    </class-descriptor>
+    <!--************ TABLE ROLE_PERMISSION*************-->
+	<class-descriptor class="it.aco.mandragora.vo.RolePermissionVO" table="ROLE_PERMISSION">
+        <field-descriptor id="1" name="idRole" column="ID_ROLE" jdbc-type="INTEGER" primarykey="true"/>
+        <field-descriptor id="2" name="idPermission" column="ID_PERMISSION" jdbc-type="VARCHAR" primarykey="true"/>
+        <reference-descriptor name="permissionVO" class-ref="it.aco.mandragora.vo.PermissionVO" auto-retrieve="false" auto-update="object" auto-delete="none">
+			<foreignkey field-ref="idPermission"/>
+		</reference-descriptor>
+    </class-descriptor>
+    <!--************ TABLE USER_ROLE*************-->
+	<class-descriptor class="it.aco.mandragora.vo.UserRoleVO" table="USER_ROLE">
+        <field-descriptor id="1" name="idUser" column="ID_USER" jdbc-type="VARCHAR" primarykey="true"/>
+        <field-descriptor id="2" name="idRole" column="ID_ROLE" jdbc-type="INTEGER" primarykey="true"/>
+        <reference-descriptor name="roleVO" class-ref="it.aco.mandragora.vo.RoleVO" auto-retrieve="false" auto-update="object" auto-delete="none">
+			<foreignkey field-ref="idRole"/>
+		</reference-descriptor>
+    </class-descriptor>
+    <!--************ TABLE USER*************-->
+	<class-descriptor class="it.aco.mandragora.vo.UserVO" table="USER">
+        <field-descriptor id="1" name="idUser" column="ID_USER" jdbc-type="VARCHAR" primarykey="true"/>
+        <field-descriptor id="2" name="firstName" column="FIRSTNAME" jdbc-type="VARCHAR"/>
+        <field-descriptor id="3" name="lastName" column="LASTNAME" jdbc-type="VARCHAR" />
+        <collection-descriptor name="userRoleVOs" element-class-ref="it.aco.mandragora.vo.UserRoleVO" orderby="idRole" sort="ASC" auto-retrieve="false" auto-update="object" auto-delete="object" collection-class="org.apache.ojb.broker.util.collections.ManageableVector">
+			<inverse-foreignkey field-ref="idUser"/>
+		</collection-descriptor>
+    </class-descriptor>
+    <!--************ TABLE BOOK*************-->
+	<class-descriptor class="it.aco.mandragora.vo.BookVO" table="BOOK">
+		<field-descriptor id="1" name="idBook" column="ID_BOOK" jdbc-type="VARCHAR" primarykey="true" autoincrement="false"/>
+		<field-descriptor id="2" name="title" column="TITLE" jdbc-type="VARCHAR" />
+    </class-descriptor>
+    <!--************ TABLE PET*************-->
+	<class-descriptor class="it.aco.mandragora.vo.PetVO" table="PET">
+		<field-descriptor id="1" name="idPet" column="ID_PET" jdbc-type="VARCHAR" primarykey="true" autoincrement="false"/>
+		<field-descriptor id="2" name="name" column="NAME" jdbc-type="VARCHAR" />
+    </class-descriptor>
+
+
+    <!-- include mappings for the EJB-examples -->
+    <!-- &ejb; -->
+</descriptor-repository>

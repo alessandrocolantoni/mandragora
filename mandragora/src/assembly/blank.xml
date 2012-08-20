@@ -1,0 +1,37 @@
+<assembly>
+    <id>blank</id>
+    <formats>
+        <format>zip</format>
+        <format>tar.gz</format>
+        <format>tar.bz2</format>
+    </formats>
+    <includeBaseDirectory>false</includeBaseDirectory>
+    <dependencySets>
+        <dependencySet>
+            <outputDirectory>WEB-INF/lib</outputDirectory>
+            <unpack>false</unpack>
+
+        </dependencySet>
+    </dependencySets>
+    <fileSets>
+        <fileSet>
+            <directory>target/classes</directory>
+            <outputDirectory>WEB-INF/classes</outputDirectory>
+            <excludes>
+                <exclude>it/**/</exclude>
+                <exclude>fr/**/</exclude>
+                <exclude>META-INF/**/</exclude>
+            </excludes>
+        </fileSet>
+        <fileSet>
+            <includes>
+                <include>README*</include>
+                <include>LICENSE*</include>
+                <include>NOTICE*</include>
+            </includes>
+        </fileSet>
+    </fileSets>
+
+
+
+</assembly>

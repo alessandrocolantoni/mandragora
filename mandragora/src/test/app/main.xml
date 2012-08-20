@@ -1,0 +1,70 @@
+<?xml version="1.0"?>
+
+<assembly>
+	<!--<id>bin</id>-->
+	<id>bin</id>
+	<formats>
+		<format>ear</format>
+	</formats>
+	<includeBaseDirectory>false</includeBaseDirectory>
+
+
+	<fileSets>
+        <!--
+		<fileSet>
+            <directory>target</directory>
+            <outputDirectory>/</outputDirectory>   
+            <includes>
+                <include>mandragora-${pom.version}.jar</include>
+            </includes>
+		</fileSet>
+        -->
+        <fileSet>
+            <directory>src/test/resources/ejbResources</directory>
+            <outputDirectory>/</outputDirectory>
+            <includes>
+                <include>*.*</include>
+            </includes>
+		</fileSet>
+        <fileSet>
+            <directory>src/test/resources</directory>
+            <outputDirectory>/</outputDirectory>
+            <includes>
+                <!--
+                <include>log4j.properties</include>
+                <include>OJB-logging.properties</include>
+                -->
+                <include>repository.xml</include>
+                <include>repository.dtd</include>
+            </includes>
+		</fileSet>
+        <fileSet>
+            <directory>target</directory>
+            <outputDirectory>/</outputDirectory>
+            <includes>
+                <include>mandragora-vo-tests.jar</include>
+                <include>mandragora-ejb-tests.jar</include>
+            </includes>
+            
+		</fileSet>
+		<!-- start added 02-04-2011 -->
+		<fileSet>
+            <directory>src/test/app/datasources</directory>
+            <outputDirectory>datasources</outputDirectory>
+            <includes>
+                <include>*.*</include>
+            </includes>
+		</fileSet>
+		<!-- end added 02-04-2011 -->
+	</fileSets>
+
+    
+    <dependencySets>
+        <dependencySet>
+            <outputDirectory>lib</outputDirectory>
+            <unpack>false</unpack>
+            
+        </dependencySet>
+    </dependencySets>
+
+</assembly>

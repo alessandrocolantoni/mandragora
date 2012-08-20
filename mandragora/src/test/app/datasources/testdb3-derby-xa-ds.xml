@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<datasources>
+    <xa-datasource>
+        <jndi-name>TestDB3DS</jndi-name>
+<!--
+      <xa-datasource-class>
+         org.apache.derby.jdbc.ClientConnectionPoolDataSource
+      </xa-datasource-class>
+-->
+		<xa-datasource-class>
+			org.apache.derby.jdbc.ClientXADataSource
+		</xa-datasource-class>
+
+		<isSameRM-override-value>false</isSameRM-override-value>
+      	<connection-url>jdbc:derby://localhost:1527/testdb3</connection-url> 
+<!--
+      <xa-datasource-property name="Password">BRES</xa-datasource-property>
+      <xa-datasource-property name="User">BRES</xa-datasource-property>
+-->
+<!--
+      <xa-datasource-property name="DatabaseName">
+         ${jboss.server.data.dir}/derby/default
+      </xa-datasource-property>
+-->
+<!--      <xa-datasource-property name="DatabaseName">/home/alessandro/Development/mandragora/testdb3</xa-datasource-property>	-->
+		<xa-datasource-property name="DatabaseName">C:\Abertis\workspace\mandragora\testdb3</xa-datasource-property>	
+<!--	    <xa-datasource-property name="ServerName">localhost</xa-datasource-property>-->
+<!--	    <xa-datasource-property name="PortNumber">1527</xa-datasource-property>-->
+		
+	    <track-connection-by-tx>true</track-connection-by-tx>
+		<no-tx-separate-pools>true</no-tx-separate-pools>
+		<min-pool-size>5</min-pool-size>
+		<max-pool-size>20</max-pool-size>
+		<idle-timeout-minutes>5</idle-timeout-minutes>
+		<check-valid-connection-sql>
+		   select count(*) from BOOK
+		</check-valid-connection-sql>
+		<metadata>
+		   <type-mapping>Derby</type-mapping>
+		</metadata>
+<!--<depends>jboss:service=Derby</depends>-->
+   </xa-datasource>
+
+<!--   
+   <mbean code="org.jboss.jdbc.DerbyDatabase" name="jboss:service=Derby">
+   <attribute name="Database">testdb3</attribute>
+   </mbean>
+-->
+</datasources>
+

@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+
+<!--<project name="Mandragora">-->
+
+<project xmlns="http://maven.apache.org/DECORATION/1.0.0"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:schemaLocation="http://maven.apache.org/DECORATION/1.0.0 http://maven.apache.org/xsd/decoration-1.0.0.xsd"
+      name="Mandragora"  >
+<skin>
+    <groupId>org.apache.maven.skins</groupId>
+    <artifactId>maven-default-skin</artifactId>
+    <version>1.1</version>
+  </skin>
+
+
+
+    <bannerLeft>
+        <name>Mandragora</name>
+        <src>images/mandragora1.jpg</src>
+        <href>http://mandragora.sourceforge.net/</href>
+    </bannerLeft>
+    <bannerRight>
+        <src>http://sflogo.sourceforge.net/sflogo.php?group_id=138861&amp;type=2</src>
+        <!--<href>http://sourceforge.net</href>-->
+        <href>http://sourceforge.net/projects/mandragora</href>
+        <alt>Get Mandragora at SourceForge.net. Fast, secure and Free Open Source software downloads</alt> 
+    </bannerRight>
+    <poweredBy>
+        <!--<logo name="Maven" href="http://maven.apache.org/"  img="http://maven.apache.org/images/logos/maven-feather.png"/>-->
+        <logo name="Maven" href="http://maven.apache.org/"  img="images/maven-feather.png"/>
+        <logo name="IntellijIdea" href="http://www.jetbrains.com/idea/" img="images/IntellijIdeaLogo-small.jpg"/>
+
+    </poweredBy>
+    <body>
+        <head>
+            <!-- Piwik -->
+            <script type="text/javascript">
+            var pkBaseURL = (("https:" == document.location.protocol) ? "https://apps.sourceforge.net/piwik/mandragora/" : "http://apps.sourceforge.net/piwik/mandragora/");
+            document.write(unescape("%3Cscript src='" + pkBaseURL + "piwik.js' type='text/javascript'%3E%3C/script%3E"));
+            </script><script type="text/javascript">
+            piwik_action_name = '';
+            piwik_idsite = 1;
+            piwik_url = pkBaseURL + "piwik.php";
+            piwik_log(piwik_action_name, piwik_idsite, piwik_url);
+            </script>
+            <object><noscript><p><img src="http://apps.sourceforge.net/piwik/mandragora/piwik.php?idsite=1" alt="piwik"/></p></noscript></object>
+            <!-- End Piwik Tag -->
+        </head>
+        <links>
+            <item name="Donate" href="https://sourceforge.net/project/project_donations.php?group_id=138861"/>
+            <item name="Apache" href="http://www.apache.org/" />
+            <item name="Ojb" href="http://db.apache.org/ojb/"/>
+            <item name="Maven 2" href="http://maven.apache.org/maven2/"/>
+        </links>
+        <menu  name="Mandragora">
+            <item name="Home" href="index.html" />
+            <item name="Introduction" href="introduction.html"/>
+            <item name="Overview" href="overview.html"/>
+            <item name="Quick start" href="quickstart.html"/>
+            <item name="Reference guide" href="referenceguide.html" collapse="true">
+                <item name="BD apis guide" href="referenceguide/bd-api-guide.html"/>
+                <item name="DAO apis guide" href="referenceguide/dao-api-guide.html"/>
+                <item name="Lookup and mapping" href="referenceguide/lookup-and-mapping.html"/>
+                <item name="Ejb use" href="referenceguide/ejb.html"/>
+                <item name="Logic condition" href="referenceguide/logic-condition.html"/>
+                <item name="Implementations" href="referenceguide/implementations.html"/>
+                <item name="How to extend" href="referenceguide/how-to-extend.html"/>
+                <item name="Mandragora.properties" href="referenceguide/mandragora-properties.html"/>
+                <item name="Queries on collections" href="referenceguide/queries-on-collections.html"/>
+                <item name="Utilities" href="referenceguide/utilities.html"/>
+                <item name="Advanced"  href="referenceguide/advanced.html" collapse="true">
+                    <item name="Context" href="referenceguide/advanced/context.html"/>    
+                </item>
+            </item>
+            <item name="Permissions module" href="permissions.html"/>
+            <item name="Ajax Struts-layout" href="ajax-struts-layout.html"/>
+            <item name="Architecture" href="architecture.html"/>
+            <item name="Download" href="download.html"/>
+            <!--<item name="http://www.e-zeeinternet.com/count.php?page=58854&amp;style=curly&amp;nbdigits=8"  href="http://www.e-zeeinternet.com/count.php?page=58854&amp;style=curly&amp;nbdigits=8" img="http://www.e-zeeinternet.com/count.php?page=58854&amp;style=curly&amp;nbdigits=8"/>-->
+            <item name="Statistics" href="https://sourceforge.net/project/stats/?group_id=138861&amp;ugn=mandragora"/>
+            <item name="Links" href="links.html"/>
+            <!--<item name="FAQ" href="faq.html"/>-->
+        </menu>
+        ${reports}
+
+
+    </body>
+
+</project>

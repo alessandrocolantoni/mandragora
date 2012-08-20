@@ -1,0 +1,459 @@
+ -----
+ Implementations
+ -----
+ Alessandro Colantoni
+ -----
+
+Implementations
+
+    * {{{#Introduction}Introduction}}
+
+    * {{{#BD_implementations}BD implementations}}
+
+        * {{{#PojoManagerBD}PojoManagerBD}}
+
+        * {{{#SLSBManagerBD}SLSBManagerBD}}
+
+        * {{{#ProxyManagerBD}ProxyManagerBD}}
+
+        * SecurityManagerImplBD
+
+    * ServiceFacade implementations
+
+        * PojoFacade
+
+        * SessionFacade
+
+            * BusinessSLSBFacade
+
+            * CrudSLSBFacade
+
+    * ApplicationService implementations
+
+        * ImplApplicationService
+
+    * DAO (Data Access Object) implementations
+
+        * OjbPbDAO
+
+            * OjbPbCore implementations
+
+                * OjbPbCoreDefaultImpl
+
+                * Ojb105rc1PbCoreImpl
+
+            * PersistenceBrokerSupport
+
+                * PersistenceBrokerSupportDefaultImpl
+
+                * PersistenceBrokerSupportJndiImpl
+
+    * {{{#BDFactory_extensions}BDFactory extensions}}
+
+        * {{{#DefaultBDFactory}DefaultBDFactory}}
+
+        * {{{#ProxyBDHandlerFactory}ProxyBDHandlerFactory}}
+
+            * {{{#MethodInterceptorFactory_extensions}MethodInterceptorFactory extensions}}
+
+                * {{{#DefaultMethodInterceptorFactory}DefaultMethodInterceptorFactory}}
+
+            * {{{#MethodInterceptor_implementations}MethodInterceptor implementations (net.sf.cglib.proxy)}}
+
+                * {{{#MethodInterceptorDefaultImpl}MethodInterceptorDefaultImpl}}
+     
+    * ServiceFacadeFactory
+
+    * ApplicationServiceFactory
+
+    * DAOFactory
+
+
+
+* {Introduction}
+
+
+    TODO
+
+
+
+
+    
+=======================================================================
+
+
+* {BD implementations}
+
+
+
+    BD implementations are :
+
+        * {{{#PojoManagerBD}PojoManagerBD}}
+
+        * {{{#SLSBManagerBD}SLSBManagerBD}}
+
+        * {{{#ProxyBDHandlerFactory}ProxyBDHandlerFactory}}
+
+
+
+
+=======================================================================
+
+** {PojoManagerBD}
+
+
+
+    The BD implementation <<it.aco.mandragora.bd.impl.pojo.PojoManagerBD>> is the most simple implementation.\
+    As its name suggests it is a Pojo implementation and it doesn't use enterprise beans anyway.\
+    PojoManagerBD is a singleton class.\
+    PojoManagerBD uses as ServiceFacade a POJO Facade, where with the name POJOFacade, as defined in
+    {{http://www.corej2eepatterns.com/Patterns2ndEd/ServiceFacade.htm}}, we mean a class providing a behavior similar to the Session Façades,
+    but, instead of using session beans, we use POJOs to implement the facades. POJO facades can be looked up through concrete
+    extensions of ServiceFacadeFactory (see {{{lookup_and_mapping.html#Pojo_Facade}lookup and mapping}}) and so it is how PojoManagerBD works as well.\
+    PojoManagerBD use a protected method to look up ServiceFacade implementations:
+
+*------------------------------------------------------------------------------------------------------------------------------------+
+|protected ServiceFacade getServiceFacade()throws ApplicationException\{                                                             |
+\ \ \ \ try\{                                                                                                                        |
+|\ \ \ \ return ServiceLocator.getInstance().getServiceFacade(ServiceFacadeFactoryClassName,ServiceFacadeClassName);                 |
+\ \ \ \ \}catch (ServiceLocatorException e) \{                                                                                       |
+|\ \ \ \ log.error("ServiceLocatorException caught in PojoManagerBD.getServiceFacade(): " + e.toString());                           |
+\ \ \ \ throw new ApplicationException("ApplicationException thrown in PojoManagerBD.getServiceFacade()" + e.toString(),e);          |
+|\ \ \ \ \}                                                                                                                          |
+\}                                                                                                                                   |
+*------------------------------------------------------------------------------------------------------------------------------------+
+
+    <<ServiceFacadeFactoryClassName>> and <<ServiceFacadeClassName>> are two protected variables that are so defined in the static block
+    of PojoManagerBD, so that they are assigned their value in the instantiation of PojoManagerBD :
+
+*------------------------------------------------------------------------------------------------------------------------------------+
+|ServiceFacadeFactoryClassName = "PojoManagerBD.ServiceFacadeFactoryClass" ;                                                         |
+ServiceFacadeClassName = "PojoManagerBD.ServiceFacadeClass" ;                                                                        |
+*------------------------------------------------------------------------------------------------------------------------------------+
+
+    So that you can choose which has to be the real implementation of ServiceFacade and which has to be the factory that instance it configuring
+    the properties <PojoManagerBD.ServiceFacadeFactoryClass> and <PojoManagerBD.ServiceFacadeClass> in {{{mandragora-properties.html}Mandragora.properties}}.\
+    For example:
+
+*--------------------------------------------------------------------------------------------------------------------------------------------------------+
+|PojoManagerBD.ServiceFacadeFactoryClass=it.aco.mandragora.serviceFacade.concreteFactory.DefaultServiceFacadeFactory                                     |
+PojoManagerBD.ServiceFacadeClass=it.aco.mandragora.serviceFacade.pojoFacade.PojoFacade                                                                   |
+*--------------------------------------------------------------------------------------------------------------------------------------------------------+
+
+     If you write an extension of PojoManagerBD, let's call it <ExtPojoManagerBD>, you can overwrite <<ServiceFacadeFactoryClassName>> and <<ServiceFacadeClassName>>
+     in the static block, or overwrite the <getServiceFacade()> method to let <ExtPojoManagerBD> to choose its ServiceFacade.\
+     An example of the first case, where the extending class is again singleton is <<SecurityManagerImplBD>>
+
+*----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+|public class SecurityManagerImplBD extends PojoManagerBD implements SecurityManagerBD\{                                                                                           |
+\ \ \ \ protected static SecurityManagerImplBD securityManagerImplBD = null;                                                                                                       |
+|\ \ \ \ static private org.apache.log4j.Category log = org.apache.log4j.Logger.getLogger(SecurityManagerImplBD.class.getName());                                                  |
+\                                                                                                                                                                                  |
+|\ \ \ \ static \{                                                                                                                                                                 |
+\ \ \ \ \ \ \ \ try \{                                                                                                                                                             |
+|\ \ \ \ \ \ \ \ \ \ \ \ if (securityManagerImplBD!=null) throw new ApplicationException("thrown in the static block of SecurityManagerImplBD: static instance is already set");   |
+\ \ \ \ \ \ \ \ \ \ \ \ securityManagerImplBD = new SecurityManagerImplBD();                                                                                                       |
+|\ \ \ \ \ \ \ \ \}catch (Exception e)\{                                                                                                                                           |
+\ \ \ \ \ \ \ \ \ \ \ \ throw new RuntimeException("Exception thrown in the static block of SecurityManagerImplBD "+ e.toString(),e);                                              |
+|\ \ \ \ \ \ \ \ \}                                                                                                                                                                |
+\ \ \ \ \ \ \ \ ServiceFacadeFactoryClassName = "SecurityManagerImplBD.ServiceFacadeFactoryClass" ;                                                                                |
+|\ \ \ \ \ \ \ \ ServiceFacadeClassName = "SecurityManagerImplBD.ServiceFacadeClass" ;                                                                                             |
+\ \ \ \ \}                                                                                                                                                                         |
+|\ \ \ \ protected SecurityManagerImplBD()  \{                                                                                                                                     |
+\ \ \ \ \}                                                                                                                                                                         |
+|\ \ \ \ public static PojoManagerBD getInstance() \{ // It has to return PojoManagerBD to not clash with getInstance of PojoManagerBD.                                            |
+\ \ \ \ \ \ \ \ return securityManagerImplBD;                                                                                                                                      |
+|\ \ \ \ \}                                                                                                                                                                        |
+\}                                                                                                                                                                                 |
+*----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+
+    So the properties <SecurityManagerImplBD.ServiceFacadeFactoryClass> and <SecurityManagerImplBD.ServiceFacadeClass> have to
+    be configured in {{{mandragora-properties.html}Mandragora.properties}}.
+
+    PojoManagerBD can be looked up by {{{#DefaultBDFactory}DefaultBDFactory}}
+
+
+=======================================================================
+
+
+** {SLSBManagerBD}
+
+
+    <<it.aco.mandragora.bd.impl.SLSB.SLSBManagerBD>> is a singleton class, that use stateless session beans to do the work.
+
+    {{{ejb.html#Use_of_ejb_BD_implementation_provided_by_Mandragora} See Use of ejb BD implementation provided by Mandragora}}
+
+
+
+    SLSBManagerBD can be looked up by {{{#DefaultBDFactory}DefaultBDFactory}}
+
+
+
+=======================================================================
+
+
+** {ProxyManagerBD}
+
+    ProxyManagerBD is not a real class. With it we are referring to a proxy class; concretely we are referring to a {{{advanced/context.html#Proxy_Handler}Proxy BD Handler class}}.\
+    So with ProxyManageBD we mean a proxy class that dynamically implements the BD interface.\
+    When one of the BD interface method is called, it is intercepted, and its parameters will be used by the {{{advanced/context.html#ContextHandler}ContextHandler}}
+    to put inside a {{{advanced/context.html}Context}} instance, the pairs <(name,value)> where name is the name of the parameter and value is its value.\
+    Moreover all the pairs of the {{{advanced/context.html#ContextHandler}localSession}} are put inside the Context instance.\
+    Then the method with the same name will be called in a ContextBD instance, passing the created context as parameter.
+
+    ProxyManagerBD extends {{{advanced/context.html#ContextHandler}ContextHandler}}, so it has available a <localSession>. It can be used to
+    {{{advanced/context.html#Inject_context_parameters}inject}} the {{{advanced/context.html#Logic_and_context_parameters}context parameters}}.
+
+    The ProxyManagerBD is looked up by the {{{#ProxyBDHandlerFactory}ProxyBDHandlerFactory}}
+
+
+=======================================================================
+
+* {BDFactory extensions}
+
+    In this section we expose the concrete extensions of the abstract class <<it.aco.mandragora.bd.BDFactory>>.\
+    BDFactory is a factory of  factories of {{{#BD_implementations}BD implementations}}.\
+    This abstract class looks up a factory of {{{#BD_implementations}BD implementations}} that is the class that definitively looks up
+    the {{{#BD_implementations}BD implementations}}.\
+    The factory looked up must be a concrete extension of this class and must implement the Singleton pattern so just one
+    instance of it will be allowed. The factory looked up must implement the details of the policy of looking up
+    the wanted implementation of the interface BD so to hide the details of how an implementation of interface BD is chosen and looked up.
+    So this abstract class decouple the real factory looking up the BD implementation,
+    from the class that wants to use the BD implementation.\
+    Every one can write his own factory of {{{#BD_implementations}BD implementations}} just extending this class and registering it in
+    the file {{{mandragora-properties.html}Mandragora.properties}}, so to have his own factory to look up the {{{#BD_implementations}BD implementations}}.
+    
+
+
+=======================================================================
+
+
+
+** {DefaultBDFactory}
+
+
+    <<it.aco.mandragora.bd.concreteFactory.DefaultBDFactory>> is a concrete extension of it.aco.mandragora.bd.BDFactory, it is a singleton class
+    and it is designed to look up singleton implementation of BD ( for example {{{#PojoManagerBD}PojoManagerBD}} and {{{#SLSBManagerBD}SLSBManagerBD}}).\
+    The method
+
+        * public BD getBD(String nameBdClass)
+
+    returns the implementation of the BD interface specified by the input string <nameBdClass>.
+    The implementation of BD interface specified by the input string <nameBdClass> depends by its mapping
+    in the {{{mandragora-properties.html}Mandragora.properties}} file.
+
+    The method of DefaultBDFactory
+
+        * public BD getBD()
+
+    looks the BD implementation specified in {{{mandragora-properties.html}Mandragora.properties}} by the
+    property <DefaultBDFactory.BDClass>.
+
+=======================================================================
+
+** {ProxyBDHandlerFactory}
+
+    <<it.aco.mandragora.bd.concreteFactory.ProxyBDHandlerFactory>> is a concrete extension of it.aco.mandragora.bd.BDFactory,
+    it is a singleton class and it is designed to lookup {{{#ProxyManagerBD}Proxy BD Handler}}.\
+    The client that uses ProxyBDHandlerFactory expects that, as always with the concrete extensions of BDFactory, the method
+
+        * public BD getBD(String nameBdClass)
+
+    returns an implementation of the BD interface specified someway by the input string <nameBdClass>. \
+    The implementation returned is a Proxy instance built with the {{{http://cglib.sourceforge.net/}Cglib framework}}.\
+    The built proxy class will implement all the interfaces of the class specified by the property
+
+*-------------------------------------------------------------+
+|"ProxyBDHandlerFactory."+bdClassName+".realBDClassName"      |
+*-------------------------------------------------------------+
+
+    in {{{mandragora-properties.html}Mandragora.properties}}. So such property must be mapped to whatever class that implements the BD interface, otherwise a
+    Class Cast Exception will be thrown.\
+    The built proxy class holds a MethodInterceptor implementation looked up by the ServiceLocator method
+
+        * public MethodInterceptor getMethodInterceptor(String methodInterceptorFactoryClassName, String methodInterceptorClassName)
+
+    where:
+
+*--------------------------------------------------------------------------------------------------------------------+
+|methodInterceptorFactoryClassName = "ProxyBDHandlerFactory."+bdClassName+".methodInterceptorFactoryClassName"       |
+methodInterceptorClassName = "ProxyBDHandlerFactory."+bdClassName+".methodInterceptorClassName"                      |
+*--------------------------------------------------------------------------------------------------------------------+
+
+
+    So the input parameter is needed to choose what is the MethodInterceptor of the proxy and what is the factory that has to look it up.\
+    When a BD method it is called it is intercepted by the MethodInterceptor that will do the job. When the method is intercepted it is called the MethodInterceptor method
+
+        * public Object intercept(Object obj, Method method, Object[] args , MethodProxy proxy)
+
+    So the behavior of the returned instance depends on the chosen MethodInterceptor implementation, above all on the above method implementation.\
+
+    Moreover than to implement BD interface, the proxy class  will be a subclass of the class {{{advanced/context.html#ContextHandler}ContextHandler}}, so it has available
+    a <localSession>. It can be used to
+    {{{advanced/context.html#Inject_context_parameters}inject}} the {{{advanced/context.html#Logic_and_context_parameters}context parameters}}.\
+    For example if we would inject the context parameter <<jcdAlias>> with some value, so to force the layers on the back end to use it, we have just to do:
+
+*----------------------------------------------------------------------------------------------------+
+|BD bd  = ServiceLocator.getInstance().getManagerBD("someBDFactoryClass","someBDClass");             |
+MandragoraContext localSession = (MandragoraContext)((ContextHandler)bd).getLocalSession();          |
+|localSession.put("jcdAlias","testdb2");                                                             |
+\                                                                                                    |
+|bd.insert(petVO);                                                                                   |
+*----------------------------------------------------------------------------------------------------+
+
+    Of course the property <someBDFactoryClass> must be mapped to <it.aco.mandragora.bd.concreteFactory.ProxyBDHandlerFactory> in {{{mandragora-properties.html}Mandragora.properties}}.
+
+*------------------------------------------------------------------------------+
+|someBDFactoryClass=it.aco.mandragora.bd.concreteFactory.ProxyBDHandlerFactory |
+*------------------------------------------------------------------------------+
+
+
+    As we said the most important is to associate a MethodInterceptor to the instance of the built ProxyClass. To do that are needed factories and implementations of MethodInterceptor.
+
+
+*** {MethodInterceptorFactory extensions}
+
+
+
+    In this section we expose the concrete extensions of the abstract class <<it.aco.mandragora.bd.impl.proxy.methodInterceptor.MethodInterceptorFactory>>.\
+    MethodInterceptorFactory is a factory of  factories of {{{#MethodInterceptor_implementations}MethodInterceptor implementations}}.\
+    This abstract class looks up a factory of {{{#MethodInterceptor_implementations}MethodInterceptor implementations}} that is the class that definitively looks up
+    the {{{#MethodInterceptor_implementations}MethodInterceptor implementations}}.\
+    MethodInterceptor is a callback interface of {{{http://cglib.sourceforge.net/}Cglib framework}}.\
+    The factory looked up must be a concrete extension of MethodInterceptorFactory and must implement the Singleton pattern so just one
+    instance of it will be allowed. The factory looked up must implement the details of the policy of looking up
+    the wanted implementation of the interface MethodInterceptorFactory so to hide the details of how an implementation of interface MethodInterceptorFactory is chosen and looked up.
+    So this abstract class decouple the real factory looking up the MethodInterceptorFactory implementation, from the class that wants to use the MethodInterceptorFactory implementation.\
+    Every one can write his own factory of {{{#MethodInterceptor_implementations}MethodInterceptor implementations}} just extending MethodInterceptorFactory and registering the
+    extending class in the file {{{mandragora-properties.html}Mandragora.properties}}, so to have his own factory to look up
+    the {{{#MethodInterceptor_implementations}MethodInterceptor implementations}}.
+
+
+
+**** {DefaultMethodInterceptorFactory}
+
+
+    <<it.aco.mandragora.bd.impl.proxy.methodInterceptor.concreteFactory.DefaultMethodInterceptorFactory>> is a
+    concrete extension of it.aco.mandragora.bd.impl.proxy.methodInterceptor.MethodInterceptorFactory, it is a singleton class
+    and it is designed to create and return a new instance of {{{#MethodInterceptor_implementations}MethodInterceptor implementation}}
+    ( for example {{{#MethodInterceptorDefaultImpl}MethodInterceptorDefaultImpl}} .\
+    The method
+
+        * public MethodInterceptor getMethodInterceptor(String methodInterceptorClassName)
+
+    returns a new instance of the class implementation of the interface MethodInterceptor, specified by the input string <methodInterceptorClassName>.\
+    The implementation of interface MethodInterceptor specified by the input string <methodInterceptorClassName> depends by its mapping in the {{{mandragora-properties.html}Mandragora.properties}} file.\
+    DefaultMethodInterceptorFactory expects that the implemented MethodInterceptor works with a <<ContextBD>> implementation (see {{advanced/context.html}}); so it has to provide
+    to the MethodInterceptor implementation that it wants to instance the ContextBD factory and implementation to use.\
+    DefaultMethodInterceptorFactory instance the specified MethodInterceptor implementation calling a constructor that take two string parameters, and will use such parameters
+    to pass the  <contextBDFactoryClassName> and the <contextBDClassName> name of the <ContextBD> that will be used by the MethodInterceptor method
+
+        * intercept(Object, java.lang.reflect.Method, Object[], net.sf.cglib.proxy.MethodProxy)
+
+    Note that Apart of the no-arg  constructor the MethodInterceptor class to be instanced must have a constructor that take two string parameters.
+    DefaultMethodInterceptorFactory build the two parameters value to pass to the MethodInterceptor implementation constructor in this way:
+
+*--------------------------------------------------------------------------------------------------------------------------+
+|contextBDFactoryClassName = "DefaultMethodInterceptorFactory."+methodInterceptorClassName+".contextBDFactoryClassName"    |
+contextBDClassName = "DefaultMethodInterceptorFactory."+methodInterceptorClassName+".contextBDClassName"                   |
+*--------------------------------------------------------------------------------------------------------------------------+
+
+
+    The method of DefaultMethodInterceptorFactory
+
+        * public MethodInterceptor getMethodInterceptor()throws
+
+    looks the MethodInterceptor implementation specified in {{{mandragora-properties.html}Mandragora.properties}} by the
+    property <DefaultMethodInterceptorFactory.DefaultMethodInterceptorImpl>.
+
+=======================================================================
+
+*** {MethodInterceptor implementations}
+
+
+    MethodInterceptor implementations are :
+
+        * {{{#MethodInterceptorDefaultImpl}MethodInterceptorDefaultImpl}}
+
+
+
+
+**** {MethodInterceptorDefaultImpl}
+
+    MethodInterceptorDefaultImpl is related to one <<ContextBD>> implementation (see {{advanced/context.html}}). That ContextBD is used by the intercept method to do its job.\
+    The ContextBD is instanced at creation time. MethodInterceptorDefaultImpl has two constructors: one no-args contructor and and one taking two input String parameters.
+
+        * public MethodInterceptorDefaultImpl(String contextBDFactoryClassName,String contextBDClassName)
+
+    In both cases the ContextBD will be looked up with the ServiceLocator using factories in the same way that can be seen in {{{lookup-and-mapping.html}look up and mapping}}, so
+    a factory and implementation specifications are needed.
+    The default factory and implementation class names are respectively the ones mapped in  {{{mandragora-properties.html}Mandragora.properties}} to
+    <MethodInterceptorDefaultImpl.ContextBDFactoryClassName> and <MethodInterceptorDefaultImpl.ContextBDClassName>.
+    So for example in {{{mandragora-properties.html}Mandragora.properties}} we have  
+
+*------------------------------------------------------------------------------------------------------------------------------+
+|MethodInterceptorDefaultImpl.ContextBDFactoryClassName=it.aco.mandragora.bd.context.concreteFactory.DefaultContextBDFactory   |
+MethodInterceptorDefaultImpl.ContextBDClassName=it.aco.mandragora.bd.context.impl.pojo.PojoManagerContextBD                    |
+*------------------------------------------------------------------------------------------------------------------------------+
+
+
+    So if the no args constructor is used the default <contextBDFactoryClassName> and <contextBDClassName> will be used, otherwise the one provided by input parameters.
+
+    The relationship between the involved classes are depicted in the following class diagram
+
+[../images/ProxyBDHandler.jpg]
+
+
+    The following sequence diagram shows how definitively a proxyBDHandler is looked up.
+
+[../images/ProxyBDHandlerFactory.jpg]
+
+
+    Let's suppose now that in some client class we do:
+
+*----------------------------------------------------------------------------------------------------------------------------------+
+|BD bd = ServiceLocator.getInstance().getManagerBD("TestSLSBManagerContextBD.BDFactoryClass","TestSLSBManagerContextBD.BDClass");  |
+*----------------------------------------------------------------------------------------------------------------------------------+
+
+    Let's have a look at how configure {{{mandragora-properties.html}Mandragora.properties}}.\
+    Of course it must have
+
+*------------------------------------------------------------------------------------------------------+
+|TestSLSBManagerContextBD.BDFactoryClass=it.aco.mandragora.bd.concreteFactory.ProxyBDHandlerFactory    |
+*------------------------------------------------------------------------------------------------------+
+
+    to specify that we are looking up a ProxyBD.\
+    <<ProxyBDHandlerFactory.TestSLSBManagerContextBD.BDClass.methodInterceptorFactoryClassName>> will specify which is the MethodInterceptorFactory and
+    <<ProxyBDHandlerFactory.TestSLSBManagerContextBD.BDClass.methodInterceptorClassName>> will specify which is the MethodInterceptor implementation.
+
+    So for example:
+
+*----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+|ProxyBDHandlerFactory.TestSLSBManagerContextBD.BDClass.methodInterceptorFactoryClassName=it.aco.mandragora.bd.impl.proxy.methodInterceptor.concreteFactory.DefaultMethodInterceptorFactory                |
+ProxyBDHandlerFactory.TestSLSBManagerContextBD.BDClass.methodInterceptorClassName=it.aco.mandragora.bd.impl.proxy.methodInterceptor.impl.MethodInterceptorDefaultImpl                                      |
+*----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+
+    Then, as the DefaultMethodInterceptorFactory will return the MethodInterceptorDefaultImpl calling its method
+
+        * getMethodInterceptor("ProxyBDHandlerFactory.TestSLSBManagerContextBD.BDClass.methodInterceptorClassName")
+
+    <<DefaultMethodInterceptorFactory.ProxyBDHandlerFactory.TestSLSBManagerContextBD.BDClass.methodInterceptorClassName.contextBDFactoryClassName>>
+    will specify which is the ContextBDFactory, while
+    <<DefaultMethodInterceptorFactory.ProxyBDHandlerFactory.TestSLSBManagerContextBD.BDClass.methodInterceptorClassName.contextBDClassName>>
+    will specify which is the ContextBD implementation of the created instance of MethodInterceptor.
+
+    So for example:
+
+*---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+|DefaultMethodInterceptorFactory.ProxyBDHandlerFactory.TestSLSBManagerContextBD.BDClass.methodInterceptorClassName.contextBDFactoryClassName=it.aco.mandragora.bd.context.concreteFactory.DefaultContextBDFactory     |
+DefaultMethodInterceptorFactory.ProxyBDHandlerFactory.TestSLSBManagerContextBD.BDClass.methodInterceptorClassName.contextBDClassName=it.aco.mandragora.bd.context.impl.SLSB.SLSBManagerContextBD                      |
+*---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+
+    Moreover as <<ProxyBDHandlerFactory.TestSLSBManagerContextBD.BDClass.realBDClassName>> specifies a class which interfaces have to be implemented dynamically by
+    the proxy class, and we want the proxy class be a BD class, we can put
+
+*------------------------------------------------------------------------------------------------------------------------+
+|ProxyBDHandlerFactory.TestSLSBManagerContextBD.BDClass.realBDClassName=it.aco.mandragora.bd.impl.SLSB.SLSBManagerBD     |
+*------------------------------------------------------------------------------------------------------------------------+
+
+=======================================================================

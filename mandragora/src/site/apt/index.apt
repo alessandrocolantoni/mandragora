@@ -1,0 +1,19 @@
+ -----
+ The Site
+ -----
+ Alessandro Colantoni
+ -----
+
+What's mandragora?
+
+    Mandragora is an open source project focused on providing an extensible framework to build the business layer of java applications.
+
+    In other words Mandragora is a generic business layer highly configurable and easily extensible so to be suitable for every application.
+    The business layer that Mandragora offers to your application, follows the BD (Business Delegate), Service Facade (Pojo Facade and Session Facade) Application Service and DAO (Data Access Object) patterns.
+    This business layer can be easily extended maintaining  the  patterns, and extensions can be accessed trough the same Mandragora access service (Service Locator).
+
+
+[images/specification_small.jpg]
+
+
+=======================================================================

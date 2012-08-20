@@ -1,0 +1,542 @@
+ -----
+ Permisssions
+ -----
+ Alessandro Colantoni
+ -----
+
+
+Permissions Module
+
+    * {{{#Introduction}Introduction}}
+
+    * {{{#Configuration}Configuration}}
+
+        * {{{#Restrictions}Restrictions}}
+
+    * {{{#Permission_Apis}Permission Apis}}
+
+        * {{{#getPermissions}getPermissions}}
+
+        * {{{#isAuthorized}isAuthorized}}
+
+    * {{{#Permission_taglib}Permission taglib}}
+
+        * {{{#permission.tld}permission.tld}}
+
+        * {{{#present_tag}present tag}}
+
+        * {{{#notPresent_tag}notPresent tag}}
+
+
+
+* {Introduction}
+
+    The Mandragora Permission Module deals with user and permissions.
+    Most applications allow to use operations and functions depending by who is the user, and the permissions he has.
+    The Mandragora Permissions Module is very easy to use. You have just to {{{#Configuration}configure}} two properties in {{{referenceguide/mandragora-properties.html}Mandragora.properties}},
+    to specify which is the user class (the one mapped with the USER table), and how (trough which classes and relationship) a user is related with his permissions.
+    Once done that, the Mandragora Permissions Module will provide you {{{#Permission_Apis}simple apis}} to {{{#getPermissions}get the user permissions}}, and to check if a user {{{#isAuthorized}is authorized}}.
+    Moreover the Mandragora Permissions Module will provide you a {{{#Permission_taglib}taglib}} to establish if evaluate or not the body content of a tag depending
+    by the user permissions.
+
+=======================================================================
+
+
+* {Configuration}
+
+    You have just to configure two properties in {{{referenceguide/mandragora-properties.html}Mandragora.properties}}:
+
+        * <<userVO.class>> that specifies the fully qualified name of your user class (the class mapped with the USER table)
+
+        * <<user.permissions.path>> that specifies the path from the user to the permission class, thus specifying how a user is
+        related with his permissions in the class diagram and in the underlying media store;
+
+    For example suppose that your user class is 'somePackage.UserVO', and the permissions are hold by the class PermissionVO, and that the UserVO class is related to the
+    PermissionVO class trough the roles that are hold by the class RolVO, so that users are related with roles that are related with permissions.
+    Suppose now that your classes UserVO and RolVO are related trough a class called UserRolVO, and the class UserVO has an attribute <userRolVOs> that
+    is a collection of instances of UserRolVO, that have an attribute <rolVO> of type RolVO, and RolVO has an attribute <rolPermissionVOs> that
+    is a collection of instances of RolPermissionVO, that have an attribute <permissionVO> of type PermissionVO. This example is depicted in the
+    picture below:
+
+[images/UserRolPermissionClassDiagram.jpg]
+
+     In this case in  {{{referenceguide/mandragora-properties.html}Mandragora.properties}} we should put:
+
+*-----------------------------------------------------------------------+
+|userVO.class= somePackage.UserVO                                       |
+\                                                                       |
+|user.permissions.path=userRolVOs.rolVO.rolPermissionVOs.permissionVO   |
+*-----------------------------------------------------------------------+
+
+
+    So once configured {{{referenceguide/mandragora-properties.html}Mandragora.properties}} so to reflect the class diagram of your
+    user and permission classes you can use the Mandragora Permissions Module directly with the {{{#Permission_Apis}apis}} provided by the interface
+
+*----------------------------------------------------------------+
+|it.aco.mandragora.security.bd.SecurityManagerBD                 |
+*----------------------------------------------------------------+
+
+    or you can use the {{{#Permission_taglib}taglib}} specified by {{{#permission.tld}permission.tld}}.
+    Anyway the taglib uses the SecurityManagerBD interface to make his job, so in both cases, directly or indirectly you use the SecurityManagerBD interface.
+    <<SecurityManagerBD>> interface can be considered the core of the Mandragora Permission Module. In both cases you will need to specify which SecurityManagerBD implementation you want to use,
+    and for this implementation you will need to specify which DAO implementation it has to work with. How to configure that is shown in {{{#Permission_Apis}Permission Apis}}
+    and in {{{#Permission_taglib}Permission taglib}}.
+
+    If for example you use an implementation (as 'it.aco.mandragora.security.bd.impl.SecurityManagerImplBD') that use the DAO implementation
+    'it.aco.mandragora.dao.ojb.pb.OjbPbDAO', or other (not yet available) based on {{{http://db.apache.org/ojb/}Ojb}}, in the case of the above example,
+    the {{{http://db.apache.org/ojb/docu/guides/repository.html}repository.xml}} should be something like the below :
+
+*-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+|\<descriptor-repository version="1.0"\>                                                                                                                                            |
+\ \ \ \ \<!--************ TABLE USER *************--\>                                                                                                                              |
+|\ \ \ \ \<class-descriptor class="UserVO" table="USER"\>                                                                                                                           |
+\ \ \ \ \ \ \ \ \<field-descriptor id="1" name="username" column="username" jdbc-type="VARCHAR" primarykey="true" \>                                                                |
+|\ \ \ \ \ \ \ \ \<field-descriptor id="2" name="password" column="password" jdbc-type="VARCHAR"/\>                                                                                 |
+\ \ \ \ \ \ \ \ \<field-descriptor id="3" name="fullname" column="fullname" jdbc-type="VARCHAR"/\>                                                                                  |
+|\ \ \ \ \ \ \ \ \<collection-descriptor name="userRolVOs" element-class-ref="UserRolVO" collection-class="org.apache.ojb.broker.util.collections.ManageableVector"\>               |
+\ \ \ \ \ \ \ \ \ \ \ \ \<inverse-foreignkey field-ref="username"/\>                                                                                                                |
+|\ \ \ \ \ \ \ \ \ \</collection-descriptor\>                                                                                                                                       |
+\ \ \ \ \</class-descriptor\>                                                                                                                                                       |
+|\ \ \ \ \<!--************ TABLE USERROL *************--\>                                                                                                                          |
+\ \ \ \ \<class-descriptor class="com.steria.tc.vo.UserRolVO" table="USERROL"\>                                                                                                     |
+|\ \ \ \ \ \ \ \ \<field-descriptor id="1" name="username" column="username" jdbc-type="VARCHAR" primarykey="true" /\>                                                              |
+\ \ \ \ \ \ \ \ \<field-descriptor id="2" name="codrol" column="codrol" jdbc-type="VARCHAR" primarykey="true" /\>                                                                   |
+|\ \ \ \ \ \ \ \ \<reference-descriptor name="rolVO" class-ref="RolVO"\>                                                                                                            |
+\ \ \ \ \ \ \ \ \ \ \ \ \<foreignkey field-ref="codrol"/\>                                                                                                                          |
+|\ \ \ \ \ \ \ \ \</reference-descriptor\>                                                                                                                                          |
+\ \ \ \ \</class-descriptor\>                                                                                                                                                       |
+|\ \ \ \ \<!--************ TABLE MROL ************--\>                                                                                                                              |
+\ \ \ \ \<class-descriptor class="RolVO" table="MROL"\>                                                                                                                             |
+|\ \ \ \ \ \ \ \ \<field-descriptor id="1" name="codrol" column="codrol" jdbc-type="VARCHAR" primarykey="true" /\>                                                                  |
+\ \ \ \ \ \ \ \ \<field-descriptor id="2" name="description" column="description" jdbc-type="VARCHAR"/\>                                                                            |
+|\ \ \ \ \ \ \ \ \<collection-descriptor name="rolPermissionVOs" element-class-ref="RolPermissionVO" collection-class="org.apache.ojb.broker.util.collections.ManageableVector"\>   |
+\ \ \ \ \ \ \ \ \ \ \ \ \<inverse-foreignkey field-ref="codrol"/\>                                                                                                                  |
+|\ \ \ \ \ \ \ \ \</collection-descriptor\>                                                                                                                                         |
+\ \ \ \ \</class-descriptor\>                                                                                                                                                       |
+|\ \ \ \ \<!--************ TABLE ROLPERMISSION *************--\>                                                                                                                    |
+\ \ \ \ \<class-descriptor class="RolPermissionVO" table="ROLPERMISSION"\>                                                                                                          |
+|\ \ \ \ \ \ \ \ \<field-descriptor id="1" name="codrol" column="codrol" jdbc-type="VARCHAR" primarykey="true" /\>                                                                  |
+\ \ \ \ \ \ \ \ \<field-descriptor id="2" name="codpermission" column="codpermission" jdbc-type="VARCHAR" primarykey="true" /\>                                                     |
+|\ \ \ \ \ \ \ \ \<reference-descriptor name="permissionVO" class-ref="PermissionVO"\>                                                                                              |
+\ \ \ \ \ \ \ \ \ \ \ \ \<foreignkey field-ref="codpermission"/\>                                                                                                                   |
+|\ \ \ \ \ \ \ \ \</reference-descriptor\>                                                                                                                                          |
+\ \ \ \ \</class-descriptor\>                                                                                                                                                       |
+|\ \ \ \ \<!--************ TABLE PERMISSION************--\>                                                                                                                         |
+\ \ \ \ \<class-descriptor class="PermissionVO" table="PERMISSION"\>                                                                                                                |
+|\ \ \ \ \ \ \ \ \<field-descriptor id="1" name="codpermission" column="codpermission" jdbc-type="VARCHAR" primarykey="true" /\>                                                    |
+\ \ \ \ \ \ \ \ \<field-descriptor id="2" name="description" column="description" jdbc-type="VARCHAR"/\>                                                                            |
+|\ \ \ \ \</class-descriptor\>                                                                                                                                                      |
+\</descriptor-repository\>                                                                                                                                                          |
+*-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+
+    Of course the above is just an example and you can have any other class diagrams for users and permissions.
+    You have just to reflect the relationship between them in the '<<user.permissions.path>>'.
+
+    An other example could be that you have permissions directly related with users, as represented in the class diagram below
+
+[images/UserPermissionClassDiagram.jpg]
+
+    In this case in  {{{referenceguide/mandragora-properties.html}Mandragora.properties}} we should put:
+
+*-----------------------------------------------------------------------+
+|userVO.class= somePackage.UserVO                                       |
+\                                                                       |
+|user.permissions.path=userPermissionVOs.permissionVO                   |
+*-----------------------------------------------------------------------+
+
+=======================================================================
+
+** {Restrictions}
+
+    To use Mandragora Permissions Module you have to respect two small restrictions about both user and permission classes.
+    Remember that the user class is the one determined by the <<userVO.class>> property of {{{referenceguide/mandragora-properties.html}Mandragora.properties}} file,
+    while the permission class the one determined following the path determined by the <<user.permissions.path>> property of {{{referenceguide/mandragora-properties.html}Mandragora.properties}} from
+    the user class.
+
+    Both user and permission classes must have a simple primary key (made of just one attribute) and must be of type String.
+
+=======================================================================
+
+* {Permission Apis}
+
+    The Mandragora Permissions Module provides his apis trough the interface
+
+*----------------------------------------------------------------+
+|it.aco.mandragora.security.bd.SecurityManagerBD                 |
+*----------------------------------------------------------------+
+
+    that extends the interface
+
+*----------------------------------------------------------------+
+|it.aco.mandragora.bd.BD                                         |
+*----------------------------------------------------------------+
+
+    The only existing {{{referenceguide/implementations.html}implementation}} of this interface is
+
+*----------------------------------------------------------------+
+|it.aco.mandragora.security.bd.impl.SecurityManagerImplBD        |
+*----------------------------------------------------------------+
+
+    but of course you can {{{referenceguide/how-to-extend.html}write you own one}}.
+    The SecurityManagerImplBD is a singleton class extending 'it.aco.mandragora.bd.standard.StandardManagerBD'
+
+    If you want to use the <<SecurityManagerImplBD>> implementation in your client you have just to put in it:
+
+*-------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+|try \{                                                                                                                                                             |
+\ \ \ \ SecurityManagerBD securityManagerBD= (SecurityManagerBD)ServiceLocator.getInstance().getManagerBD("YourClientBDFactoryClassName","YourClientBDClassName");  |
+|\ \ \ \ // do your job with securityManagerBD                                                                                                                      |
+\ \ \ \ securityManagerBD.someMethod1(...);                                                                                                                         |
+|\ \ \ \ securityManagerBD.someMethod2(...);                                                                                                                        |
+\                                                                                                                                                                   |
+|} catch (ServiceLocatorException e) \{                                                                                                                             |
+\ \ \ \ \ //manage the exception                                                                                                                                    |
+|} catch (ApplicationException e) \{                                                                                                                                |
+\ \ \ \ \ //manage the exception                                                                                                                                    |
+|}                                                                                                                                                                  |
+*-------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+
+    and add in {{{referenceguide/mandragora-properties.html}Mandragora.properties}} the following two properties as explained in
+    {{{referenceguide/lookup-and-mapping.html}lookup and mapping}}:
+
+*---------------------------------------------------------------------------------------+
+|YourClientBDFactoryClassName = it.aco.mandragora.bd.standard.StandardBDFactory         |
+\                                                                                       |
+|YourClientBDClassName = it.aco.mandragora.security.bd.impl.SecurityManagerImplBD       |
+*---------------------------------------------------------------------------------------+
+
+    If one day you write your own SecurityManagerBD implementation, or some other one will be available under Mandragora, and in your client
+    you wish to use it, you will have to change just the second property value:
+
+*---------------------------------------------------------------------------------------+
+|YourClientBDClassName = somePackage.someOtherSecurityManagerImplBD                     |
+*---------------------------------------------------------------------------------------+
+
+    As SecurityManagerBD extends BD, of course in <securityManagerBD> of the above example you have available all the {{{referenceguide/bd-api-guide.html}BD methods}}.
+    The {{{referenceguide/implementations.html}implementation}} <<SecurityManagerImplBD>>, uses the same DAOFactory and DAO implementation of his ancestor class <<StandardManagerBD>>,
+    so to choose which DAOFactory and DAO implementation you want it uses, you have to set properly the properties '<<StandardManagerBD.DAOFactoryClass>>' and
+    '<<StandardManagerBD.DAOClass>>' in {{{referenceguide/mandragora-properties.html}Mandragora.properties}}.
+    For example if you want to use the DAOFactory 'it.aco.mandragora.dao.ojb.pb.OjbPbDAOFactory' and the DAO implementation 'it.aco.mandragora.dao.ojb.pb.OjbPbDAOFactory'
+    set these properties as below:
+
+*---------------------------------------------------------------------------------------+
+|StandardManagerBD.DAOClass=it.aco.mandragora.dao.ojb.pb.OjbPbDAO                       |
+StandardManagerBD.DAOFactoryClass=it.aco.mandragora.dao.ojb.pb.OjbPbDAOFactory          |
+*---------------------------------------------------------------------------------------+
+
+    SecurityManagerBD extend BD with two methods:  {{{#getPermissions}getPermissions}}  and {{{#isAuthorized}isAuthorized}}.
+
+=======================================================================
+
+** {getPermissions}
+
+    This is a method to get the collection of the primary keys of the permissions associated with a user:
+
+        * public Collection getPermissions(String userName) throws ApplicationException;
+
+    Remember that the permission class must respect the {{{#Restrictions}restrictions}} to have a simple primary key (made of just one attribute) that must be of type String.
+    This method returns the collection of the permissions primary keys associated with the user instance specified by the input string <userName>.
+    The class of the user instance is the one determined by the '<<userVO.class>>' property of {{{referenceguide/mandragora-properties.html}Mandragora.properties}}, and
+    the input string <userName> must be the primary key value of the user we want to get the permissions of.
+    So the instance of '<<userVO.class>>' that has <userName> as primary key value is looked up.
+    The permission class is determined following the path specified by the '<<user.permissions.path>>' property of {{{referenceguide/mandragora-properties.html}Mandragora.properties}} from the user class,
+    and the permission instances associated to the user are retrieved following the same '<<user.permissions.path>>' property, that specifies too the path of relationship in the class diagram from
+    the user class to the permission class. Once got the permissions instances associated with the user, their distinct primary keys strings are returned.
+
+    For example if we have a user permission class diagram like the below one
+
+[images/UserRolPermissionClassDiagram.jpg]
+
+    and in {{{referenceguide/mandragora-properties.html}Mandragora.properties}} we have:
+
+*---------------------------------------------------------------------------------------+
+|userVO.class= somePackage.UserVO                                                       |
+\                                                                                       |
+|user.permissions.path=userRolVOs.rolVO.rolPermissionVOs.permissionVO                   |
+\                                                                                       |
+|YourClientBDFactoryClassName = it.aco.mandragora.bd.standard.StandardBDFactory         |
+\                                                                                       |
+|YourClientBDClassName = it.aco.mandragora.security.bd.impl.SecurityManagerImplBD       |
+*---------------------------------------------------------------------------------------+
+
+     doing:
+
+*-------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+|try \{                                                                                                                                                             |
+\ \ \ \ SecurityManagerBD securityManagerBD= (SecurityManagerBD)ServiceLocator.getInstance().getManagerBD("YourClientBDFactoryClassName","YourClientBDClassName");  |
+|\ \ \ \ Collection permissions = securityManagerBD.getPermissions("user_1");                                                                                       |
+\                                                                                                                                                                   |
+|\ \ \ \ /* permissions holds all the distinct primary keys of PermissionVO instances associated trough the relationship class RolPermissionVO to at least          |
+\ \ \ \ \  one of the RolVO instances associated trough the relationship class UserRolVO to the UserVO instance that has "user_1" as primary key. */                |
+|                                                                                                                                                                   |
+\                                                                                                                                                                   |
+|} catch (ServiceLocatorException e) \{                                                                                                                             |
+\ \ \ \ \ //manage the exception                                                                                                                                    |
+|} catch (ApplicationException e) \{                                                                                                                                |
+\ \ \ \ \ //manage the exception                                                                                                                                    |
+|}                                                                                                                                                                  |
+*-------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+
+    the collection <permissions> will hold all the distinct primary keys of the PermissionVO instances associated trough the relationship class RolPermissionVO to at least one of the RolVO instances
+    associated trough the relationship class UserRolVO to the UserVO instance that has "user_1" as primary key.
+    As the primary key of PermissionVO must be a simple String attribute ({{{#Restrictions}see restrictions}}), <permissions> will be a collection of strings.
+
+
+=======================================================================
+
+** {isAuthorized}
+
+    The method is :
+
+        * public boolean isAuthorized(String userName, Collection permissions, boolean all) throws ApplicationException;
+
+    This method returns true or false if the user specified by the input string <userName> is authorized or is not authorized, depending by the input parameters
+    <permissions> and <all>.
+
+    The user <userName> is authorized if he has all the permissions specified by the input collection <permissions> and the input parameter <all> is true, or
+    if he has at least one of the permissions specified by the input collection <permissions> and the input parameter <all> is false.
+
+    More concretely: if the input collection <permissions> is null or empty, the user is always authorized; if the input collection <permissions> is not null and not empty
+    this method will look for all the permissions primary keys strings of the user specified by  input string <userName>, in the same way of the method {{{#getPermissions}getPermissions}}; if the collection
+    of the user permissions primary keys is null or empty, the user is never authorized, otherwise, if the input <all> is true and the retrieved user's permissions primary keys collection contains all permissions primary keys specified
+    by the input collection <permissions> the user is authorized, otherwise is not authorized, and if the input <all> is false, and the retrieved user's permissions collection has at the least
+    one common element with the collection of <permissions> specified by the input, the user is authorized, otherwise is not authorized.
+
+
+
+
+=======================================================================
+
+
+
+
+* {Permission taglib}
+
+    The permission taglib is based on the file {{{#permission.tld}permission.tld}}, that you can find in the META-INF/tlds of the mandragora.jar or
+    in the WEB-INF of mandragora-blank.zip .
+    To use the permission taglib, you can keep the {{{#permission.tld}permission.tld}} in the jar or you can copy it in the WEB-INF directory of your application.
+    If you keep it in the jar it should be quite slower.
+    If you put it in the WEB-INF directory, add the following lines to your web.xml
+
+*--------------------------------------------------------------------------------------------------------------------+
+|\<taglib\>                                                                                                          |
+\ \ \ \ \<taglib-uri\>/WEB-INF/permission.tld\</taglib-uri\>                                                         |
+|\ \ \ \ \<taglib-location\>/WEB-INF/permission.tld\</taglib-location\>                                              |
+\</taglib\>                                                                                                          |
+*--------------------------------------------------------------------------------------------------------------------+
+
+    Then you have just to put in the JSP where you want to use the permissions tag:
+
+*--------------------------------------------------------------------------------------------------------------------+
+|\<%@ taglib uri="/WEB-INF/permissions.tld" prefix="perm" %\>                                                        |
+*--------------------------------------------------------------------------------------------------------------------+
+
+    and you can use the {{{#present_tag}present}} and {{{#notPresent_tag}notPresent}} tags.
+
+    As we talked about in {{{#Configuration}Configuration}}, the core of the Mandragora Permission Module is the interface SecurityManagerBD.
+    So the permission taglib use it too, and must be specified which implementation has to be used, and for that implementation must be specified which DAO implementation it has to work with.
+    It must be specified too which BDFactory has to look up the SecurityManagerBD implementation, and which DAOFactory the SecurityManagerBD implementation has to use to look up the DAO implementation
+    to work with.
+
+    To specify which BDFactory has to look up the SecurityManagerBD implementation, and which has to be the SecurityManagerBD implementation you have to configure two properties in
+    {{{referenceguide/mandragora-properties.html}Mandragora.properties}}, <<SecurityBDFactoryClass>> and <<SecurityBDClass>>.
+
+    The only existing {{{referenceguide/implementations.html}implementation}} of this SecurityManagerBD interface is
+
+*----------------------------------------------------------------+
+|it.aco.mandragora.security.bd.impl.SecurityManagerImplBD        |
+*----------------------------------------------------------------+
+
+    but of course you can {{{referenceguide/how-to-extend.html}write you own one}}.
+    The SecurityManagerImplBD is a singleton class extending 'it.aco.mandragora.bd.standard.StandardManagerBD' .
+
+    If you want that the permission taglib uses the BDFactory 'it.aco.mandragora.bd.standard.StandardBDFactory' and the SecurityManagerImplBD implementation of SecurityManagerBD interface,
+    just put in {{{referenceguide/mandragora-properties.html}Mandragora.properties}}:
+
+*---------------------------------------------------------------------------------------+
+|SecurityBDFactoryClass = it.aco.mandragora.bd.standard.StandardBDFactory               |
+\                                                                                       |
+|SecurityBDClass = it.aco.mandragora.security.bd.impl.SecurityManagerImplBD             |
+*---------------------------------------------------------------------------------------+
+
+    The {{{referenceguide/implementations.html}implementation}} <<SecurityManagerImplBD>>, uses the same DAOFactory and DAO implementation of his ancestor class <<StandardManagerBD>>,
+    so to choose which DAOFactory and DAO implementation you want it uses, you have to set properly the properties '<<StandardManagerBD.DAOFactoryClass>>' and
+    '<<StandardManagerBD.DAOClass>>' in {{{referenceguide/mandragora-properties.html}Mandragora.properties}}.
+    For example if you want to use the DAOFactory 'it.aco.mandragora.dao.ojb.pb.OjbPbDAOFactory' and the DAO implementation 'it.aco.mandragora.dao.ojb.pb.OjbPbDAOFactory'
+    set these properties as below:
+
+*---------------------------------------------------------------------------------------+
+|StandardManagerBD.DAOClass=it.aco.mandragora.dao.ojb.pb.OjbPbDAO                       |
+StandardManagerBD.DAOFactoryClass=it.aco.mandragora.dao.ojb.pb.OjbPbDAOFactory          |
+*---------------------------------------------------------------------------------------+
+
+    The permission taglib has two tags: {{{#present_tag}present tag}} and {{{#notPresent_tag}notPresent tag}}:
+
+
+=======================================================================
+
+
+** {permission.tld}
+
+    Here we show the permission.tld file:
+
+*-------------------------------------------------------------------------------------------------------------------------------------------------+
+|\<?xml version="1.0" encoding="UTF-8"?\>                                                                                                         |
+\                                                                                                                                                 |
+|                                                                                                                                                 |
+\                                                                                                                                                 |
+|\<!DOCTYPE taglib PUBLIC "-//Sun Microsystems, Inc.//DTD JSP Tag Library 1.1//EN" "http://java.sun.com/j2ee/dtds/web-jsptaglibrary_1_1.dtd"\>    |
+\<taglib\>                                                                                                                                        |
+\ \ \ \ \<tlibversion\>1.2\</tlibversion\>                                                                                                        |
+|\ \ \ \ \<jspversion\>1.2\</jspversion\>                                                                                                         |
+\ \ \ \ \<shortname\>permissions\</shortname\>                                                                                                    |
+|\ \ \ \ \<uri\>http://mandragora.sourceforge.net/permissions.html\</uri\>                                                                        |
+\ \ \ \ \<tag\>                                                                                                                                   |
+|\ \ \ \ \ \ \ \ \<name\>present\</name\>                                                                                                         |
+\ \ \ \ \ \ \ \ \<tagclass\>it.aco.mandragora.taglib.permissions.PresentTag\</tagclass\>                                                          |
+|\ \ \ \ \ \ \ \ \<bodycontent\>JSP\</bodycontent\>                                                                                               |
+\ \ \ \ \ \ \ \ \<attribute\>                                                                                                                     |
+|\ \ \ \ \ \ \ \ \ \ \ \ \<name\>list\</name\>                                                                                                    |
+\ \ \ \ \ \ \ \ \ \ \ \ \<required\>true\</required\>                                                                                             |
+|\ \ \ \ \ \ \ \ \ \ \ \ \<rtexprvalue\>true\</rtexprvalue\>                                                                                      |
+\ \ \ \ \ \ \ \ \</attribute\>                                                                                                                    |
+|\ \ \ \ \ \ \ \ \<attribute\>                                                                                                                    |
+\ \ \ \ \ \ \ \ \ \ \ \ \<name\>all\</name\>                                                                                                      |
+|\ \ \ \ \ \ \ \ \ \ \ \ \<required\>false\</required\>                                                                                           |
+\ \ \ \ \ \ \ \ \ \ \ \ \<rtexprvalue\>true\</rtexprvalue\>                                                                                       |
+|\ \ \ \ \ \ \ \ \</attribute\>                                                                                                                   |
+\ \ \ \ \</tag\>                                                                                                                                  |
+|\ \ \ \ \<tag\>                                                                                                                                  |
+\ \ \ \ \ \ \ \ \<name\>notPresent\</name\>                                                                                                       |
+|\ \ \ \ \ \ \ \ \<tagclass\>it.aco.mandragora.taglib.permissions.NotPresentTag\</tagclass\>                                                      |
+\ \ \ \ \ \ \ \ \<bodycontent\>JSP\</bodycontent\>                                                                                                |
+|\ \ \ \ \ \ \ \ \<attribute\>                                                                                                                    |
+\ \ \ \ \ \ \ \ \ \ \ \ \<name\>list\</name\>                                                                                                     |
+|\ \ \ \ \ \ \ \ \ \ \ \ \<required\>true\</required\>                                                                                            |
+\ \ \ \ \ \ \ \ \ \ \ \ \<rtexprvalue\>true\</rtexprvalue\>                                                                                       |
+|\ \ \ \ \ \ \ \ \</attribute\>                                                                                                                   |
+\ \ \ \ \ \ \ \ \<attribute\>                                                                                                                     |
+|\ \ \ \ \ \ \ \ \ \ \ \ \<name\>all\</name\>                                                                                                     |
+\ \ \ \ \ \ \ \ \ \ \ \ \<required\>false\</required\>                                                                                            |
+|\ \ \ \ \ \ \ \ \ \ \ \ \<rtexprvalue\>true\</rtexprvalue\>                                                                                      |
+\ \ \ \ \ \ \ \ \</attribute\>                                                                                                                    |
+|\ \ \ \ \</tag\>                                                                                                                                 |
+\</taglib\>                                                                                                                                       |
+*-------------------------------------------------------------------------------------------------------------------------------------------------+
+
+=======================================================================
+
+** {present tag}
+
+    The <<present tag>> evaluates a condition, that if it results to be true, the nested body content of this tag will be evaluated,
+    while if it results to be false the nested body content of this tag will be skipped.
+    The condition to be evaluated is expressed on the basis of the two attribute that this tag has: <<list>> and <<all>>.
+
+    The attribute <<list>> is a comma separated list of strings that are the primary keys of the permissions, that the logged user must have to the condition
+    be evaluated true. The attribute <<list>> is required.
+    Remember that the permission class must respect the {{{#Restrictions}restrictions}} to have a simple primary key (made of just one attribute) that must be of type String.
+
+    The attribute <<all>> is a boolean value, that establishes if the logged user must have all the permissions of the list (<all==true>) or just at least one
+    (<all==false>) to the condition be evaluated true. The attribute <<all>> is not required and his default value is false.
+
+    So the condition to decide if  the nested body content of this tag should be evaluated or skipped is:
+
+*-----------------------------------------------------------------------------------------------+
+|(<<all>>==<true> AND <<logged user>> has all permissions specified by <<list>>)  OR            |
+(<<all>>==<false> AND <<logged user>> has at least one permission of the specified by <<list>>) |
+*-----------------------------------------------------------------------------------------------+
+
+    The logged user is retrieved by the tag with the line of code:
+
+*----------------------------------------------------------------+
+|request.getUserPrincipal().getName()                            |
+*----------------------------------------------------------------+
+
+    Note that the condition is the same of ({{{#isAuthorized}see isAuthorized}}):
+
+*-------------------------------------------------------------------------------------------------------+
+|isAuthorized(request.getUserPrincipal().getName(),permissionsCollection,all)                           |
+*-------------------------------------------------------------------------------------------------------+
+
+    where permissionsCollection is a collection holding all the comma separated elements of <<list>>.
+
+    For example in a jsp you can have:
+
+*--------------------------------------------------------------------------------------------------------------------+
+|\<%@ taglib uri="/WEB-INF/permissions.tld" prefix="perm" %\>                                                        |
+\                                                                                                                    |
+\<perm:present list="p1, p2, p4"\>                                                                                   |
+\                                                                                                                    |
+\ \ \ \ \ \ \     nested body                                                                                        |
+\                                                                                                                    |
+\</perm:present\>                                                                                                    |
+*--------------------------------------------------------------------------------------------------------------------+
+
+    nested body  will be evaluated just if the logged user has at least one of the permissions whose key be the string "p1" or "p2" or "p3".
+
+=======================================================================
+
+
+** {notPresent tag}
+
+    The <<notPresent tag>> acts in the exact opposite way of {{{#present_tag}present tag}}.
+
+    The <<notPresent tag>> evaluates a condition, that if it results to be true, the nested body content of this tag will be evaluated,
+    while if it results to be false the nested body content of this tag will be skipped.
+    The condition to be evaluated is expressed on the basis of the two attribute that this tag has: <<list>> and <<all>>.
+    The condition expressed is the inverse (the NOT) of the condition expressed by {{{#present_tag}present tag}} with the same values for the attributes <<list>> and <<all>>.
+
+    So the condition to decide if the nested body content of this tag should be evaluated or skipped is the following one:
+
+*--------------------------------------------------------------------------------------------------------------+
+|(<<all>>==<false> AND <<logged user>> has no one of the permissions of the specified by <<list>>) OR          |
+(<<all>>==<true>  AND <<logged user>> has at least one missing permission of the specified by <<list>> )       |
+*--------------------------------------------------------------------------------------------------------------+
+
+    Note that if the assertion <'logged user has no one of the permissions of the specified by list'> is true, the assertion
+    <'logged user has at least one missing permission of the specified by list'> is true too.
+    So if logged user has no one of the permissions of the specified by list, the condition is evaluated true for both values of the attribute <all>.
+
+    The logged user is retrieved by the tag with the line of code:
+
+*----------------------------------------------------------------+
+|request.getUserPrincipal().getName()                            |
+*----------------------------------------------------------------+
+
+    Note that the condition is the same of ({{{#isAuthorized}see isAuthorized}}):
+
+*-------------------------------------------------------------------------------------------------------+
+| !isAuthorized(request.getUserPrincipal().getName(),permissionsCollection,all)                         |
+*-------------------------------------------------------------------------------------------------------+
+
+    where permissionsCollection is a collection holding all the comma separated elements of <<list>>.
+
+    For example in a jsp you have:
+
+*--------------------------------------------------------------------------------------------------------------------+
+|\<%@ taglib uri="/WEB-INF/permissions.tld" prefix="perm" %\>                                                        |
+\                                                                                                                    |
+\<perm:notPresent list="p1, p2, p4"\>                                                                                |
+\                                                                                                                    |
+\ \ \ \ \ \ \     nested body                                                                                        |
+\                                                                                                                    |
+\</perm:notPresent\>                                                                                                 |
+*--------------------------------------------------------------------------------------------------------------------+
+
+    nested body  will be evaluated just if the logged user has no one of the permissions whose key be the string "p1" or "p2" or "p3".
+
+    If on other side in a jsp you have:
+
+*--------------------------------------------------------------------------------------------------------------------+
+|\<%@ taglib uri="/WEB-INF/permissions.tld" prefix="perm" %\>                                                        |
+\                                                                                                                    |
+\<perm:notPresent list="p1, p2, p4" all="true"\>                                                                     |
+\                                                                                                                    |
+\ \ \ \ \ \ \     nested body                                                                                        |
+\                                                                                                                    |
+\</perm:notPresent\>                                                                                                 |
+*--------------------------------------------------------------------------------------------------------------------+
+
+    nested body  will be evaluated just if the logged user has at least one missing permission of the permissions whose key be the string "p1" or "p2" or "p3".
+
+=======================================================================

@@ -1,0 +1,1100 @@
+ -----
+ How to extend
+ -----
+ Alessandro Colantoni
+ -----
+
+How to extend Mandragora
+
+    * {{{#Introduction}Introduction}}
+
+    * {{{#BD}BD (Business Delegate)}}
+
+        * {{{#Write_your_BD_implementation}Write your BD implementation}}
+
+        * {{{#Extend_the_BD_interface}Extend the BD interface}}
+
+        * {{{#Write_your_BD_factory}Write your BD factory}}
+
+    * {{{#ServiceFacade}ServiceFacade (Service Facade)}}
+
+        * {{{#Write_your_ServiceFacade_implementation}Write your ServiceFacade implementation}}
+
+        * {{{#Extend_the_ServiceFacade_interface}Extend the ServiceFacade interface}}
+
+        * {{{#Write_your_ServiceFacade_factory}Write your ServiceFacade factory}}
+
+    * {{{#ApplicationService}ApplicationService (Application Service)}}
+
+            * {{{#Write_your_ApplicationService_implementation}Write your ApplicationService implementation}}
+
+            * {{{#Extend_the_ApplicationService_interface}Extend the ApplicationService interface}}
+
+            * {{{#Write_your_ApplicationService_factory}Write your ApplicationService factory}}
+
+    * {{{#DAO}DAO (Data Access Object)}}
+
+        * {{{#Write_your_DAO_implementation}Write your DAO implementation}}
+
+        * {{{#Extend_the_DAO_interface}Extend the DAO interface}}
+
+        * {{{#Write_your_DAO_Factory}Write your DAO Factory}}
+
+    * {{{#Putting_all_together}Putting all together}}
+
+
+* {Introduction}
+
+    A client (a controller, a UI interface or other) that uses Mandragora has to get someway an implementation of the interface BD
+    (Business Delegate) and then it uses its methods. Analogously a BD implementation has to get someway an implementation of the
+    interface ServiceFacade and then it uses its methods, and so on down to the chain of patterns.
+
+[../images/General.jpg]
+
+
+    The client uses the ServiceLocator singleton class to {{{lookup-and-mapping.html}lookup}} the abstract class
+    BDFactory that has to lookup one of its concrete extensions (right now inside Mandragora just the DefaultBDFactory is available) that
+    has to lookup one of the implementations of the interface BD, following the parameters that the client supplied to the ServiceLocator and
+    following the configuration file {{{mandragora-properties.html}Mandragora.properties}}. So the client uses the methods of the interface BD, and
+    the implementation looked up will be working. Note that SecurityManagerImplBD implements the interface SecurityManagerBD that
+    extends the interface BD. So if the client wants to use methods of the SecurityManagerBD not present in BD it has to cast the
+    BD to SecurityManagerBD.
+
+    In the same way the client uses the Service Locator to choose and lookup the BD implementation, the BD implementation uses the Service Locator
+    to choose and look up a ServiceFacade implementation.
+    So a BD implementation uses the ServiceLocator singleton class to {{{lookup-and-mapping.html}lookup}} the abstract class
+    ServiceFacadeFactory that has to lookup one of its concrete extensions (right now inside Mandragora just the DefaultServiceFacadeFactory is available) that
+    has to lookup one of the implementations of the interface ServiceFacade, following the parameters that the BD implementation supplied to the ServiceLocator and
+    following the configuration file {{{mandragora-properties.html}Mandragora.properties}}. So the BD implementation  uses the methods of the interface ServiceFacade, and
+    the implementation looked up will be working.
+
+    Carrying on down to the architecture BD, ServiceFacade, ApplicationService, DAO, the  ServiceFacade implementation uses the ServiceLocator singleton class to {{{lookup-and-mapping.html}lookup}} the abstract class
+    ApplicationServiceFactory that has to lookup one of its concrete extensions (right now inside Mandragora just the DefaultApplicationServiceFactory is available) that
+    has to lookup one of the implementations of the interface ApplicationService, following the parameters that the ServiceFacade implementation supplied to the ServiceLocator and
+    following the configuration file {{{mandragora-properties.html}Mandragora.properties}}. So the ServiceFacade implementation  uses the methods of the interface ApplicationService, and
+    the implementation looked up will be working.
+
+    Analogously, both ServiceFacade and ApplicationService implementations use the ServiceLocator singleton class to {{{lookup-and-mapping.html}lookup}} the abstract class
+    DAOFactory that has to lookup one of its concrete extensions (right now inside Mandragora just the DefaultDAOFactory is available) that
+    has to lookup one of the implementations of the interface DAO, following the parameters that the ApplicationService or ServiceFacade implementation supplied to the ServiceLocator and
+    following the configuration file {{{mandragora-properties.html}Mandragora.properties}}. So the ServiceFacade and ApplicationService implementations  use the methods of the interface DAO, and
+    the implementation looked up will be working.
+
+    Note that the client sees just the Service Locator and the BD interface, and eventually has to cast it.
+
+    So the core of Mandragora are the BD, ServiceFacade, ApplicationService and DAO interfaces, with their implementations and  factories.
+    All these classes can be extended by the user and new implementations  of the interfaces can be written, mapping all in the
+    configuration file {{{mandragora-properties.html}Mandragora.properties}}.
+    So the user can build his customized Mandragora to fit his needing.
+
+
+
+
+* {BD} (Business Delegate)
+
+    Up now just three implementations of the BD interface exist:
+
+        * it.aco.mandragora.bd.impl.pojo.PojoManagerBD
+
+        * it.aco.mandragora.bd.impl.SLSB.SLSBManagerBD
+
+        * it.aco.mandragora.security.bd.impl.SecurityManagerImplBD
+
+        * ProxyBDHandler
+
+
+** {Write your BD implementation}
+
+    If you want of course you can write your own implementation of the BD interface. The implementations of the interface BD should be implemented
+    following the singleton pattern and must allow subclasses, so that can be written other implementations just overwriting o adding some method to the class you are writing{{{#Extend_the_BD_interface}(see Extend the BD interface)}}.
+    So to write the implementation UserImplBD1 do:
+
+*-----------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+|package mypackage;                                                                                                                                                     |
+public class UserImplBD1  implements it.aco.mandragora.bd.BD\{                                                                                                          |
+|\ \ \ \ protected static UserImplBD1 userImplBD1 = null;                                                                                                               |
+\                                                                                                                                                                       |
+|\ \ \ \ static \{                                                                                                                                                      |
+\ \ \ \ \ \ \ \ try \{                                                                                                                                                  |
+|\ \ \ \ \ \ \ \ \ \ \ \ if (userImplBD1!=null) throw new ApplicationException("thrown in the static block of UserImplBD1: static instance is already set");            |
+\ \ \ \ \ \ \ \ \ \ \ \ userImplBD1 = new UserImplBD1();                                                                                                                |
+|\ \ \ \ \ \ \ \ \}catch (Exception e)\{                                                                                                                                |
+\ \ \ \ \ \ \ \ \ \ \ \ throw new RuntimeException("Exception thrown in the static block of UserImplBD1 "+ e.toString(),e);                                             |
+|\ \ \ \ \ \ \ \ \}                                                                                                                                                     |
+\ \ \ \ \}                                                                                                                                                              |
+|                                                                                                                                                                       |
+\                                                                                                                                                                       |
+|\ \ \ \ protected UserImplBD1()\{                                                                                                                                      |
+\ \ \ \ \}                                                                                                                                                              |
+|\                                                                                                                                                                      |
+\ \ \ \ public static UserImplBD1 getInstance() \{                                                                                                                      |
+|\ \ \ \ \ \ \ \ return userImplBD1;                                                                                                                                    |
+\ \ \ \ \}                                                                                                                                                              |
+|// implement the methods of BD                                                                                                                                         |
+\}                                                                                                                                                                      |
+*-----------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+
+    It could be that you don't want to implement all methods of the interface BD, because for you are suitable the methods of an existing implementation, let's say
+    'it.aco.mandragora.bd.impl.SLSB.SLSBManagerBD', so maybe you want just to overwrite someone of its methods.
+    To do that write a new class implementing the BD interface and extending the 'it.aco.mandragora.bd.impl.SLSB.SLSBManagerBD', always remembering
+    that it should follow the singleton pattern and must allow subclasses, so that can be written other implementations just overwriting or adding some method to the class you are writing.
+
+*--------------------------------------------------------------------------------------------------------------------------------------------------------------+
+|package mypackage;                                                                                                                                            |
+public class UserImplBD2 extends it.aco.mandragora.bd.impl.SLSB.SLSBManagerBD implements BD\{                                                                  |
+|\ \ \ \ protected static UserImplBD2 userImplBD2 = null;                                                                                                      |
+\                                                                                                                                                              |
+|\ \ \ \ static \{                                                                                                                                             |
+\ \ \ \ \ \ \ \ try \{                                                                                                                                         |
+|\ \ \ \ \ \ \ \ \ \ \ \ if (userImplBD2!=null) throw new ApplicationException("thrown in the static block of UserImplBD2: static instance is already set");   |
+\ \ \ \ \ \ \ \ \ \ \ \ userImplBD2 = new UserImplBD2();                                                                                                       |
+|\ \ \ \ \ \ \ \ \}catch (Exception e)\{                                                                                                                       |
+\ \ \ \ \ \ \ \ \ \ \ \ throw new RuntimeException("Exception thrown in the static block of UserImplBD2 "+ e.toString(),e);                                    |
+|\ \ \ \ \ \ \ \ \}                                                                                                                                            |
+\                                                                                                                                                              |
+|\ \ \ \ \}                                                                                                                                                    |
+\ \ \ \ protected UserImplBD2()\{                                                                                                                              |
+|\ \ \ \ \}                                                                                                                                                    |
+\ \ \ \ public static SLSBManagerBD getInstance() \{/*It has to return SLSBManagerBD to not clash with getInstance of SLSBManagerBD.*/                         |
+| \ \ \ \ \ \ \ \ return userImplBD2;                                                                                                                          |
+\ \ \ \ \}                                                                                                                                                     |
+| \ \ \ \ \                                                                                                                                                    |
+\ \ \ \ /* overwrite the methods you want*/                                                                                                                    |
+|\}                                                                                                                                                            |
+*--------------------------------------------------------------------------------------------------------------------------------------------------------------+
+
+    The only difference is that the getInstance() method has to return the extended class to avoid to clash with getInstance() method of the
+    extended class.
+
+
+[../images/UserExtImplBD.jpg]
+
+
+    Now you have to register your own implementations in the {{{mandragora-properties.html}Mandragora.properties}} so they can be looked up
+    by the ServiceLocator.
+    For example following the {{{lookup-and-mapping.html}suggested way of mapping}} suppose you want to use the BD implementation 'mypackage.UserImplBD1' in a client class called Shop,
+    To do that put in the {{{mandragora-properties.html}Mandragora.properties}}:
+
+*-------------------------------------------------------------------------------------------------------------+
+|ShopBDClass=mypackage.UserImplBD1                                                                            |
+*-------------------------------------------------------------------------------------------------------------+
+
+    Now to use it in your client Shop just do:
+
+*-------------------------------------------------------------------------------------------------------------+
+|try \{                                                                                                       |
+\ \ \ \ BD bd = ServiceLocator.getInstance().getManagerBD("BDFactoryDefaultClass","ShopBDClass");             |
+|\} catch (ServiceLocatorException e) \{                                                                      |
+\ \ \ \ //manage the exception                                                                                |
+|\                                                                                                            |
+\}                                                                                                            |
+*-------------------------------------------------------------------------------------------------------------+
+
+    If for example you want to use the {{{bd-api-guide.html#findByPrimaryKey}findByPrimaryKey}} method of the BD you do:
+
+*-------------------------------------------------------------------------------------------------------------+
+|try \{                                                                                                       |
+\ \ \ \ BD bd = ServiceLocator.getInstance().getManagerBD("BDFactoryDefaultClass","ShopBDClass");             |
+|\ \ \ \ AuthorVO authorVO= (AuthorVO)bd.findByPrimaryKey(AuthorVO.class, new Integer(9));                    |
+\} catch (ServiceLocatorException e) \{                                                                       |
+|\ \ \ \ //manage the exception                                                                               |
+\}catch (ApplicationException e) \{                                                                           |
+|\ \ \ \ //manage the exception                                                                               |
+\}                                                                                                            |
+*-------------------------------------------------------------------------------------------------------------+
+
+    The code '<bd.findByPrimaryKey(AuthorVO.class, new Integer(9))>' will use the method of your implementation.
+
+    If some day for some reason you want that the Shop class use the BD implementation 'mypackage.UserImplBD2' just change the mapping in the
+    {{{mandragora-properties.html}Mandragora.properties}}:
+
+*-------------------------------------------------------------------------------------------------------------+
+|ShopBDClass=mypackage.UserImplBD2                                                                            |
+*-------------------------------------------------------------------------------------------------------------+
+
+    
+
+=======================================================================
+
+
+
+** {Extend the BD interface}
+
+    It could be that methods in the BD interface are not enough for you, so you want to extend the interface BD.
+
+*-------------------------------------------------------------------------------------------------------------+
+|package mypackage;                                                                                           |
+public interface UserBD  extends it.aco.mandragora.bd.BD\{                                                    |
+|\ \ \ \ // define the methods not present in BD: for example                                                 |
+\ \ \ \ public Collection myMethod1(....) throws ApplicationException;                                        |
+|\ \ \ \ public void myMethod2(....) throws ApplicationException;                                             |
+\                                                                                                             |
+|\ \ \ \ ......                                                                                               |
+\                                                                                                             |
+|\}                                                                                                           |
+*-------------------------------------------------------------------------------------------------------------+
+
+    The interface mypackage.UserBD extends the interface BD and have much more methods. Now you have to write its implementation,
+    that can be a class extending an existing implementation, where you have just to add the new methods, and of course overwrite all that
+    you want, or it can be a totally new class that doesn't extend nothing.
+    If the new implementation extends an existing implementation, for example 'it.aco.mandragora.bd.impl.pojo.PojoManagerBD', you have write the following code,
+    remembering that BD implementation should follow the singleton pattern and must allow subclasses, so that can be written other implementations just overwriting or adding some method to the class you are writing.
+
+*--------------------------------------------------------------------------------------------------------------------------------------------------------------+
+|package mypackage;                                                                                                                                            |
+public class UserImplBD3 extends it.aco.mandragora.bd.impl.pojo.PojoManagerBD implements UserBD\{                                                              |
+|\ \ \ \ protected static UserImplBD3 userImplBD3 = null;                                                                                                      |
+\                                                                                                                                                              |
+|\ \ \ \ static \{                                                                                                                                             |
+\ \ \ \ \ \ \ \ try \{                                                                                                                                         |
+|\ \ \ \ \ \ \ \ \ \ \ \ if (userImplBD3!=null) throw new ApplicationException("thrown in the static block of UserImplBD3: static instance is already set");   |
+\ \ \ \ \ \ \ \ \ \ \ \ userImplBD3 = new UserImplBD3();                                                                                                       |
+|\ \ \ \ \ \ \ \ \}catch (Exception e)\{                                                                                                                       |
+\ \ \ \ \ \ \ \ \ \ \ \ throw new RuntimeException("Exception thrown in the static block of UserImplBD3 "+ e.toString(),e);                                    |
+|\ \ \ \ \ \ \ \ \}                                                                                                                                            |
+\                                                                                                                                                              |
+|\ \ \ \ \}                                                                                                                                                    |
+\ \ \ \ protected UserImplBD3()\{                                                                                                                              |
+|\ \ \ \ \}                                                                                                                                                    |
+\ \ \ \ public static PojoManagerBD getInstance() \{/*It has to return PojoManagerBD to not clash with getInstance of PojoManagerBD */                         |
+| \ \ \ \ \ \ \ \ return userImplBD3;                                                                                                                          |
+\ \ \ \ \}                                                                                                                                                     |
+|\ \ \ \ /* overwrite the methods you want of PojoManagerBD*/                                                                                              |
+\                                                                                                                                                              |
+| \ \ \ /* implements the methods of UserBD not present in BD*/                                                                                                |
+\}                                                                                                                                                             |
+*--------------------------------------------------------------------------------------------------------------------------------------------------------------+
+
+    If your implementation doesn't extend any existing implementation, of course you have to implement all methods of both interfaces BD and UserBD.
+    Remembering that BD implementations should follow the singleton pattern and must allow subclasses, so that can be written other implementations just overwriting o adding some method at the class you are writing:
+
+*-----------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+|package mypackage;                                                                                                                                                     |
+public class UserImplBD4  implements UserBD\{                                                                                                                           |
+|\ \ \ \ protected static UserImplBD4 userImplBD4 = null;                                                                                                               |
+\                                                                                                                                                                       |
+|\ \ \ \ static \{                                                                                                                                                      |
+\ \ \ \ \ \ \ \ try \{                                                                                                                                                  |
+|\ \ \ \ \ \ \ \ \ \ \ \ if (userImplBD4!=null) throw new ApplicationException("thrown in the static block of UserImplBD4: static instance is already set");            |
+\ \ \ \ \ \ \ \ \ \ \ \ userImplBD4 = new UserImplBD4();                                                                                                                 |
+|\ \ \ \ \ \ \ \ \}catch (Exception e)\{                                                                                                                                |
+\ \ \ \ \ \ \ \ \ \ \ \ throw new RuntimeException("Exception thrown in the static block of UserImplBD4 "+ e.toString(),e);                                             |
+|\ \ \ \ \ \ \ \ \}                                                                                                                                                     |
+\                                                                                                                                                                       |
+|\ \ \ \ \}                                                                                                                                                             |
+\                                                                                                                                                                       |
+|\ \ \ \ protected UserImplBD4()\{                                                                                                                                      |
+\ \ \ \ \}                                                                                                                                                              |
+|\                                                                                                                                                                      |
+\ \ \ \ public static UserImplBD4 getInstance() \{                                                                                                                      |
+|\ \ \ \ \ \ \ \ return userImplBD4;                                                                                                                                    |
+\ \ \ \ \}                                                                                                                                                              |
+|// implement the methods of of both  interfaces BD and UserBD                                                                                                          |
+\}                                                                                                                                                                      |
+*-----------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+
+    The only difference is that if you are extending an existing implementation,  the getInstance() method has to return the extended class to avoid to clash with getInstance() method of the
+    extended class.
+
+
+[../images/UserExtUserBD.jpg]
+
+
+    Now you have to register your own implementations in the {{{mandragora-properties.html}Mandragora.properties}} so they can be looked up
+    by the ServiceLocator.
+    For example following the {{{lookup-and-mapping.html}suggested way of mapping}} suppose you want to use the BD implementation 'mypackage.UserImplBD3' in a client class called Article,
+    To do that put in the {{{mandragora-properties.html}Mandragora.properties}}:
+
+
+
+*-------------------------------------------------------------------------------------------------------------+
+|ArticleBDClass=mypackage.UserImplBD3                                                                         |
+*-------------------------------------------------------------------------------------------------------------+
+
+    An example of use is:
+
+*-------------------------------------------------------------------------------------------------------------+
+|try \{                                                                                                       |
+\ \ \ \ BD bd = ServiceLocator.getInstance().getManagerBD("BDFactoryDefaultClass","ArticleBDClass");          |
+|\ \ \ \ AuthorVO authorVO= (AuthorVO)bd.findByPrimaryKey(AuthorVO.class, new Integer(9));                    |
+|\ \ \ \ Collection col = ((MyBD)bd).myMethod1(......);                                                       |
+|\ \ \ \ ((MyBD)bd).myMethod2(......);                                                                        |
+\} catch (ServiceLocatorException e) \{                                                                       |
+|\ \ \ \ //manage the exception                                                                               |
+\} catch (ApplicationException e) \{                                                                          |
+|\ \ \ \ //manage the exception                                                                               |
+\                                                                                                             |
+\}                                                                                                            |
+*-------------------------------------------------------------------------------------------------------------+
+
+    The code '<bd.findByPrimaryKey(AuthorVO.class, new Integer(9))>' will use the method of your implementation.
+
+    If you want to use methods of UserBD (not present in BD) of course you have to cast the BD returned by the line of code:
+
+*-------------------------------------------------------------------------------------------------------------+
+|ServiceLocator.getInstance().getManagerBD("BDFactoryDefaultClass","ArticleBDClass");                         |
+*-------------------------------------------------------------------------------------------------------------+
+
+    to UserBD.
+
+    If some day for some reason you want that the Shop class uses the BD implementation 'mypackage.UserImplBD4' just change the mapping in the
+    {{{mandragora-properties.html}Mandragora.properties}}:
+
+*-------------------------------------------------------------------------------------------------------------+
+|ArticleBDClass=mypackage.UserImplBD4                                                                         |
+*-------------------------------------------------------------------------------------------------------------+
+
+    Maybe in the methods you implemented in the class implementing BD you wrote, you need to look up some ServiceFacade implementation to use its methods to do your job.
+    To do that you should always use the method:
+
+        * public ServiceFacade getServiceFacade(String serviceFacadeFactoryClassName, String serviceFacadeClassName) throws ServiceLocatorException
+
+    of the ServiceLocator {{{lookup-and-mapping.html}(see lookup and mapping)}}.
+    So for example:
+
+*---------------------------------------------------------------------------------------------------------------------------------------------------------------+
+|try \{                                                                                                                                                         |
+\ \ \ \ ServiceFacade serviceFacade = ServiceLocator.getInstance().getServiceFacade("someServiceFacadeFactoryClassName", "someServiceFacadeClassName")          |
+\} catch (ServiceLocatorException e) \{                                                                                                                         |
+|\ \ \ \ //manage the exception                                                                                                                                 |
+\}                                                                                                                                                              |
+*---------------------------------------------------------------------------------------------------------------------------------------------------------------+
+
+
+=======================================================================
+
+
+
+** {Write your BD factory}
+
+    The abstract class  'it.aco.mandragora.bd.BDFactory' is a factory of  factories of BD implementations.
+    The abstract class  'it.aco.mandragora.bd.BDFactory' looks up a factory of BD implementations that is the class that definitively looks up the BD implementation.
+    The factory looked up must be a concrete extension of 'it.aco.mandragora.bd.BDFactory' and must implement the Singleton pattern so just one
+    instance of it will be allowed. The factory looked up must implement the details of the policy of looking up
+    the wanted implementation of the interface BD so to hide the details of how an implementation of interface BD is chosen and looked up.
+    So the abstract class 'it.aco.mandragora.bd.BDFactory' decouple the real factory looking up the BD implementation,
+    from the class that wants to use the BD implementation.
+    Every one can write its own factory of BD implementation just extending the class 'it.aco.mandragora.bd.BDFactory' and registering it in
+    the {{{mandragora-properties.html}Mandragora.properties}} file, so to have his own factory to look up the BD implementations.
+
+    The abstract class BDFactory has two abstract methods:
+
+
+*-------------------------------------------------------------------------------------------------------------+
+|public abstract BD getBD() throws BdFactoryException;                                                        |
+public abstract BD getBD(String nameBdClass) throws BdFactoryException;                                       |
+*-------------------------------------------------------------------------------------------------------------+
+
+    and two concrete static method :
+
+*-------------------------------------------------------------------------------------------------------------+
+|public static BDFactory getBDFactory(String nameBdFactoryClass)                                              |
+public static BDFactory getBDFactory()                                                                        |
+*-------------------------------------------------------------------------------------------------------------+
+
+
+    The first one of the concrete static methods,  <<getBDFactory(String nameBdFactoryClass)>>, returns a concrete extension of the same 'it.aco.mandragora.bd.BDFactory';
+    in other words returns a factory of BD implementations. The factory returned (a concrete extension of the abstract class BDFactory)
+    is the one specified by the input string <nameBdFactoryClass>, depending by its mapping in the {{{mandragora-properties.html}Mandragora.properties}} file.
+    So if you for example are working in a class of your application called Shop:
+
+*----------------------------------------------------------------------------------------------------------------+
+|try \{                                                                                                          |
+\ \ \ \ BDFactory bDFactory =  BDFactory.getBDFactory("ShopBDFactoryClassName")                                  |
+| \ \ \ \ /* bDFactory is a the factory of BD implementations, concrete class extending BDFactory, specified in  |
+\ \ \ \ \ \ \  {{{mandragora-properties.html}Mandragora.properties}} by the entry  ShopBDFactoryClassName */     |
+\} catch (BdFactoryException e) \{                                                                               |
+|\ \ \ \ //manage the exception                                                                                  |
+\}                                                                                                               |
+*----------------------------------------------------------------------------------------------------------------+
+
+    if you put an entry in the {{{mandragora-properties.html}Mandragora.properties}}:
+
+*-------------------------------------------------------------------------------------------------------------+
+|ShopBDFactoryClassName=it.aco.mandragora.bd.concreteFactory.DefaultBDFactory                                 |
+*-------------------------------------------------------------------------------------------------------------+
+
+    the <bDFactory> of the above example will be the instance (unique as BDFactory extension must be Singleton) of 'it.aco.mandragora.bd.concreteFactory.DefaultBDFactory',
+    that is a concrete extension of BDFactory and of course a factory of BD implementations.
+
+    The second one of the concrete static methods <<getBDFactory()>> returns the default factory, concrete extension of 'it.aco.mandragora.bd.BDFactory'. The default factory concrete extension of 'it.aco.mandragora.bd.BDFactory'
+    is the one mapped in {{{mandragora-properties.html}Mandragora.properties}} with the string "BDFactoryDefaultClass".
+    So doing:
+
+*-------------------------------------------------------------------------------------------------------------+
+|BDFactory bDFactory =  BDFactory.getBDFactory()                                                              |
+*-------------------------------------------------------------------------------------------------------------+
+
+    It's the same of doing:
+
+*-------------------------------------------------------------------------------------------------------------+
+|BDFactory bDFactory =  BDFactory.getBDFactory("BDFactoryDefaultClass")                                       |
+*-------------------------------------------------------------------------------------------------------------+
+
+    Right now just one concrete extension BDFactory exists:
+
+        * it.aco.mandragora.bd.concreteFactory.DefaultBDFactory
+
+    So BDFactoryDefaultClass is mapped in {{{mandragora-properties.html}Mandragora.properties}} with DefaultBDFactory.
+
+*-------------------------------------------------------------------------------------------------------------+
+|BDFactoryDefaultClass=it.aco.mandragora.bd.concreteFactory.DefaultBDFactory                                  |
+*-------------------------------------------------------------------------------------------------------------+
+
+    But if one write his own concrete extension of BDFactory, can change the mapping for his factory:
+
+*-------------------------------------------------------------------------------------------------------------+
+|BDFactoryDefaultClass=mypackage.UserBDFactory                                                                |
+*-------------------------------------------------------------------------------------------------------------+
+
+
+
+[../images/BDFactory.jpg]
+
+
+    Of course you can create your concrete extension, factory of BD implementations. You have just to create your class, that has to extend it.aco.mandragora.bd.BDFactory,
+    implements the two abstract methods <getBD(String nameBdClass)>  and <getBD()> and implement the Singleton pattern.
+    The method <getBD(String nameBdClass)> returns the implementation of the interface BD specified by the input string <nameBdClass>, while
+    the method <getBD()> returns the default implementation of the interface BD.
+    Which are the default implementation or the  implementation of BD specified by the input string <nameBdClass> depends by the same factory,
+    extension of BDFactory, that is being created, because this class is who holds (and hides) the policy of looking up
+    the wanted implementation of the interface BD.
+    For example if you are working in a client class of your application called Shop, you could do:
+
+*--------------------------------------------------------------------------------------------------------------------------------------------------+
+|try \{                                                                                                                                            |
+\ \ \ \ BD bd= BDFactory.getBDFactory("ShopBDFactoryClassName").getBD("ShopBDClassName");                                                          |
+| \ \ \ \ /* bd is the implementation of BD looked up relatively at the string "ShopBDClassName" by the factory, extending BDFactory, specified in |
+\ \ \ \ \ \ \  {{{mandragora-properties.html}Mandragora.properties}} by the entry  ShopBDFactoryClassName */                                       |
+\} catch (BdFactoryException e) \{                                                                                                                 |
+|\ \ \ \ //manage the exception                                                                                                                    |
+\}                                                                                                                                                 |
+*--------------------------------------------------------------------------------------------------------------------------------------------------+
+
+    How the input string "ShopBDClassName" determines which BD implementation has to be looked up depends by the concrete factory, extension of BDfactory,
+    determined by the input string "ShopBDFactoryClassName".
+
+    For example the factory DefaultBDFactory, extension of BDFactory,  looks up the implementation of the interface BD specified by the input string "ShopBDClassName"
+    in the method <getBD(String nameBdClass)>
+    depending by its mapping in the {{{mandragora-properties.html}Mandragora.properties}} file, and considers the default BD implementation (the one looked up by <getBD()>)
+    the one specified by the "DefaultBDFactory.BDClass" entry in {{{mandragora-properties.html}Mandragora.properties}}. {{{implementations.html}See implementations}}
+
+    So if you have these lines in the  {{{mandragora-properties.html}Mandragora.properties}} file
+
+*-------------------------------------------------------------------------------------------------------------+
+ShopBDFactoryClassName=it.aco.mandragora.bd.concreteFactory.DefaultBDFactory                                  |
+|ShopBDClass=it.aco.mandragora.bd.impl.SLSB.SLSBManagerBD                                                     |
+DefaultBDFactory.BDClass=it.aco.mandragora.bd.impl.pojo.PojoManagerBD                                         |
+*-------------------------------------------------------------------------------------------------------------+
+
+    with the line of code
+
+*-------------------------------------------------------------------------------------------------------------+
+|BD bd= BDFactory.getBDFactory("ShopBDFactoryClassName").getBD("ShopBDClassName");                            |
+*-------------------------------------------------------------------------------------------------------------+
+
+    bd is the instance (unique if BD implementation is Singleton) of it.aco.mandragora.bd.impl.SLSB.SLSBManagerBD and doing:
+
+*-------------------------------------------------------------------------------------------------------------+
+|BD bd= BDFactory.getBDFactory("ShopBDFactoryClassName").getBD();                                             |
+*-------------------------------------------------------------------------------------------------------------+
+
+    that is the same of
+
+*-------------------------------------------------------------------------------------------------------------+
+|BD bd= BDFactory.getBDFactory("ShopBDFactoryClassName").getBD("DefaultBDFactory.BDClass)";                   |
+*-------------------------------------------------------------------------------------------------------------+
+
+    bd is the instance (unique as BD implementations must be Singleton) of it.aco.mandragora.bd.impl.pojo.PojoManagerBD
+
+    Anyway the look up of the BD implementation shouldn't be done directly {{{lookup-and-mapping.html}see lookup and mapping}} , but through
+    the ServiceLocator ('it.aco.mandragora.common.ServiceLocator') that provides the methods
+
+        * public BD getManagerBD(String bdFactoryClassName, String bdClassName) throws ServiceLocatorException
+
+        * public BD getManagerBD() throws ServiceLocatorException
+
+    In the following example we show how should be built a BDFactory extension (a factory of BD implementation) remembering that must implement
+    the singleton pattern.
+
+
+*----------------------------------------------------------------------------------------------------------------------------+
+|package mypackage;                                                                                                          |
+\                                                                                                                            |
+|public class UserBDFactory extends BDFactory\{                                                                              |
+\                                                                                                                            |
+|\ \ \ \ private static UserBDFactory userBDFactory;                                                                         |
+\                                                                                                                            |
+|\ \ \ \ static \{                                                                                                           |
+\ \ \ \ \ \ \ \ userBDFactory = new UserBDFactory();                                                                         |
+|\ \ \ \ }                                                                                                                   |
+\                                                                                                                            |
+|\ \ \ \ private UserBDFactory()\{\}                                                                                         |
+\                                                                                                                            |
+|                                                                                                                            |
+\                                                                                                                            |
+|\ \ \ \ public static BDFactory getInstance()\{                                                                             |
+\ \ \ \ \ \ \ \ return userBDFactory;                                                                                        |
+|\ \ \ \ }                                                                                                                   |
+\                                                                                                                            |
+|\ \ \ \ public BD getBD(String nameBdClass) throws BdFactoryException\{                                                     |
+\                                                                                                                            |
+|                                                                                                                            |
+\ \ \ \ \ \ \ \ /* returns the implementation of the interface BD specified by the input string <nameBdClass>,               |
+| \ \ \ \ \ \ \ \ \ this method holds and hides the policy of looking up the wanted implementation of the interface BD. */   |
+\                                                                                                                            |
+|                                                                                                                            |
+\ \ \ \ \}                                                                                                                   |
+|                                                                                                                            |
+\                                                                                                                            |
+|\ \ \ \ public BD getBD()throws BdFactoryException \{                                                                       |
+\                                                                                                                            |
+|                                                                                                                            |
+\ \ \ \ \ \ \ \  /* returns the default implementation of the interface BD, default relatively to this class,                |
+|\ \ \ \ \ \ \ \ \  this method holds (and hides) the policy of looking up the wanted implementation of the interface BD. */ |
+\                                                                                                                            |
+|                                                                                                                            |
+\ \ \ \ \}                                                                                                                   |
+|\}                                                                                                                          |
+*----------------------------------------------------------------------------------------------------------------------------+
+
+
+    The class UserBDFactory, subclass of BDFactory, being singleton ,must have a private attribute  <userBDFactory> of type UserBDFactory that will be the unique instance of the singleton class UserBDFactory.
+    To be singleton the class UserBDFactory must have a static block that initializes the unique instance <userBDFactory> of UserBDFactory, and a private constructor with no input parameters.
+    Then it must have a public static method that returns the unique instance of UserBDFactory <userBDFactory>.
+    This method MUST be named <<getInstance()>>, because this is the method that the super abstract class BDFactory calls, in both its static methods
+    <<getBDFactory(String nameBdFactoryClass)>> and  <<getBDFactory()>> to look up the chosen subclass to return.
+
+    If in {{{mandragora-properties.html}Mandragora.properties}} you put
+
+*-------------------------------------------------------------------------------------------------------------+
+|ShopBDFactoryClassName=mypackage.UserBDFactory                                                               |
+*-------------------------------------------------------------------------------------------------------------+
+
+    doing ({{{lookup-and-mapping.html}see lookup and mapping}}):
+
+*--------------------------------------------------------------------------------------------------------------------------------------------------+
+|try \{                                                                                                                                            |
+\ \ \ \ BD bd= ServiceLocator.getInstance().getManagerBD("ShopBDFactoryClassName","someBDClassName");                                              |
+| \ \ \ \ /* bd is the implementation of BD obtained by the execution of getBD("someBDClassName") of the unique instance                           |
+\ \ \ \ \ \ \  of the singleton class mypackage.UserBDFactory looked up  */                                                                        |
+\} catch (ServiceLocatorException e) \{                                                                                                            |
+|\ \ \ \ //manage the exception                                                                                                                    |
+\}                                                                                                                                                 |
+*--------------------------------------------------------------------------------------------------------------------------------------------------+
+
+    <bd> will be the implementation of BD obtained by the execution of getBD("someBDClassName") of the unique instance  of the singleton class 'mypackage.UserBDFactory' looked up.
+
+    The class diagram of Mandragora with the user extensions of the Business Delegate is the following one.
+
+
+[../images/UserExtBDimplFactory.jpg]
+
+
+=======================================================================
+
+
+* {ServiceFacade} (Service Facade)
+
+** {Write your ServiceFacade implementation}
+
+** {Extend the ServiceFacade interface}
+
+** {Write your ServiceFacade factory}
+
+
+
+=======================================================================
+
+
+
+* {ApplicationService} (Application Service)
+
+** {Write your ApplicationService implementation}
+
+** {Extend the ApplicationService interface}
+
+** {Write your ApplicationService factory}
+
+
+
+=======================================================================
+
+* {DAO} (Data Access Object)
+
+    Up now just one implementation of the DAO interface exists:
+
+        * it.aco.mandragora.dao.impl.ojb.pb.OjbPbDAO
+
+
+* {Write your DAO implementation}
+
+    If you want of course you can write your own implementation of the DAO interface. The implementations of the interface DAO should be implemented
+    following the singleton pattern and must allow subclasses, so that can be written other implementations just overwriting or adding some method to the class you are writing
+    {{{#Extend_the_DAO_interface}see Extend the DAO interface}}. So to write UserImplDAO1 do:
+
+*-----------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+|package mypackage;                                                                                                                                                     |
+public class UserImplDAO1  implements it.aco.mandragora.dao.DAO\{                                                                                                       |
+|\ \ \ \ protected static UserImplDAO1 userImplDAO1 = null;                                                                                                             |
+\                                                                                                                                                                       |
+|\ \ \ \ static \{                                                                                                                                                      |
+\ \ \ \ \ \ \ \ try \{                                                                                                                                                   |
+|\ \ \ \ \ \ \ \ \ \ \ \ if (userImplDAO1!=null) throw new DataAccessException("thrown in the static block of UserImplDAO1: static instance is already set");           |
+\ \ \ \ \ \ \ \ \ \ \ \ userImplDAO1 = new UserImplDAO1();                                                                                                              |
+|\ \ \ \ \ \ \ \ \}catch (Exception e)\{                                                                                                                                |
+\ \ \ \ \ \ \ \ \ \ \ \ throw new RuntimeException("Exception thrown in the static block of UserImplDAO1 "+ e.toString(),e);                                            |
+|\ \ \ \ \}                                                                                                                                                             |
+\                                                                                                                                                                       |
+|\ \ \ \ protected UserImplDAO1()\{                                                                                                                                     |
+\ \ \ \ \}                                                                                                                                                              |
+|\                                                                                                                                                                      |
+\ \ \ \ public static UserImplDAO1 getInstance() \{                                                                                                                     |
+|\ \ \ \ \ \ \ \ return userImplDAO1;                                                                                                                                   |
+\ \ \ \ \}                                                                                                                                                              |
+|// implement the methods of DAO                                                                                                                                        |
+\}                                                                                                                                                                      |
+*-----------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+
+    It could be that you don't want to implement all methods of the interface DAO, because for you are suitable the methods on an existing implementation, let's say
+    'it.aco.mandragora.dao.impl.ojb.pb.OjbPbDAO', so you want just to overwrite someone of its methods.
+    To do that write a new class implementing the DAO interface and extending the 'it.aco.mandragora.dao.impl.ojb.pb.OjbPbDAO', always remembering that it should follow the singleton pattern and
+    must allow subclasses, so that can be written other implementations just overwriting or adding some method to the class you are writing.
+
+
+*-----------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+|package mypackage;                                                                                                                                                     |
+public class UserImplDAO2 extends it.aco.mandragora.dao.impl.ojb.pb.OjbPbDAO implements DAO\{                                                                           |
+|\ \ \ \ protected static UserImplDAO2 userImplDAO2 = null;                                                                                                             |
+\                                                                                                                                                                       |
+|\ \ \ \ static \{                                                                                                                                                      |
+\ \ \ \ \ \ \ \ try \{                                                                                                                                                  |
+|\ \ \ \ \ \ \ \ \ \ \ \ if (userImplDAO2!=null) throw new DataAccessException("thrown in the static block of UserImplDAO2: static instance is already set");           |
+\ \ \ \ \ \ \ \ \ \ \ \ userImplDAO2 = new UserImplDAO2();                                                                                                              |
+|\ \ \ \ \ \ \ \ \}catch (Exception e)\{                                                                                                                                |
+\ \ \ \ \ \ \ \ \ \ \ \ throw new RuntimeException("Exception thrown in the static block of UserImplDAO2 "+ e.toString(),e);                                            |
+|\ \ \ \ \}                                                                                                                                                             |
+\ \ \ \ protected UserImplDAO2()\{                                                                                                                                      |
+|\ \ \ \ \}                                                                                                                                                             |
+\ \ \ \ public static OjbPbDAO getInstance() \{/*It has to return OjbPbDAO to not clash with getInstance of OjbPbDAO.*/                                                 |
+| \ \ \ \ \ \ \ \ return userImplDAO2;                                                                                                                                  |
+\ \ \ \ \}                                                                                                                                                              |
+| \ \ \ \ \                                                                                                                                                             |
+\ \ \ \ /* overwrite the methods you want*/                                                                                                                             |
+|\}                                                                                                                                                                     |
+*-----------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+
+    The only difference is that the getInstance() method has to return the extended class to avoid to clash with getInstance() method of the
+    extended class
+
+[../images/UserExtImplDAO.jpg]
+
+
+    Now you have to register your own implementation in the Mandragora.properties so it can be looked up by the ServiceLocator.
+    For example following the {{{lookup-and-mapping.html}suggested way of mapping}} suppose you want to use the DAO implementation 'mypackage.UserImplDAO1' in a business delegate class called ShopServiceFacade. To do that put in the {{{mandragora-properties.html}Mandragora.properties}} for example:
+
+*-------------------------------------------------------------------------------------------------------------+
+|ShopServiceFacade.DAOClass=mypackage.UserImplDAO1                                                            |
+*-------------------------------------------------------------------------------------------------------------+
+
+    To use it in some Business Delegate method use the following code:
+
+*-------------------------------------------------------------------------------------------------------------+
+|try \{                                                                                                       |
+\ \ \ \ DAO dao = ServiceLocator.getInstance().getDAO("DAOFactoryDefaultClass","ShopBD.DAOClass");            |
+|\} catch (ServiceLocatorException e) \{                                                                      |
+\ \ \ \ //manage the exception                                                                                |
+|\                                                                                                            |
+\}                                                                                                            |
+*-------------------------------------------------------------------------------------------------------------+
+
+    If for example you want to use the insert method of the DAO in some method of your ServiceFacade implementation  you do:
+
+*-------------------------------------------------------------------------------------------------------------+
+|try \{                                                                                                       |
+\ \ \ \ DAO dao = ServiceLocator.getInstance().getDAO("DAOFactoryDefaultClass","ShopServiceFacade.DAOClass"); |
+|\ \ \ \ dao.insert(authorVO);                                                                                |
+\} catch (ServiceLocatorException e) \{                                                                       |
+|\ \ \ \ //manage the exception                                                                               |
+\}catch (DataAccessException e) \{                                                                            |
+|\ \ \ \ //manage the exception                                                                               |
+\}                                                                                                            |
+*-------------------------------------------------------------------------------------------------------------+
+
+    The code '<dao.insert(authorVO)>' will use the method of your implementation.
+
+    If some day for some reason you want that the business delegate class called ShopBD uses the BD implementation 'mypackage.UserImplDAO2' just change the mapping in the {{{mandragora-properties.html}Mandragora.properties}}:
+
+*-------------------------------------------------------------------------------------------------------------+
+|ShopServiceFacade.DAOClass=mypackage.UserImplDAO2                                                            |
+*-------------------------------------------------------------------------------------------------------------+
+
+
+
+=======================================================================
+
+
+* {Extend the DAO interface}
+
+    It could be that methods in the DAO interface are not enough for you.
+    For example if you wrote a new implementation of the ServiceFacade, above all if you extended it with new methods, it could be you wish to have
+    some method more in the DAO. So you want to extend the interface DAO.
+
+*-------------------------------------------------------------------------------------------------------------+
+|package mypackage;                                                                                           |
+public interface UserDAO  extends it.aco.mandragora.dao.DAO\{                                                 |
+|\ \ \ \ // define the methods not present in DAO: for example                                                |
+\ \ \ \ public Collection myMethod1(....) throws DataAccessException;                                         |
+|\ \ \ \ public void myMethod2(....) throws DataAccessException;                                              |
+\                                                                                                             |
+|\ \ \ \ ......                                                                                               |
+\                                                                                                             |
+|\}                                                                                                           |
+*-------------------------------------------------------------------------------------------------------------+
+
+    The interface mypackage.UserDAO extends the interface DAO and have much more methods. Now you have to write its implementation,
+    that can be a class extending an existing implementation, where you have just to add the new methods, and of course overwrite all that
+    you want, or it can be a totally new class that doesn't extend nothing.
+    If the new implementation extends an existing implementation, for example 'it.aco.mandragora.dao.impl.ojb.pb.OjbPbDAO', you have to write the following code,
+    remembering that DAO implementation should follow the singleton pattern.
+
+*---------------------------------------------------------------------------------------------------------------------------------------------------------------+
+|package mypackage;                                                                                                                                             |
+public class UserImplDAO3 extends it.aco.mandragora.dao.impl.ojb.pb.OjbPbDAO implements UserDAO\{                                                               |
+|\ \ \ \ protected static UserImplDAO3 userImplDAO3 = null;                                                                                                     |
+\                                                                                                                                                               |
+|\ \ \ \ static \{                                                                                                                                              |
+\ \ \ \ \ \ \ \ try \{                                                                                                                                          |
+|\ \ \ \ \ \ \ \ \ \ \ \ if (userImplDAO3!=null) throw new DataAccessException("thrown in the static block of UserImplDAO3: static instance is already set");   |
+\ \ \ \ \ \ \ \ \ \ \ \ userImplDAO3 = new UserImplDAO3();                                                                                                      |
+|\ \ \ \ \ \ \ \ \}catch (Exception e)\{                                                                                                                        |
+\ \ \ \ \ \ \ \ \ \ \ \ throw new RuntimeException("Exception thrown in the static block of UserImplDAO3 "+ e.toString(),e);                                    |
+|\ \ \ \ \}                                                                                                                                                     |
+\ \ \ \ protected UserImplDAO3()\{                                                                                                                              |
+|\ \ \ \ \}                                                                                                                                                     |
+\ \ \ \ public static OjbPbDAO getInstance() \{/*It has to return OjbPbDAO to not clash with getInstance of OjbPbDAO */                                         |
+| \ \ \ \ \ \ \ \ return userImplDAO3;                                                                                                                          |
+\ \ \ \ \}                                                                                                                                                      |
+|\ \ \ \ /* overwrite the methods you want of OjbPbDAO*/                                                                                                        |
+\                                                                                                                                                               |
+| \ \ \ /* implements the methods of UserDAO not present in DAO*/                                                                                               |
+\}                                                                                                                                                              |
+*---------------------------------------------------------------------------------------------------------------------------------------------------------------+
+
+    If your implementation doesn't extend any existing implementation, of course you have to implement all methods of both  interfaces DAO and UserDAO.
+    Remembering that DAO implementations should follow the singleton pattern:
+
+*-----------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+|package mypackage;                                                                                                                                                     |
+public class UserImplDAO4  implements UserDAO\{                                                                                                                         |
+|\ \ \ \ protected static UserImplDAO4 userImplDAO4 = null;                                                                                                             |
+\                                                                                                                                                                       |
+|\ \ \ \ static \{                                                                                                                                                      |
+\ \ \ \ \ \ \ \ try \{                                                                                                                                                  |
+|\ \ \ \ \ \ \ \ \ \ \ \ if (userImplDAO4!=null) throw new DataAccessException("thrown in the static block of UserImplDAO4: static instance is already set");           |
+\ \ \ \ \ \ \ \ \ \ \ \ userImplDAO4 = new UserImplDAO4();                                                                                                              |
+|\ \ \ \ \ \ \ \ \}catch (Exception e)\{                                                                                                                                |
+\ \ \ \ \ \ \ \ \ \ \ \ throw new RuntimeException("Exception thrown in the static block of UserImplDAO4 "+ e.toString(),e);                                            |
+|\ \ \ \ \}                                                                                                                                                             |
+\                                                                                                                                                                       |
+|\ \ \ \ protected UserImplDAO4()\{                                                                                                                                     |
+\ \ \ \ \}                                                                                                                                                              |
+|\                                                                                                                                                                      |
+\ \ \ \ public static UserImplDAO4 getInstance() \{                                                                                                                     |
+|\ \ \ \ \ \ \ \ return userImplDAO4;                                                                                                                                   |
+\ \ \ \ \}                                                                                                                                                              |
+|// implement the methods of of both  interfaces DAO and UserDAO                                                                                                        |
+\}                                                                                                                                                                      |
+*-----------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+
+    The only difference is that if you are extending an existing implementation,  the getInstance() method has to return the extended class to avoid to clash with getInstance() method of the
+    extended class.
+
+
+[../images/UserExtUserDAO.jpg]
+
+    Now you have to register your own implementation in the {{{mandragora-properties.html}Mandragora.properties}} so it can be looked up by the ServiceLocator.
+    For example following the {{{lookup-and-mapping.html}suggested way of mapping}} suppose you want to use the DAO implementation 'mypackage.UserImplDAO3' in a service facade class called ShopServiceFacade. To do that put in the Mandragora.properties for example:
+
+*-------------------------------------------------------------------------------------------------------------+
+|ShopServiceFacade.DAOClass=mypackage.UserImplDAO3                                                            |
+*-------------------------------------------------------------------------------------------------------------+
+
+    If for example you want to use of the DAO methods in some your ServiceFacade method of your ServiceFacade implementation you do:
+
+*-------------------------------------------------------------------------------------------------------------+
+|try \{                                                                                                       |
+\ \ \ \ DAO dao = ServiceLocator.getInstance().getDAO("DAOFactoryDefaultClass","ShopServiceFacade.DAOClass"); |
+|\ \ \ \ AuthorVO authorVO= (AuthorVO)dao.findByPrimaryKey(AuthorVO.class, new Integer(9));                   |
+|\ \ \ \ Collection col = ((UserDAO)dao).myMethod1(......);                                                   |
+|\ \ \ \ ((UserDAO)dao).myMethod2(......);                                                                    |
+\} catch (ServiceLocatorException e) \{                                                                       |
+|\ \ \ \ //manage the exception                                                                               |
+\} catch (DataAccessException e) \{                                                                           |
+|\ \ \ \ //manage the exception                                                                               |
+\                                                                                                             |
+\}                                                                                                            |
+*-------------------------------------------------------------------------------------------------------------+
+
+    The code '<dao.insert(authorVO)>' will use the method of your DAO implementation.
+    If you want to use methods of UserDAO (not present in DAO) of course you have to cast the DAO returned by the line of code:
+
+*-------------------------------------------------------------------------------------------------------------+
+|ServiceLocator.getInstance().getDAO("DAOFactoryDefaultClass","ShopServiceFacade.DAOClass");                  |
+*-------------------------------------------------------------------------------------------------------------+
+
+    to UserDAO.
+
+    If some day for some reason you want that the business delegate class called ShopServiceFacade uses the BD implementation 'mypackage.UserImplDAO4'
+    just change the mapping in the Mandragora.properties:
+
+*-------------------------------------------------------------------------------------------------------------+
+|ShopServiceFacade.DAOClass=mypackage.UserImplDAO4                                                            |
+*-------------------------------------------------------------------------------------------------------------+
+
+
+
+=======================================================================
+
+
+
+
+
+** {Write your DAO Factory}
+
+    The abstract class  'it.aco.mandragora.dao.DAOFactory' is a factory of  factories of DAO implementations.
+    The abstract class  'it.aco.mandragora.dao.DAOFactory' looks up a factory of DAO implementations that is the class that definitively looks up the DAO implementation.
+    The factory looked up must be a concrete extension of 'it.aco.mandragora.dao.DAOFactory' and must implement the Singleton pattern so just one
+    instance of it will be allowed. The factory looked up must implement the details of the policy of looking up
+    the wanted implementation of the interface DAO so to hide the details of how an implementation of interface DAO is chosen and looked up.
+    So the abstract class 'it.aco.mandragora.dao.DAOFactory' decouple the real factory looking up the DAO implementation,
+    from the class that wants to use the DAO implementation.
+    Every one can write his own factory of DAO implementation just extending the class 'it.aco.mandragora.dao.DAOFactory' and registering it in
+    the {{{mandragora-properties.html}Mandragora.properties}} file, so to have his own factory to look up the DAO implementations.
+
+    The abstract class it.aco.mandragora.dao.DAOFactory has two abstract methods:
+
+
+*-------------------------------------------------------------------------------------------------------------+
+|public abstract DAO getDAO() throws DaoFactoryException;                                                     |
+public abstract DAO getDAO(String nameDaoClass) throws DaoFactoryException;                                   |
+*-------------------------------------------------------------------------------------------------------------+
+
+    and two concrete static method :
+
+*-------------------------------------------------------------------------------------------------------------+
+|public static DAOFactory getDAOFactory(String nameDaoFactoryClass) throws DaoFactoryException                |
+public static DAOFactory getDAOFactory()throws DaoFactoryException                                            |
+*-------------------------------------------------------------------------------------------------------------+
+
+
+    The first one of the concrete static methods,  <<getDAOFactory(String nameDaoFactoryClass)>>, returns a concrete extension of the same 'it.aco.mandragora.dao.DAOFactory';
+    in other words returns a factory of DAO implementations. The factory returned (a concrete extension of the abstract class DAOFactory)
+    is the one specified by the input string <nameDaoFactoryClass>, depending by his mapping in the {{{mandragora-properties.html}Mandragora.properties}} file.
+    So if you for example are working in a Service Facade class of your application called ShopServiceFacade:
+
+*-------------------------------------------------------------------------------------------------------------------------------+
+|try \{                                                                                                                         |
+\ \ \ \ DAOFactory dAOFactory =  DAOFactory.getDAOFactory("ShopServiceFacade.DAOFactoryClassName")                              |
+| \ \ \ \ /* dAOFactory is a the factory of DAO implementations, concrete class extending DAOFactory, specified in              |
+\ \ \ \ \ \ \  {{{mandragora-properties.html}Mandragora.properties}} by the entry  ShopServiceFacade.DAOFactoryClassName */     |
+\} catch (DaoFactoryException e) \{                                                                                             |
+|\ \ \ \ //manage the exception                                                                                                 |
+\}                                                                                                                              |
+*-------------------------------------------------------------------------------------------------------------------------------+
+
+    if you put an entry in the {{{mandragora-properties.html}Mandragora.properties}}:
+
+*-------------------------------------------------------------------------------------------------------------+
+|ShopServiceFacade.DAOFactoryClassName=it.aco.mandragora.dao.concreteFactory.DefaultDAOFactory                |
+*-------------------------------------------------------------------------------------------------------------+
+
+    the <dAOFactory> of the above example will be the instance (unique as DAOFactory extensions must be Singleton) of 'it.aco.mandragora.dao.concreteFactory.DefaultDAOFactory',
+    that is a concrete extension of DAOFactory and of course a factory of DAO implementations.
+
+    The second one of the concrete static methods <<getDAOFactory()>> returns the default factory, concrete extension of 'it.aco.mandragora.dao.DAOFactory'. The default factory concrete extension of 'it.aco.mandragora.dao.DAOFactory'
+    is the one mapped in {{{mandragora-properties.html}Mandragora.properties}} with the string "DAOFactoryDefaultClass".
+    So doing:
+
+*-------------------------------------------------------------------------------------------------------------+
+|DAOFactory dAOFactory = DAOFactory.getDAOFactory()                                                           |
+*-------------------------------------------------------------------------------------------------------------+
+
+    It's the same of doing:
+
+*-------------------------------------------------------------------------------------------------------------+
+|DAOFactory dAOFactory =  DAOFactory.getDAOFactory("DAOFactoryDefaultClass")                                  |
+*-------------------------------------------------------------------------------------------------------------+
+
+    Right now just one concrete extension BDFactory exists:
+
+        * it.aco.mandragora.dao.ojb.pb.OjbPbDAOFactory
+
+    So DAOFactoryDefaultClass is mapped in {{{mandragora-properties.html}Mandragora.properties}} with it.aco.mandragora.dao.ojb.pb.OjbPbDAOFactory .
+
+*-------------------------------------------------------------------------------------------------------------+
+|DAOFactoryDefaultClass=it.aco.mandragora.dao.concreteFactory.DefaultDAOFactory                               |
+*-------------------------------------------------------------------------------------------------------------+
+
+    But if one write his own concrete extension of DAOFactory, can change the mapping for his factory:
+
+*-------------------------------------------------------------------------------------------------------------+
+|DAOFactoryDefaultClass=mypackage.UserDAOFactory                                                              |
+*-------------------------------------------------------------------------------------------------------------+
+
+
+[../images/DAOFactory.jpg]
+
+
+    Of course you can create your concrete extension, factory of DAO implementations. You have just to create your class, that has to extend 'it.aco.mandragora.dao.DAOFactory',
+    implements the two abstract methods <getDAO(String nameDaoClass)>  and <getDAO()> and implement the Singleton pattern.
+    The method <getDAO(String nameDaoClass)> returns the implementation of the interface DAO specified by the input string <nameDaoClass>, while
+    the method <getDAO()> returns the default implementation of the interface DAO.
+    Which are the default implementation or the  implementation of DAO specified by the input string <nameDaoClass> depends by the same factory,
+    extension of DAOFactory, that is being created, because this class is who holds (and hides) the policy of looking up
+    the wanted implementation of the interface DAO.
+    So if  for example you are working in a Service Facade class of your application called ShopServiceFacade the  code:
+
+*--------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+|try \{                                                                                                                                                                    |
+\ \ \ \ DAO dao= DAOFactory.getDAOFactory("ShopServiceFacade.DAOFactoryClassName").getDAO("ShopServiceFacade.DAOClassName");                                               |
+| \ \ \ \ /* dao is the implementation of DAO looked up relatively at the string "ShopServiceFacade.DAOClassName" by the factory, extending DAOFactory, specified in       |
+\ \ \ \ \ \ \  {{{mandragora-properties.html}Mandragora.properties}} by the entry  ShopServiceFacade.DAOFactoryClassName */                                                |
+\} catch (DaoFactoryException e) \{                                                                                                                                        |
+|\ \ \ \ //manage the exception                                                                                                                                            |
+\}                                                                                                                                                                         |
+*--------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+
+    How the input string "ShopServiceFacade.DAOClassName" determines which DAO implementation has to be looked up depends by the concrete factory, extension of DAOfactory,
+    determined by the input string "ShopServiceFacade.DAOFactoryClassName".
+
+    For example the factory it.aco.mandragora.dao.concreteFactory.DefaultDAOFactory, extension of DAOFactory,  looks up the implementation of the interface DAO specified by the input string "ShopServiceFacade.DAOClassName"
+    in the method <getDAO(String nameDaoClass)>
+    depending by its mapping in the {{{mandragora-properties.html}Mandragora.properties}} file, and considers the default DAO implementation (the one looked up by <getDAO()>)
+    the one specified by the "DefaultDAOFactory.DefaultDAOImpl" entry in {{{mandragora-properties.html}Mandragora.properties}}. {{{implementations.html}See implementations}}
+
+    So if you have these lines in the  {{{mandragora-properties.html}Mandragora.properties}} file
+
+*-------------------------------------------------------------------------------------------------------------+
+ShopServiceFacade.DAOFactoryClassName=it.aco.mandragora.dao.concreteFactory.DefaultDAOFactory                 |
+|ShopServiceFacade.DAOClassName=it.aco.mandragora.dao.impl.ojb.pb.OjbPbDAO                                    |
+DefaultDAOFactory.DefaultDAOImpl=mypackage.UserImplDAO1                                                       |
+*-------------------------------------------------------------------------------------------------------------+
+
+    with the line of code
+
+*-----------------------------------------------------------------------------------------------------------------------------------+
+|DAO dao= DAOFactory.getDAOFactory("ShopServiceFacade.DAOFactoryClassName").getBD("ShopServiceFacade.DAOClassName");                |
+*-----------------------------------------------------------------------------------------------------------------------------------+
+
+    dao is the instance  of it.aco.mandragora.dao.impl.ojb.pb.OjbPbDAO and doing:
+
+*-------------------------------------------------------------------------------------------------------------+
+|DAO dao= DAOFactory.getDAOFactory("ShopServiceFacade.DAOFactoryClassName").getBD();                          |
+*-------------------------------------------------------------------------------------------------------------+
+
+    that is the same of
+
+*------------------------------------------------------------------------------------------------------------------------------------+
+|DAO dao= DAOFactory.getDAOFactory("ShopServiceFacade.DAOFactoryClassName").getBD("DefaultDAOFactory.DefaultDAOImpl");               |
+*------------------------------------------------------------------------------------------------------------------------------------+
+
+    dao is the instance  of mypackage.UserImplDAO1.
+
+    Anyway the look up of the DAO implementation shouldn't be done directly {{{lookup-and-mapping.html}see lookup and mapping}} , but through
+    the ServiceLocator ('it.aco.mandragora.common.ServiceLocator') that provides the methods
+
+        * public DAO getDAO(String daoFactoryClassName, String daoClassName) throws ServiceLocatorException
+
+        * public DAO getDAO() throws ServiceLocatorException
+
+    In the following example we show how should be built a DAOFactory extension (a factory of DAO implementations) remembering that must implement
+    the singleton pattern.
+
+
+*------------------------------------------------------------------------------------------------------------------------------+
+|package mypackage;                                                                                                            |
+\                                                                                                                              |
+|public class UserDAOFactory extends DAOFactory\{                                                                              |
+\                                                                                                                              |
+|\ \ \ \ private static UserDAOFactory userDAOFactory;                                                                         |
+\                                                                                                                              |
+|\ \ \ \ static \{                                                                                                             |
+\ \ \ \ \ \ \ \ userDAOFactory = new UserDAOFactory();                                                                         |
+|\ \ \ \ }                                                                                                                     |
+\                                                                                                                              |
+|\ \ \ \ private UserDAOFactory()\{\}                                                                                          |
+\                                                                                                                              |
+|                                                                                                                              |
+\                                                                                                                              |
+|\ \ \ \ public static DAOFactory getInstance()\{                                                                              |
+\ \ \ \ \ \ \ \ return userDAOFactory;                                                                                         |
+|\ \ \ \ }                                                                                                                     |
+\                                                                                                                              |
+|\ \ \ \ public DAO getDAO(String nameDaoClass) throws DaoFactoryException\{                                                   |
+\                                                                                                                              |
+|                                                                                                                              |
+\ \ \ \ \ \ \ \ /* returns the implementation of the interface DAO specified by the input string <nameDaoClass>,               |
+| \ \ \ \ \ \ \ \ \ this method holds and hides the policy of looking up the wanted implementation of the interface DAO. */    |
+\                                                                                                                              |
+|                                                                                                                              |
+\ \ \ \ \}                                                                                                                     |
+|                                                                                                                              |
+\                                                                                                                              |
+|\ \ \ \ public DAO getDAO()throws DaoFactoryException \{                                                                      |
+\                                                                                                                              |
+|                                                                                                                              |
+\ \ \ \ \ \ \ \  /* returns the default implementation of the interface DAO, default relatively to this class,                 |
+|\ \ \ \ \ \ \ \ \  this method holds (and hides) the policy of looking up the wanted implementation of the interface DAO. */  |
+\                                                                                                                              |
+|                                                                                                                              |
+\ \ \ \ \}                                                                                                                     |
+|\}                                                                                                                            |
+*------------------------------------------------------------------------------------------------------------------------------+
+
+
+    The class UserDAOFactory, subclass of DAOFactory, being singleton ,must have a private attribute  <userDAOFactory> of type UserDAOFactory that will be the unique instance of the singleton class UserDAOFactory.
+    To be singleton the class UserDAOFactory must have a static block that initializes the unique instance <userDAOFactory> of UserDAOFactory, and a private constructor with no input parameters.
+    Then it must have a public static method that returns the unique instance of UserDAOFactory <userDAOFactory>.
+    This method MUST be named <<getInstance()>>, because this is the method that the super abstract class DAOFactory calls, in both his static methods
+    <<getDAOFactory(String nameDaoFactoryClass)>> and  <<getDAOFactory()>> to look up the chosen subclass to return.
+
+    If in {{{mandragora-properties.html}Mandragora.properties}} you put
+
+*-------------------------------------------------------------------------------------------------------------+
+|ShopServiceFacade.DAOFactoryClassName=mypackage.UserBDFactory                                                |
+*-------------------------------------------------------------------------------------------------------------+
+
+    doing ({{{lookup-and-mapping.html}see lookup and mapping}}):
+
+*--------------------------------------------------------------------------------------------------------------------------------------------------+
+|try \{                                                                                                                                            |
+\ \ \ \ DAO dao= ServiceLocator.getInstance().getDAO("ShopServiceFacade.DAOFactoryClassName","someDAOClassName");                                  |
+| \ \ \ \ /* dao is the implementation of DAO obtained by the execution of getDAO("someDAOClassName") of the unique instance                       |
+\ \ \ \ \ \ \  of the singleton class mypackage.UserDAOFactory looked up  */                                                                       |
+\} catch (ServiceLocatorException e) \{                                                                                                            |
+|\ \ \ \ //manage the exception                                                                                                                    |
+\}                                                                                                                                                 |
+*--------------------------------------------------------------------------------------------------------------------------------------------------+
+
+    <dao> will be the implementation of DAO obtained by the execution of getDAO("someDAOClassName") of the unique instance of the singleton class mypackage.UserDAOFactory looked up.
+
+    The class diagram of Mandragora with the user extensions of the DAO is the following one.
+
+
+[../images/UserExtImplDAOFactory.jpg]
+
+
+=======================================================================
+
+
+* {Putting all together}
+
+
+    The following diagram consider as just the BD layer and DAO layer exists. It will be completed   soon
+
+
+[../images/BDDAOandFactoriesWithExtensions.gif]
+
+
+=======================================================================

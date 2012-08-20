@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<datasources>
+   
+
+    <xa-datasource>
+        <jndi-name>TestDB4DS</jndi-name>
+<!--
+      <xa-datasource-class>
+         org.apache.derby.jdbc.ClientConnectionPoolDataSource
+      </xa-datasource-class>
+-->
+		<xa-datasource-class>
+		   org.apache.derby.jdbc.ClientXADataSource	
+		</xa-datasource-class>
+      	<isSameRM-override-value>false</isSameRM-override-value>
+      	<connection-url>jdbc:derby://localhost:1527/testdb4</connection-url> 
+<!--      <xa-datasource-property name="DatabaseName">/home/alessandro/Development/mandragora/testdb4</xa-datasource-property>	-->
+		<xa-datasource-property name="DatabaseName">C:\Abertis\workspace\mandragora\testdb4</xa-datasource-property>
+			      
+	    <track-connection-by-tx>true</track-connection-by-tx>
+	    <no-tx-separate-pools>true</no-tx-separate-pools>
+		<min-pool-size>5</min-pool-size>
+		<max-pool-size>20</max-pool-size>
+		<idle-timeout-minutes>5</idle-timeout-minutes>
+		<check-valid-connection-sql>
+		   select count(*) from BOOK
+		</check-valid-connection-sql>
+		<metadata>
+		   <type-mapping>Derby</type-mapping>
+		</metadata>
+<!--<depends>jboss:service=Derby-testdb4</depends>-->
+	</xa-datasource>
+<!--
+   <mbean code="org.jboss.jdbc.DerbyDatabase" name="jboss:service=Derby-testdb4">
+   <attribute name="Database">testdb4</attribute>
+   </mbean>
+-->
+</datasources>
+

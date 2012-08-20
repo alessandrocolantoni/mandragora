@@ -1,0 +1,890 @@
+ -----
+ Lookup and mapping
+ -----
+ Alessandro Colantoni
+ -----
+
+Lookup and mapping
+
+    * {{{#Introduction}Introduction}}
+
+    * {{{#Look_up_a_BD_implementation}Look up a BD implementation}}
+
+    * {{{#Look_up_a_Service_Facade_implementation}Look up a Service Facade implementation}}
+
+        * {{{#Pojo_Facade}Pojo Facade}}
+
+        * {{{#Session_Facade}Session Facade}}
+
+    * {{{#Look_up_a_Application_Service_implementation}Look up a Application Service implementation}}
+
+    * {{{#Look_up_a_DAO_implementation}Look up a DAO implementation}}
+
+    * {{{#Putting_all_together}Putting all together}}
+
+    * {{{#How_to_choose_names_to_map}How to choose names to map}}
+
+
+* {Introduction}
+
+    The client sees the business layer provided by Mandragora (or its {{{how-to-extend.html}user extensions}}), and to access it has to access to the Business Delegate (BD), that does its job accessing to the Service Facade that in turn accesses the Application Service and
+    Data Access Object (DAO), and the Application Service itself accesses the DAO as well, that access to the media store.
+    The client uses the interface BD to access to the business layer, and the BD implementation that will work is chosen by a look up trough the ServiceLocator singleton class, depending by some property of the {{{mandragora-properties.html}Mandragora.properties}} file.
+    Analogously, a BD implementation class need to access to the Service Facade, and which implementation will be used is chosen in the same way by a look up trough the ServiceLocator singleton class, depending by some property of the {{{mandragora-properties.html}Mandragora.properties}} file.
+    Generalizing, in Mandragora each layer knows the lower layers just trough their interface, and accesses them by a lookup up trough the ServiceLocator, and which implementation of such interfaces will work depends by the properties of the {{{mandragora-properties.html}Mandragora.properties}} file.
+    The ServiceLocator class is the one responsible of the lookup of the right implementation of BD, ServiceFacade, ApplicationService,DAO.
+        
+[../images/AccessService.jpg]
+
+    So every implementation uses the ServiceLocator to lookup the needed lower level implementations. This is better depicted in the following diagram
+
+[../images/UseAccessService.jpg]
+
+
+    We can consider that each layer offers a service to the upper layer, and that the component realizing such service is chosen, instantiated, or provided some way by the ServiceLocator, that is responsible to make it work.
+
+    To provide the wanted implementation of a service, the ServiceLocator doesn't look up the implementation directly,  but trough a factory of implementations (factory pattern), and this factory is chosen
+    trough an other look up as well. Both real service implementation and real service factory are chosen depending on a couple of parameters passed to the ServiceLocator,
+    and above all depending on the {{{mandragora-properties.html}Mandragora.properties}} file.
+    Concretely the ServiceLocator uses an abstract Factory class that looks up the concrete service factory that has to be a concrete extension of the Factory class itself, then, the concrete service factory
+    has to look up the real service implementation, that is returned by the ServiceLocator as the service interface. 
+
+[../images/ServiceLookup.jpg]
+
+    This pattern has not to be always used, as is the case of the lookup of the ServiceFacade by it.aco.mandragora.bd.impl.SLSB.SLSBManagerBD.
+
+
+* {Look up a BD implementation}
+
+    The ServiceLocator is the responsible to look up the BD implementation chosen specifying some input parameter.
+    The ServiceLocator doesn't look up the BD implementation directly, but trough a factory of BD implementation, and this factory is chosen
+    with a look up specified by some input parameter too.
+    So what the ServiceLocator does is to look up a factory of BD implementation, and then this factory looks up the BD implementation that will
+    be used by the client.
+
+[../images/GenericBDFactory.jpg]
+
+    To be returned the wanted BD implementation, the client has to pass to the ServiceLocator two parameters, one specifying which is the factory
+    that has to look up the BD implementation, and one specifying which is the BD implementation to be looked up by the factory.
+    To do this job the ServiceLocator makes available two methods:
+
+        * public BD getManagerBD(String bdFactoryClassName, String bdClassName) throws ServiceLocatorException
+
+        * public BD getManagerBD() throws ServiceLocatorException
+
+    The first one returns the implementation of the interface BD specified by the input parameter <bdClassName> and looked up by the real BDFactory specified by
+    the input parameter <bdFactoryClassName>.
+    In other words <bdFactoryClassName> specifies which is the BD factory (following the factoryfactory pattern),  while <bdClassName> specifies which BD implementation the specified BD factory
+    has to look up.
+    The mapping between the input string <bdFactoryClassName> and the real BDFactory is specified in the {{{mandragora-properties.html}Mandragora.properties}} file,
+    while the mapping between <bdClassName> and the BD implementation depends by the chosen BD factory.
+    For example if the real BDFactory looked up is 'it.aco.mandragora.bd.concreteFactory.DefaultBDFactory' the mapping between <bdClassName> and BD implementation is specified in the {{{mandragora-properties.html}Mandragora.properties}} file too.
+    Of course the user can {{{how-to-extend.html#Write_your_BD_factory}write his own BDFactory}}
+
+    So if  for example you are working in a client class of your application called Shop in the code:
+
+*--------------------------------------------------------------------------------------------------------------------------------------------------+
+|try \{                                                                                                                                            |
+\ \ \ \ BD bd= ServiceLocator.getInstance().getManagerBD("ShopBDFactoryClassName","ShopBDClassName");                                              |
+|\ \ \ \ /* bd is the implementation of BD looked up relatively at the string "ShopBDClassName" by the BDfactory specified by                      |
+\ \ \ \ the property "ShopBDFactoryClassName" in {{{mandragora-properties.html}Mandragora.properties}}   */                                        |
+|\ \ \ \ // do your job with bd                                                                                                                    |
+\ \ \ \ bd.someMethod1(...);                                                                                                                       |
+|\ \ \ \ bd.someMethod2(...);                                                                                                                      |
+\                                                                                                                                                  |
+|} catch (ServiceLocatorException e) \{                                                                                                            |
+\ \ \ \ \ //manage the exception                                                                                                                   |
+|} catch (ApplicationException e) \{                                                                                                               |
+\ \ \ \ \ //manage the exception                                                                                                                   |
+|}                                                                                                                                                 |
+*--------------------------------------------------------------------------------------------------------------------------------------------------+
+
+    <bd> is the BD implementation looked up relatively at the string "ShopBDClassName" by the BDfactory,  specified in
+    {{{mandragora-properties.html}Mandragora.properties}} by the entry  ShopBDFactoryClassName.
+    If in {{{mandragora-properties.html}Mandragora.properties}} you have:
+
+*-------------------------------------------------------------------------------------------------------------+
+ShopBDFactoryClassName=it.aco.mandragora.bd.concreteFactory.DefaultBDFactory                                  |
+|ShopBDClass=it.aco.mandragora.bd.impl.SLSB.SLSBManagerBD                                                     |
+*-------------------------------------------------------------------------------------------------------------+
+
+    the line of code
+
+*-------------------------------------------------------------------------------------------------------------+
+|BD bd= ServiceLocator.getInstance().getManagerBD("ShopBDFactoryClassName","ShopBDClassName");                |
+*-------------------------------------------------------------------------------------------------------------+
+
+    looks up the BDFactory 'it.aco.mandragora.bd.concreteFactory.DefaultBDFactory',and as we told DefaultBDFactory uses {{{mandragora-properties.html}Mandragora.properties}}
+    to map <bdClassName> with the BD implementation, it looks up and returns definitively the BD implementation 'it.aco.mandragora.bd.impl.SLSB.SLSBManagerBD'.
+
+    The method <<getManagerBD(String bdFactoryClassName, String bdClassName)>> accepts as input parameter null or empty strings too.
+    If the parameter <bdFactoryClassName> is null or empty string, the default real BDFactory will be looked up, while if parameter <bdClassName> is null or empty string,
+    the BD implementation that be default for the specified real BDFactory will be looked up and returned to the client.
+    The default real BDFactory is is the one mapped in {{{mandragora-properties.html}Mandragora.properties}} with the property "BDFactoryDefaultClass", and which is
+    the default BD implementation depends by which is the used real BDFActory. For example for the real BDFactory  'it.aco.mandragora.bd.concreteFactory.DefaultBDFactory'
+    the default BD implementation is  the one mapped in {{{mandragora-properties.html}Mandragora.properties}} with the property "DefaultBDFactory.BDClass".
+
+
+    The second method
+
+        * public BD getManagerBD() throws ServiceLocatorException
+
+    looks up the the default real BDFactory, that looks up and returns its default BD implementation. We said <<'its'>> default BD implementation
+    because every real BDFactory can have a different default BD implementation.
+    For example the real BDFactory 'it.aco.mandragora.bd.concreteFactory.DefaultBDFactory' has as default BD implementation the one mapped in {{{mandragora-properties.html}Mandragora.properties}} with the properties "DefaultBDFactory.BDClass".
+    The default real BDFactory is the one mapped in {{{mandragora-properties.html}Mandragora.properties}} with the property "BDFactoryDefaultClass".
+
+    So if you do:
+
+*--------------------------------------------------------------------------------------------------------------------------------------------------+
+|try \{                                                                                                                                            |
+\ \ \ \ BD bd= ServiceLocator.getInstance().getManagerBD();                                                                                        |
+|\ \ \ \ /* bd is the default BD implementation looked up by the default real BDfactory   */                                                       |
+\ \ \ \ // do your job with bd                                                                                                                     |
+|\ \ \ \ bd.someMethod1(...);                                                                                                                      |
+\ \ \ \ bd.someMethod2(...);                                                                                                                       |
+|} catch (ServiceLocatorException e) \{                                                                                                            |
+\ \ \ \ //manage the exception                                                                                                                     |
+|} catch (ApplicationException e) \{                                                                                                               |
+\ \ \ \ //manage the exception                                                                                                                     |
+|}                                                                                                                                                 |
+*--------------------------------------------------------------------------------------------------------------------------------------------------+
+
+    and in {{{mandragora-properties.html}Mandragora.properties}} you have
+
+*-------------------------------------------------------------------------------------------------------------+
+|BDFactoryDefaultClass=it.aco.mandragora.bd.concreteFactory.DefaultBDFactory                                  |
+DefaultBDFactory.BDClass=it.aco.mandragora.bd.impl.pojo.PojoManagerBD                                         |
+*-------------------------------------------------------------------------------------------------------------+
+
+    the line of code
+
+*-------------------------------------------------------------------------------------------------------------+
+|BD bd= ServiceLocator.getInstance().getManagerBD();                                                          |
+*-------------------------------------------------------------------------------------------------------------+
+
+    looks up the BDFactory 'it.aco.mandragora.bd.concreteFactory.DefaultBDFactory',and  it looks up and returns definitively to the client
+    the BD implementation 'it.aco.mandragora.bd.impl.pojo.PojoManagerBD'.
+
+    The details of the looking up the BD implementation are always hidden by the BDFactory to the ServiceLocator.
+
+    The ServiceLocator, in the two methods <<getManagerBD(String bdFactoryClassName, String bdClassName)>> and <<getManagerBD()>>, to look up
+    the real BDFactory, uses static methods of the abstract class 'it.aco.mandragora.bd.BDFactory'. The real BDFactory looked up will be a real
+    subclass of 'it.aco.mandragora.bd.BDFactory'.
+
+[../images/UseBDServiceLookup.jpg]
+
+    In the case of the line of code:
+
+*-------------------------------------------------------------------------------------------------------------+
+|BD bd= ServiceLocator.getInstance().getManagerBD("ShopBDFactoryClassName","ShopBDClassName");                |
+*-------------------------------------------------------------------------------------------------------------+
+
+    if in {{{mandragora-properties.html}Mandragora.properties}} there are the properties
+
+*-------------------------------------------------------------------------------------------------------------+
+ShopBDFactoryClassName=it.aco.mandragora.bd.concreteFactory.DefaultBDFactory                                  |
+|ShopBDClass=it.aco.mandragora.bd.impl.pojo.PojoManagerBD                                                     |
+*-------------------------------------------------------------------------------------------------------------+
+
+    what goes on is depicted in the following sequence diagram:
+
+[../images/BDLookup.jpg]
+
+
+    Up now just four {{{implementations.html}implementations}} of the BD interface exist:
+
+        * it.aco.mandragora.bd.impl.pojo.PojoManagerBD
+
+        * it.aco.mandragora.bd.impl.SLSB.SLSBManagerBD
+
+        * it.aco.mandragora.security.bd.impl.SecurityManagerImplBD
+
+        * ProxyBDHandler
+
+
+    and just two of BDFactory exists:
+
+        * it.aco.mandragora.bd.concreteFactory.DefaultBDFactory
+
+        * it.aco.mandragora.bd.concreteFactory.ProxyBDHandlerFactory
+
+
+=======================================================================
+
+
+* {Look up a Service Facade implementation}
+
+
+
+    As suggested by {{http://www.corej2eepatterns.com/Patterns2ndEd/ServiceFacade.htm}} Session Façades provide the Facade <<GoF>> implementation in the business tier
+    using session beans,however, when you design enterprise applications that do not use EJB components, you still need to provide a behavior similar to the Session Façades.
+    But, instead of using session beans, we use POJOs to implement the facades, hence the term POJO Facades. \
+    In order to provide a common vocabulary to discuss both POJO Facades and Session Façades, {{http://www.corej2eepatterns.com/}} introduce the term service facades.
+    Service facades are business-tier facades that are implemented either as POJOs or session beans.
+
+    The way to look up a Service Facade is different for Pojo Facade and Session Facade.
+    PojoFacade directly implements the ServiceFacade interface, and follow the same look up pattern shown in the {{{#Introduction}Introduction}}, while the Session Facade, as it
+    uses ejb session beans, it is a bit different.
+
+
+** {Pojo Facade}
+
+    In the case of POJOs to implement the ServiceFacade, the implementation chosen specifying some input parameter.
+    The ServiceLocator doesn't look up the implementation directly, but trough a factory, and this factory is chosen
+    with a look up specified by some input parameter too.
+    So what the ServiceLocator does is to look up a factory of ServiceFacade implementation, and then this factory looks up the ServiceFacade implementation that will
+    be used by the client.
+
+[../images/GenericServiceFacadeFactory.jpg]
+
+    To be returned the wanted ServiceFacade implementation, the client has to pass to the ServiceLocator two parameters, one specifying which is the factory
+    that has to look up the ServiceFacade implementation, and one specifying which is the ServiceFacade implementation to be looked up by the factory.
+    To do this job the ServiceLocator has available two methods:
+
+        * public ServiceFacade getServiceFacade(String serviceFacadeFactoryClassName, String serviceFacadeClassName) throws ServiceLocatorException
+
+        * public ServiceFacade getServiceFacade() throws ServiceLocatorException
+
+    The first one returns the implementation of the interface ServiceFacade specified by the input parameter <serviceFacadeClassName> and looked up by the real ServiceFacadeFactory specified by
+    the input parameter <serviceFacadeFactoryClassName>.
+    In other words <serviceFacadeFactoryClassName> specifies which is the ServiceFacade factory (following the factoryfactory pattern),  while <serviceFacadeClassName> specifies which ServiceFacade implementation the specified ServiceFacade factory
+    has to look up.
+    The mapping between the input string <serviceFacadeFactoryClassName> and the real ServiceFacadeFactory is specified in the {{{mandragora-properties.html}Mandragora.properties}} file,
+    while the mapping between <serviceFacadeClassName> and the ServiceFacade implementation depends by the chosen ServiceFacade factory.\
+    For example if the real ServiceFacadeFactory looked up is 't.aco.mandragora.serviceFacade.concreteFactory.DefaultServiceFacadeFactory' the mapping between <serviceFacadeClassName> and ServiceFacade implementation is specified in the {{{mandragora-properties.html}Mandragora.properties}} file too.
+    Of course the user can {{{how-to-extend.html#Write_your_ServiceFacade_factory}write his own ServiceFacadeFactory}}
+
+    For example the BD implementation it.aco.mandragora.bd.impl.pojo.PojoManagerBD uses a ServiceFacade implementation, that is looked up in this way:
+
+*--------------------------------------------------------------------------------------------------------------------------------------------------------+
+|protected ServiceFacade getServiceFacade()throws ApplicationException\{                                                                                 |
+\ \ \ \ try\{                                                                                                                                            |
+|\ \ \ \ \ \ \ \ return ServiceLocator.getInstance().getServiceFacade("PojoManagerBD.ServiceFacadeFactoryClass", "PojoManagerBD.ServiceFacadeClass");    |
+\ \ \ \ \}catch (ServiceLocatorException e) \{                                                                                                           |
+|\ \ \ \ \ \ \ \ log.error("ServiceLocatorException caught in PojoManagerBD.getServiceFacade(): " + e.toString());                                       |
+\ \ \ \ \ \ \ \ throw new ApplicationException("ApplicationException thrown in PojoManagerBD.getServiceFacade()" + e.toString(),e);                      |
+|\ \ \ \ \}                                                                                                                                              |
+\}                                                                                                                                                       |
+*--------------------------------------------------------------------------------------------------------------------------------------------------------+
+
+    This method returns the implementation of ServiceFacade looked up relatively at the string "PojoManagerBD.ServiceFacadeClass" by the ServiceFacadefactory specified by
+    the property "PojoManagerBD.ServiceFacadeClass" in {{{mandragora-properties.html}Mandragora.properties}}.\
+    So, as in {{{mandragora-properties.html}Mandragora.properties}} we have:
+
+*--------------------------------------------------------------------------------------------------------------------------------------------------------+
+|PojoManagerBD.ServiceFacadeFactoryClass=it.aco.mandragora.serviceFacade.concreteFactory.DefaultServiceFacadeFactory                                     |
+PojoManagerBD.ServiceFacadeClass=it.aco.mandragora.serviceFacade.pojoFacade.PojoFacade                                                                   |
+*--------------------------------------------------------------------------------------------------------------------------------------------------------+
+
+    The method will return the the ServiceFacade implementation  it.aco.mandragora.serviceFacade.pojoFacade.PojoFacade, and concretely its instance will be looked up and returned by the
+    factory it.aco.mandragora.serviceFacade.concreteFactory.DefaultServiceFacadeFactory\
+    If you write your own BD for example, you will need a ServiceFacade, and you can use a similar method, and then using the ServceFacade methods in this way:
+
+
+
+*--------------------------------------------------------------------------------------------------------------------------------------------------+
+|try \{                                                                                                                                            |
+\ \ \ \ ServiceFacade serviceFacade =  getServiceFacade();                                                                                         |
+|\ \ \ \ // do your job with serviceFacade                                                                                                         |
+\ \ \ \ serviceFacade.someMethod(...);                                                                                                             |
+|} catch (ServiceFacade e) \{                                                                                                                      |
+\ \ \ \ \ //manage the exception                                                                                                                   |
+|}                                                                                                                                                 |
+*--------------------------------------------------------------------------------------------------------------------------------------------------+
+
+    The ServiceLocator method <<getServiceFacade(String serviceFacadeFactoryClassName, String serviceFacadeClassName)>> accepts as input parameter null or empty strings too.
+    If the parameter <serviceFacadeFactoryClassName> is null or empty string, the default real ServiceFacadeFactory will be looked up, while if parameter <serviceFacadeClassName> is null or empty string,
+    the ServiceFacade implementation that be default for the specified real ServiceFacadeFactory will be looked up and returned to the client.\
+    The default real ServiceFacadeFactory is is the one mapped in {{{mandragora-properties.html}Mandragora.properties}} with the property "ServiceFacadeFactoryDefaultClass", and which is
+    the default ServiceFacade implementation depends by which is the used real ServiceFacadeFActory. For example for the real ServiceFacadeFactory  'it.aco.mandragora.serviceFacade.concreteFactory.DefaultServiceFacadeFactory'
+    the default ServiceFacade implementation is  the one mapped in {{{mandragora-properties.html}Mandragora.properties}} with the property "DefaultServiceFacadeFactory.DefaultServiceFacadeImpl".
+
+
+    The second method
+
+        * public ServiceFacade getServiceFacade() throws ServiceLocatorException
+
+    looks up the the default real ServiceFacadeFactory, that looks up and returns its default ServiceFacade implementation. We said <<'its'>> default ServiceFacade implementation
+    because every real ServiceFacadeFactory can have a different default ServiceFacade implementation.
+    For example the real ServiceFacadeFactory 'it.aco.mandragora.serviceFacade.concreteFactory.DefaultServiceFacadeFactory' has as default ServiceFacade implementation the one mapped in {{{mandragora-properties.html}Mandragora.properties}}
+    with the properties "DefaultServiceFacadeFactory.DefaultServiceFacadeImpl".\
+    The default real ServiceFacadeFactory is the one mapped in {{{mandragora-properties.html}Mandragora.properties}} with the property "ServiceFacadeFactoryDefaultClass".
+
+    So if you do:
+
+*--------------------------------------------------------------------------------------------------------------------------------------------------+
+|try \{                                                                                                                                            |
+\ \ \ \ ServiceFacade serviceFacade= ServiceLocator.getInstance().getServiceFacade();                                                              |
+|\ \ \ \ /* serviceFacade is the default ServiceFacade implementation looked up by the default real ServiceFacadefactory   */                      |
+\ \ \ \ // do your job with bd                                                                                                                     |
+|\ \ \ \ serviceFacade.someMethod1(...);                                                                                                           |
+|} catch (ServiceLocatorException e) \{                                                                                                            |
+\ \ \ \ //manage the exception                                                                                                                     |
+|} catch (ServiceFacadeException e) \{                                                                                                             |
+\ \ \ \ //manage the exception                                                                                                                     |
+|}                                                                                                                                                 |
+*--------------------------------------------------------------------------------------------------------------------------------------------------+
+
+    and in {{{mandragora-properties.html}Mandragora.properties}} you have
+
+*-------------------------------------------------------------------------------------------------------------+
+|ServiceFacadeFactoryDefaultClass=it.aco.mandragora.serviceFacade.concreteFactory.DefaultServiceFacadeFactory |
+DefaultServiceFacadeFactory.DefaultServiceFacadeImpl=it.aco.mandragora.serviceFacade.pojoFacade.PojoFacade    |
+*-------------------------------------------------------------------------------------------------------------+
+
+    the line of code
+
+*-------------------------------------------------------------------------------------------------------------+
+|ServiceFacade serviceFacade= ServiceLocator.getInstance().getServiceFacade();                                |
+*-------------------------------------------------------------------------------------------------------------+
+
+    looks up the ServiceFacadeFactory 'it.aco.mandragora.serviceFacade.concreteFactory.DefaultServiceFacadeFactory',and  it looks up and returns definitively the ServiceFacade
+    implementation 'it.aco.mandragora.serviceFacade.pojoFacade.PojoFacade'.\
+    The details of the looking up the ServiceFacade implementation are always hidden by the ServiceFacadeFactory to the ServiceLocator.\
+    The ServiceLocator, in the two methods <<getServiceFacade(String serviceFacadeFactoryClassName, String serviceFacadeClassName)>> and <<getServiceFacade()>>, to look up
+    the real ServiceFacadeFactory, uses static methods of the abstract class 'it.aco.mandragora.serviceFacade.ServiceFacadeFactory'. The real ServiceFacadeFactory looked up will be a real
+    subclass of 'it.aco.mandragora.serviceFacade.ServiceFacadeFactory'.
+
+[../images/UseServiceFacadeServiceLookup.jpg]
+
+    In the case of the line of code:
+
+*------------------------------------------------------------------------------------------------------------------------------------------------------------+
+|ServiceFacade serviceFacade= ServiceLocator.getInstance().getServiceFacade("PojoManagerBD.ServiceFacadeFactoryClass","PojoManagerBD.ServiceFacadeClass");   |
+*------------------------------------------------------------------------------------------------------------------------------------------------------------+
+
+    And as in {{{mandragora-properties.html}Mandragora.properties}} there are the properties
+
+*--------------------------------------------------------------------------------------------------------------------------------------------------------+
+|PojoManagerBD.ServiceFacadeFactoryClass=it.aco.mandragora.serviceFacade.concreteFactory.DefaultServiceFacadeFactory                                     |
+PojoManagerBD.ServiceFacadeClass=it.aco.mandragora.serviceFacade.pojoFacade.PojoFacade                                                                   |
+*--------------------------------------------------------------------------------------------------------------------------------------------------------+
+
+    what goes on is depicted in the following sequence diagram:
+
+[../images/ServiceFacadeLookup.jpg]
+
+
+    Up now just two {{{implementations.html}implementations}} of the ServiceFacade exist:
+
+        * it.aco.mandragora.serviceFacade.pojoFacade.PojoFacade
+
+        * ProxyServiceFacadeHandler
+
+
+    and even if it does not implement the interface ServiceFacade directly, {{{#Session_Facade}Session Facade}}
+
+
+    and just two of BDFactory exists:
+
+        * it.aco.mandragora.serviceFacade.concreteFactory.DefaultServiceFacadeFactory
+
+        * it.aco.mandragora.serviceFacade.concreteFactory.ProxyServiceFacadeHandlerFactory
+
+    
+
+=======================================================================
+
+
+
+** {Session Facade}
+
+
+    In the Facade tier we have two ejb session beans: CrudSLSBFacade and BusinessSLSBFacade.\
+    Both methods joint, have the same methods listed in the ServiceFacade implementation.
+    We have chosen to have such methods in two beans, to not have them too coarse grained beans.
+
+
+    To lookup the EJBHome of an ejb Mandragora provides a useful lookup method trough the ServiceLocator:
+
+        * public EJBHome getEJBHome(String pServiceId) throws ServiceLocatorException
+
+    where the pServiceId is mapped in {{{mandragora-properties.html}Mandragora.properties}} with the fully qualified name of the home
+    of the Ejb we want to lookup.
+
+
+    So for example, in the it.aco.mandragora.bd.impl.SLSB.SLSBManagerBD when we lookup the CrudSLSBFacade and BusinessSLSBFacade, we do:
+
+*----------------------------------------------------------------------------------------------------------------------------------------------------------+
+|businessSLSBFacadeHome = (BusinessSLSBFacadeHome)serviceLocator.getEJBHome(Utils.getStringFromMandragoraProperties("SLSBManagerBD.businessManager"));     |
+crudSLSBFacadeHome = (CrudSLSBFacadeHome)serviceLocator.getEJBHome(Utils.getStringFromMandragoraProperties("SLSBManagerBD.crudManager"));                  |
+*----------------------------------------------------------------------------------------------------------------------------------------------------------+
+
+    and in {{{mandragora-properties.html}Mandragora.properties}} must be the entries
+
+
+*----------------------------------------------------------------------------------------------------------------------------+
+|SLSBManagerBD.crudManager=CrudSLSBFacadeBean                                                                                |
+CrudSLSBFacadeBean=it.aco.mandragora.serviceFacade.sessionFacade.remoteFacade.SLSB.crud.CrudSLSBFacadeHome                   |
+\                                                                                                                            |
+|SLSBManagerBD.businessManager=BusinessSLSBFacadeBean                                                                        |
+BusinessSLSBFacadeBean=it.aco.mandragora.serviceFacade.sessionFacade.remoteFacade.SLSB.business.BusinessSLSBFacadeHome       |
+*----------------------------------------------------------------------------------------------------------------------------+
+
+    Then to use the looked up ejb, you have just to do, for example:
+
+
+*----------------------------------------------------------------------------------------------------------------------------+
+|CrudSLSBFacade crudSLSBFacade= crudSLSBFacadeHome.create();                                                                 |
+Object valueobject =  crudSLSBFacade.findByPrimaryKey(realClass,pkValues);                                                   |
+*----------------------------------------------------------------------------------------------------------------------------+
+    
+    For further details have a look at {{{ejb.html}Ejb use}}.
+
+
+=======================================================================
+
+
+* {Look up a Application Service implementation}
+
+    To respect the architecture of the patterns Business Delegate (BD), ServiceFacade, Application Service, the client of an ApplicationService should be some method of a ServiceFacade implementations.
+    The ServiceLocator is the responsible to look up the ApplicationService implementation chosen specifying some input parameter.\
+    The ServiceLocator doesn't look up the ApplicationService implementation directly, but trough a factory of ApplicationService implementations, and this factory is chosen
+    with a look up specified by some input parameter too.
+    So what the ServiceLocator does is to look up a factory of ApplicationService implementations, and then this factory looks up the ApplicationService implementation that will
+    be used by the higher level ServiceFacade implementations.
+
+[../images/GenericApplicationServiceFactory.jpg]
+
+    To be returned the wanted ApplicationService implementation,  two parameters have to be passed to the ServiceLocator, one specifying which is the factory
+    that has to look up the ApplicationService implementation, and one specifying which is the ApplicationService implementation to be looked up by the factory.
+    To do this job the ServiceLocator makes available two methods:
+
+        * public ApplicationService getApplicationService(String applicationServiceFactoryClassName, String applicationServiceClassName) throws ServiceLocatorException
+
+        * public ApplicationService getApplicationService() throws ServiceLocatorException
+
+    The first one returns the implementation of the interface ApplicationService specified by the input parameter <applicationServiceClassName> and looked up by the real ApplicationServiceFactory specified by
+    the input parameter <applicationServiceFactoryClassName>.
+    In other words <applicationServiceFactoryClassName> specifies which is the ApplicationService factory (following the factoryfactory pattern),
+    while <applicationServiceClassName> specifies which ApplicationService implementation the specified ApplicationService factory has to look up.
+    The mapping between the input string <applicationServiceFactoryClassName> and the real ApplicationServiceFactory is specified
+    in the {{{mandragora-properties.html}Mandragora.properties}} file, while the mapping between <applicationServiceClassName> and
+    the ApplicationService implementation depends by the chosen ApplicationService factory.
+    For example if the real ApplicationServiceFactory looked up is 'it.aco.mandragora.as.concreteFactory.DefaultApplicationServiceFactory'
+    the mapping between <applicationServiceClassName> and ApplicationService implementation is specified in the {{{mandragora-properties.html}Mandragora.properties}} file too.
+    Of course the user can {{{how-to-extend.html#Write_your_ApplicationService_Factory}write his own ApplicationServiceFactory}}
+
+    So if  for example you are working in a ServiceFacade implementation called ShopServiceFacade, in the code:
+
+*----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+|try \{                                                                                                                                                                                                                |
+\ \ \ \ ApplicationService applicationService= ServiceLocator.getInstance().getApplicationService("ShopServiceFacade.ApplicationServiceFactoryClassName","ShopServiceFacade.ApplicationServiceClassName");             |
+|\ \ \ \ /* applicationService is the implementation of ApplicationService looked up relatively at the string "ShopServiceFacade.ApplicationServiceFactoryClassName" by the ApplicationServiceFactory specified by     |
+\ \ \ \ the property "ShopServiceFacade.ApplicationServiceClassName" in {{{mandragora-properties.html}Mandragora.properties}}   */                                                                                     |
+|\ \ \ \ // do your job with dao                                                                                                                                                                                       |
+\ \ \ \ applicationService.someMethod1(...);                                                                                                                                                                           |
+|\ \ \ \ applicationService.someMethod2(...);                                                                                                                                                                          |
+\                                                                                                                                                                                                                      |
+|} catch (ServiceLocatorException e) \{                                                                                                                                                                                |
+\ \ \ \ \ //manage the exception                                                                                                                                                                                       |
+|} catch (ApplicationServiceException e) \{                                                                                                                                                                            |
+\ \ \ \ \ //manage the exception                                                                                                                                                                                       |
+|}                                                                                                                                                                                                                     |
+*----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+
+    <applicationService> is the ApplicationService implementation looked up relatively at the string "ShopServiceFacade.ApplicationServiceClassName" by the ApplicationServiceFactory,  specified in
+    {{{mandragora-properties.html}Mandragora.properties}} by the entry  "ShopServiceFacade.ApplicationServiceFactoryClassName".
+    If in {{{mandragora-properties.html}Mandragora.properties}} you have:
+
+*-------------------------------------------------------------------------------------------------------------------------------------+
+ShopServiceFacade.ApplicationServiceFactoryClassName=it.aco.mandragora.as.concreteFactory.DefaultApplicationServiceFactory            |
+|ShopServiceFacade.ApplicationServiceClassName=it.aco.mandragora.as.impl.ImplApplicationService                                       |
+*-------------------------------------------------------------------------------------------------------------------------------------+
+
+    the line of code
+
+*-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+|ApplicationService applicationService= ServiceLocator.getInstance().getApplicationService("ShopServiceFacade.ApplicationServiceFactoryClassName","ShopServiceFacade.ApplicationServiceClassName");   |
+*-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+
+    looks up the ApplicationServiceFactory 'it.aco.mandragora.as.concreteFactory.DefaultApplicationServiceFactory', and, as we told DefaultApplicationServiceFactory uses {{{mandragora-properties.html}Mandragora.properties}}
+    to map <applicationServiceClassName> with the ApplicationService implementation, it looks up and returns definitively the ApplicationService implementation 'it.aco.mandragora.as.impl.ImplApplicationService'.\
+    The method <<getApplicationService(String applicationServiceFactoryClassName, String applicationServiceClassName)>> accepts as input parameter null or empty strings too.\
+    If the parameter <applicationServiceFactoryClassName> is null or empty string, the default real ApplicationServiceFactory will be looked up,
+    while if parameter <applicationServiceClassName> is null or empty string, the ApplicationService implementation that be default for the specified real ApplicationServiceFactory
+    will be looked up and returned to the ServiceFacade implementation using the ApplicationService.\
+    The default real ApplicationServiceFactory is the one mapped in {{{mandragora-properties.html}Mandragora.properties}} with the property "ApplicationServiceFactoryDefaultClass", and which is
+    the default ApplicationService implementation depends by which is the used real ApplicationServiceFActory. For example for the real ApplicationServiceFactory  'it.aco.mandragora.as.concreteFactory.DefaultApplicationServiceFactory'
+    the default ApplicationService implementation is  the one mapped in {{{mandragora-properties.html}Mandragora.properties}} with the property "DefaultApplicationServiceFactory.DefaultApplicationServiceImpl".
+
+
+    The second method
+
+        * public ApplicationService getApplicationService() throws ServiceLocatorException
+
+    looks up the the default real ApplicationServiceFactory, that looks up and returns its default ApplicationService implementation.
+    We said <<'its'>> default ApplicationService implementation because every real ApplicationServiceFactory can have a different default ApplicationService implementation. \
+    For example the real ApplicationServiceFactory 'it.aco.mandragora.as.concreteFactory.DefaultApplicationServiceFactory' has as default ApplicationService implementation
+    the one mapped in {{{mandragora-properties.html}Mandragora.properties}} with the properties "DefaultApplicationServiceFactory.DefaultApplicationServiceImpl".\
+    The default real ApplicationServiceFactory is the one mapped in {{{mandragora-properties.html}Mandragora.properties}} with the property "ApplicationServiceFactoryDefaultClass".
+
+    So if you do:
+
+*--------------------------------------------------------------------------------------------------------------------------------------------------+
+|try \{                                                                                                                                            |
+\ \ \ \ ApplicationService applicationService= ServiceLocator.getInstance().getApplicationService();                                               |
+|\ \ \ \ /* applicationService is the default ApplicationService implementation looked up by the default real ApplicationServicefactory   */       |
+\ \ \ \ // do your job with applicationService                                                                                                     |
+|\ \ \ \ applicationService.someMethod1(...);                                                                                                      |
+\ \ \ \ applicationService.someMethod2(...);                                                                                                       |
+|} catch (ServiceLocatorException e) \{                                                                                                            |
+\ \ \ \ //manage the exception                                                                                                                     |
+|} catch (ApplicationServiceException e) \{                                                                                                        |
+\ \ \ \ //manage the exception                                                                                                                     |
+|}                                                                                                                                                 |
+*--------------------------------------------------------------------------------------------------------------------------------------------------+
+
+    and in {{{mandragora-properties.html}Mandragora.properties}} you have:
+
+*-----------------------------------------------------------------------------------------------------------------------------------------+
+|ApplicationServiceFactoryDefaultClass=it.aco.mandragora.as.concreteFactory.DefaultApplicationServiceFactory                              |
+DefaultApplicationServiceFactory.DefaultApplicationServiceImpl=it.aco.mandragora.as.impl.ImplApplicationService                           |
+*-----------------------------------------------------------------------------------------------------------------------------------------+
+
+    the line of code
+
+*-------------------------------------------------------------------------------------------------------------+
+|ApplicationService applicationService= ServiceLocator.getInstance().getApplicationService();                 |
+*-------------------------------------------------------------------------------------------------------------+
+
+    looks up the ApplicationServiceFactory 'it.aco.mandragora.as.concreteFactory.DefaultApplicationServiceFactory',and
+    it looks up and returns definitively to the ServiceFacade implementation method using the service,
+    the ApplicationService implementation 'it.aco.mandragora.as.concreteFactory.DefaultApplicationServiceFactory'.\
+    The details of the looking up the ApplicationService implementation are always hidden by the ApplicationServiceFactory to the ServiceLocator.\
+    The ServiceLocator, in the two methods <<getApplicationService(String applicationServiceFactoryClassName, String applicationServiceClassName)>>
+    and <<getApplicationService()>>, to look up the real ApplicationServiceFactory, uses static methods of the abstract class
+    'it.aco.mandragora.a.ApplicationServiceFactory'. The real ApplicationServiceFactory looked up will be a real subclass of 'it.aco.mandragora.a.ApplicationServiceFactory'.
+
+[../images/UseApplicationServiceServiceLookup.jpg]
+
+    In the case of the line of code:
+
+*----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+|ApplicationService applicationService= ServiceLocator.getInstance().getApplicationService("ShopServiceFacade.ApplicationServiceFactoryClassName","ShopServiceFacade.ApplicationServiceClassName");  |
+*----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+
+    if in {{{mandragora-properties.html}Mandragora.properties}} there are the properties
+
+*-------------------------------------------------------------------------------------------------------------------------------------+
+ShopServiceFacade.ApplicationServiceFactoryClassName=it.aco.mandragora.as.concreteFactory.DefaultApplicationServiceFactory            |
+|ShopServiceFacade.ApplicationServiceClassName=it.aco.mandragora.as.impl.ImplApplicationService                                       |
+*-------------------------------------------------------------------------------------------------------------------------------------+
+
+    what goes on is depicted in the following sequence diagram:
+
+[../images/ApplicationServiceLookup.jpg]
+
+
+    Up now just one {{{implementations.html}implementation}} of the ApplicationService interface exists:
+
+        * it.aco.mandragora.as.impl.ImplApplicationService
+
+
+    and just one of ApplicationServiceFactory exists:
+
+        * it.aco.mandragora.as.concreteFactory.DefaultApplicationServiceFactory
+
+=======================================================================
+
+
+* {Look up a DAO implementation}
+
+    To respect the architecture of the patterns Business Delegate (BD), ServiceFacade, Application Service, DAO  which implementations have to be provided by Mandragora, the client of a DAO should be some method of a ServiceFacade or ApplicationService implementations.\
+    The ServiceLocator is the responsible to look up the DAO implementation chosen specifying some input parameter.\
+    The ServiceLocator doesn't look up the DAO implementation directly, but trough a factory of DAO implementations, and this factory is chosen
+    with a look up specified by some input parameter too.\
+    So what the ServiceLocator does is to look up a factory of DAO implementations, and then this factory looks up the DAO implementation that will
+    be used by the upper level service implementations.
+
+[../images/GenericDAOFactory.jpg]
+
+    To be returned the wanted DAO implementation,  two parameters have to be passed to the ServiceLocator, one specifying which is the factory
+    that has to look up the DAO implementation, and one specifying which is the DAO implementation to be looked up by the factory.
+    To do this job the ServiceLocator has available two methods:
+
+        * public DAO getDAO(String daoFactoryClassName, String daoClassName) throws ServiceLocatorException
+
+        * public DAO getDAO() throws ServiceLocatorException
+
+    The first one returns the implementation of the interface DAO specified by the input parameter <daoClassName> and looked up by the real DAOFactory specified by
+    the input parameter <daoFactoryClassName>.\
+    In other words <daoFactoryClassName> specifies which is the DAOfactory (following the factoryfactory pattern),  while <daoClassName> specifies
+    which DAO implementation the specified DAO factory has to look up.\
+    The mapping between the input string <daoFactoryClassName> and the real DAOFactory is specified in the {{{mandragora-properties.html}Mandragora.properties}} file,
+    while the mapping between <daoClassName> and the DAO implementation depends by the chosen DAO factory.\
+    For example if the real DAOFactory looked up is 'it.aco.mandragora.dao.concreteFactory.DefaultDAOFactory'
+    the mapping between <daoClassName> and DAO implementation is specified in the {{{mandragora-properties.html}Mandragora.properties}} file too.\
+    Of course the user can {{{how-to-extend.html#Write_your_DAO_Factory}write his own DAOFactory}}.\
+    So if  for example you are working in an ApplicationService implementation called ShopApplicationService in the code:
+
+*-----------------------------------------------------------------------------------------------------------------------------------------------------+
+|try \{                                                                                                                                               |
+\ \ \ \ DAO dao= ServiceLocator.getInstance().getDAO("ShopApplicationService.DAOFactoryClassName","ShopApplicationService.DAOClassName");             |
+|\ \ \ \ /* dao is the implementation of DAO looked up relatively at the string "ShopApplicationService.DAOClassName" by the DAOfactory specified by  |
+\ \ \ \ the property "ShopApplicationService.DAOFactoryClassName" in {{{mandragora-properties.html}Mandragora.properties}}   */                       |
+|\ \ \ \ // do your job with dao                                                                                                                      |
+\ \ \ \ dao.someMethod1(...);                                                                                                                         |
+|\ \ \ \ dao.someMethod2(...);                                                                                                                        |
+\                                                                                                                                                     |
+|} catch (ServiceLocatorException e) \{                                                                                                               |
+\ \ \ \ \ //manage the exception                                                                                                                      |
+|} catch (DataAccessException e) \{                                                                                                                   |
+\ \ \ \ \ //manage the exception                                                                                                                      |
+|}                                                                                                                                                    |
+*-----------------------------------------------------------------------------------------------------------------------------------------------------+
+
+    <dao> is the DAO implementation looked up relatively at the string "ShopApplicationService.DAOClassName" by the DAOfactory,  specified in
+    {{{mandragora-properties.html}Mandragora.properties}} by the entry  "ShopApplicationService.DAOFactoryClassName".\
+    If in {{{mandragora-properties.html}Mandragora.properties}} you have:
+
+*-------------------------------------------------------------------------------------------------------------+
+ShopApplicationService.DAOFactoryClassName=it.aco.mandragora.dao.concreteFactory.DefaultDAOFactory            |
+|ShopApplicationService.DAOClassName=it.aco.mandragora.dao.impl.ojb.pb.OjbPbDAO                               |
+*-------------------------------------------------------------------------------------------------------------+
+
+    the line of code
+
+*---------------------------------------------------------------------------------------------------------------------------------------------+
+|DAO dao= ServiceLocator.getInstance().getDAO("ShopApplicationService.DAOFactoryClassName","ShopApplicationService.DAOClassName");            |
+*---------------------------------------------------------------------------------------------------------------------------------------------+
+
+    looks up the DAOFactory 'it.aco.mandragora.dao.concreteFactory.DefaultDAOFactory', and as we told DefaultDAOFactory uses {{{mandragora-properties.html}Mandragora.properties}}
+    to map <daoClassName> with the DAO implementation, it looks up and returns definitively the DAO implementation 'it.aco.mandragora.dao.impl.ojb.pb.OjbPbDAO'.\
+    The method <<getDAO(String daoFactoryClassName, String daoClassName)>> accepts as input parameter null or empty strings too.\
+    If the parameter <daoFactoryClassName> is null or empty string, the default real DAOFactory will be looked up, while if parameter <daoClassName> is null or empty string,
+    the DAO implementation that be default for the specified real DAOFactory will be looked up and returned.\
+    The default real DAOFactory is the one mapped in {{{mandragora-properties.html}Mandragora.properties}} with the property "DAOFactoryDefaultClass", and which is
+    the default DAO implementation depends by which is the used real DAOFActory. For example for the real DAOFactory  'it.aco.mandragora.dao.concreteFactory.DefaultDAOFactory'
+    the default DAO implementation is  the one mapped in {{{mandragora-properties.html}Mandragora.properties}} with the property "DefaultDAOFactory.DefaultDAOImpl".
+
+
+    The second method
+
+        * public DAO getDAO() throws ServiceLocatorException
+
+    looks up the the default real DAOFactory, that looks up and returns its default DAO implementation. We said <<'its'>> default DAO implementation
+    because every real DAOFactory can have a different default DAO implementation.\
+    For example the real DAOFactory 'it.aco.mandragora.dao.concreteFactory.DefaultDAOFactory'
+    has as default DAO implementation the one mapped in {{{mandragora-properties.html}Mandragora.properties}}
+    with the properties "DefaultDAOFactory.DefaultDAOImpl".
+    The default real DAOFactory is the one mapped in {{{mandragora-properties.html}Mandragora.properties}} with the property "DAOFactoryDefaultClass".
+
+    So if you do:
+
+*--------------------------------------------------------------------------------------------------------------------------------------------------+
+|try \{                                                                                                                                            |
+\ \ \ \ DAO dao= ServiceLocator.getInstance().getDAO();                                                                                            |
+|\ \ \ \ /* dao is the default DAO implementation looked up by the default real DAOfactory   */                                                    |
+\ \ \ \ // do your job with dao                                                                                                                    |
+|\ \ \ \ dao.someMethod1(...);                                                                                                                     |
+\ \ \ \ dao.someMethod2(...);                                                                                                                      |
+|} catch (ServiceLocatorException e) \{                                                                                                            |
+\ \ \ \ //manage the exception                                                                                                                     |
+|} catch (DataAccessException e) \{                                                                                                                |
+\ \ \ \ //manage the exception                                                                                                                     |
+|}                                                                                                                                                 |
+*--------------------------------------------------------------------------------------------------------------------------------------------------+
+
+    and in {{{mandragora-properties.html}Mandragora.properties}} you have:
+
+*-------------------------------------------------------------------------------------------------------------+
+|DAOFactoryDefaultClass=it.aco.mandragora.dao.concreteFactory.DefaultDAOFactory                               |
+DefaultDAOFactory.DefaultDAOImpl=it.aco.mandragora.dao.impl.ojb.pb.OjbPbDAO                                   |
+*-------------------------------------------------------------------------------------------------------------+
+
+    the line of code
+
+*-------------------------------------------------------------------------------------------------------------+
+|DAO dao= ServiceLocator.getInstance().getDAO();                                                              |
+*-------------------------------------------------------------------------------------------------------------+
+
+    looks up the DAOFactory 'it.aco.mandragora.dao.concreteFactory.DefaultDAOFactory',and  it looks up and returns definitively
+    the DAO implementation 'it.aco.mandragora.dao.impl.ojb.pb.OjbPbDAO'.\
+    The details of the looking up the DAO implementation are always hidden by the DAOFactory to the ServiceLocator.\
+    The ServiceLocator, in the two methods <<getDAO(String daoFactoryClassName, String daoClassName)>> and <<getDAO()>>, to look up
+    the real DAOFactory, uses static methods of the abstract class 'it.aco.mandragora.dao.DAOFactory'. The real DAOFactory looked up will be a real
+    subclass of 'it.aco.mandragora.dao.DAOFactory'.
+
+[../images/UseDAOServiceLookup.jpg]
+
+    In the case of the line of code:
+
+*---------------------------------------------------------------------------------------------------------------------------------------------+
+|DAO dao= ServiceLocator.getInstance().getDAO("ShopApplicationService.DAOFactoryClassName","ShopApplicationService.DAOClassName");            |
+*---------------------------------------------------------------------------------------------------------------------------------------------+
+
+    if in {{{mandragora-properties.html}Mandragora.properties}} there are the properties
+
+*-------------------------------------------------------------------------------------------------------------+
+ShopApplicationService.DAOFactoryClassName=it.aco.mandragora.dao.concreteFactory.DefaultDAOFactory            |
+|ShopApplicationService.DAOClassName=it.aco.mandragora.dao.impl.ojb.pb.OjbPbDAO                               |
+*-------------------------------------------------------------------------------------------------------------+
+
+    what goes on is depicted in the following sequence diagram:
+
+[../images/DAOLookup.jpg]
+
+
+    Up now just one {{{implementations.html}implementation}} of the DAO interface exists:
+
+        * it.aco.mandragora.dao.impl.ojb.pb.OjbPbDAO
+
+
+    and just one of DAOFactory exists:
+
+        * it.aco.mandragora.dao.concreteFactory.DefaultDAOFactory
+
+    
+
+=======================================================================
+
+
+* {Putting all together}
+
+    The ServiceLocator looks up the BD, ServiceFacade, ApplicationService and DAO implementations.
+    The BD implementation is used by a client of Mandragora, while the implementation of the other patterns must be hidden to the client.
+    All look up are done trough factories, the BDFactory, ServiceFacadeFactory, ApplicationServiceFactory and DAOFactory, that are abstract classes that have static methods to look up the
+    real BDFactory, ServiceFacadeFactory, ApplicationServiceFactory and DAOFactory that definitively will look up the BD, ServiceFacade, ApplicationService and DAO implementation that the ServiceLocator will return to its caller.
+    The class that wants a BD implementation (it should be the client), or ServiceFacade (it should be a BD class), ApplicationService (it should be a ServiceFacade class), or DAO implementation (it should be a ServiceFacade or an ApplicationService class)
+    can choose the BDFactory,  ServiceFacadeFactory, ApplicationServiceFactory or DAOFactory  that has to look up, and can pass a parameter too, that represents the information
+    that the chosen  Factory has to use to choose the real implementation.
+    
+
+[../images/AllLookupAndChain.jpg]
+
+    The ServiceLocator has the following 4 methods to look up  BD, ServiceFacade, ApplicationService and DAO implementations:
+
+        * public BD getManagerBD(String bdFactoryClassName, String bdClassName) throws ServiceLocatorException
+
+        * public BD getManagerBD() throws ServiceLocatorException
+
+        * public ServiceFacade getServiceFacade(String serviceFacadeFactoryClassName, String serviceFacadeClassName) throws ServiceLocatorException
+
+        * public ServiceFacade getServiceFacade() throws ServiceLocatorException
+
+        * public ApplicationService getApplicationService(String applicationServiceFactoryClassName, String applicationServiceClassName) throws ServiceLocatorException
+
+        * public ApplicationService getApplicationService() throws ServiceLocatorException
+
+        * public DAO getDAO(String daoFactoryClassName, String daoClassName) throws ServiceLocatorException
+
+        * public DAO getDAO() throws ServiceLocatorException
+
+    If in {{{mandragora-properties.html}Mandragora.properties}}  you have
+
+*---------------------------------------------------------------------------------------------------------------------------+
+ShopBDFactoryClassName=it.aco.mandragora.bd.concreteFactory.DefaultBDFactory                                                |
+|ShopBDClass=it.aco.mandragora.bd.impl.pojo.PojoManagerBD                                                                   |
+PojoManagerBD.ServiceFacadeFactoryClass=it.aco.mandragora.serviceFacade.concreteFactory.DefaultServiceFacadeFactory         |
+|PojoManagerBD.ServiceFacadeClass=it.aco.mandragora.serviceFacade.pojoFacade.PojoFacade                                     |
+PojoFacade.ApplicationServiceFactoryClass=it.aco.mandragora.as.concreteFactory.DefaultApplicationServiceFactory             |
+|PojoFacade.ApplicationServiceClass=it.aco.mandragora.as.impl.ImplApplicationService                                        |
+PojoFacade.DAOFactoryClass=it.aco.mandragora.dao.concreteFactory.DefaultDAOFactory                                          |
+|PojoFacade.DAOClass=it.aco.mandragora.dao.impl.ojb.pb.OjbPbDAO                                                             |
+ImplApplicationService.DAOFactoryClass=it.aco.mandragora.dao.concreteFactory.DefaultDAOFactory                              |
+|ImplApplicationService.DAOClass=it.aco.mandragora.dao.impl.ojb.pb.OjbPbDAO                                                 |
+*---------------------------------------------------------------------------------------------------------------------------+
+
+    and the following code is executed
+
+*--------------------------------------------------------------------------------------------------------------------------------------------------+
+|try \{                                                                                                                                            |
+\ \ \ \ BD bd= ServiceLocator.getInstance().getManagerBD("ShopBDFactoryClassName","ShopBDClass");                                                  |
+|                                                                                                                                                  |
+\ \ \ \ // do your job with bd                                                                                                                     |
+|\ \ \ \ bd.bd_method_1(.........);                                                                                                                |
+\                                                                                                                                                  |
+|} catch (ServiceLocatorException e) \{                                                                                                            |
+\ \ \ \ //manage the exception                                                                                                                     |
+|} catch (ApplicationException e) \{                                                                                                               |
+\ \ \ \ //manage the exception                                                                                                                     |
+|}                                                                                                                                                 |
+*--------------------------------------------------------------------------------------------------------------------------------------------------+
+
+    what will goes on is depicted in the following sequence diagram:
+
+
+
+[../images/AllLookupSequence.jpg]
+
+
+
+=======================================================================
+
+
+
+* {How to choose names to map}
+
+    When you choose the name to map an implementation (BD, BDFactory, DAO, DAOFactory), it should refer to the class or the part of your application that is using it,
+    and not to the same implementation. So you can switch from an implementation to an other just changing the mapping in {{{mandragora-properties.html}Mandragora.properties}}
+    without changing in all points where you used it in the class of your application.
+
+    Suppose you are working in an application that manages a books shop, in a part that refers to the books publishers, and
+    in this part you want to use the BD implementation 'somePackage.someImplementationBD ', and the BDFactory 'somePackage.someBDFactory'.
+    In {{{mandragora-properties.html}Mandragora.properties}} put :
+
+*-------------------------------------------------------------------------------------------------------------+
+|publisherBDClass=somePackage.someImplementationBD                                                            |
+publisherBDFactoryClass=somePackage.someBDFactory                                                             |
+*-------------------------------------------------------------------------------------------------------------+
+
+    and in your class to use them just do:
+
+*-------------------------------------------------------------------------------------------------------------+
+|try \{                                                                                                       |
+\ \ \ \ BD bd = ServiceLocator.getInstance().getManagerBD("publisherBDFactoryClass","publisherBDClass");      |
+|\} catch (ServiceLocatorException e) \{                                                                      |
+\ \ \ \ //manage the exception                                                                                |
+|\                                                                                                            |
+\}                                                                                                            |
+*-------------------------------------------------------------------------------------------------------------+
+
+    If some day you decide to use an other the BD implementation 'someOtherPackage.someOtherImplementationBD', and an other BDFactory
+    'someOtherPackage.someOtherBDFactory'
+    just change the {{{mandragora-properties.html}Mandragora.properties}}
+    so that :
+
+*-------------------------------------------------------------------------------------------------------------+
+|publisherBDClass=someOtherPackage.someOtherImplementationBD                                                  |
+publisherBDFactoryClass=someOtherPackage.someOtherBDFactory                                                   |
+*-------------------------------------------------------------------------------------------------------------+
+
+    The same should be done for the mapping of DAO and DAOFactory implementations.
+    As we talked about in the {{{#Look_up_a_DAO_implementation}Look up a DAO implementation}} the client of a DAO should be some BD implementation;
+
+    Suppose you are {{{how-to-extend.html#Write your BD implementation}writing a BD implementation}} 'someImplementationBD' and here
+    you want to use the DAO implementation 'somePackage.someImplementationDAO', and the DAOFactory 'somePackage.someDAOFactory'.
+    In {{{mandragora-properties.html}Mandragora.properties}} put :
+
+*-------------------------------------------------------------------------------------------------------------+
+|someImplementationBD.DAOclass=somePackage.someImplementationDAO                                              |
+someImplementationBD.DAOFactoryclass=somePackage.someDAOFactory                                               |
+*-------------------------------------------------------------------------------------------------------------+
+
+    and in your someImplementationBD class to use them just do:
+
+*-----------------------------------------------------------------------------------------------------------------------------------+
+|try \{                                                                                                                             |
+\ \ \ \ DAO dao = ServiceLocator.getInstance().getDAO("someImplementationBD.DAOFactoryclass","someImplementationBD.DAOclass");      |
+|\} catch (ServiceLocatorException e) \{                                                                                            |
+\ \ \ \ //manage the exception                                                                                                      |
+|\                                                                                                                                  |
+\}                                                                                                                                  |
+*-----------------------------------------------------------------------------------------------------------------------------------+
+
+    If some day you decide to use an other the DAO implementation 'someOtherPackage.someOtherImplementationDAO', and an other DAOFactory
+    'someOtherPackage.someOtherDAOFactory'
+    just change the {{{mandragora-properties.html}Mandragora.properties}}
+    so that :
+
+*-------------------------------------------------------------------------------------------------------------+
+|someImplementationBD.DAOclass=someOtherPackage.someOtherImplementationDAO                                    |
+someImplementationBD.DAOFactoryclass=someOtherPackage.someOtherDAOFactory                                     |
+*-------------------------------------------------------------------------------------------------------------+
+
+
+
+=======================================================================
+

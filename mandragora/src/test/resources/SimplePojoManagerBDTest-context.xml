@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:aop="http://www.springframework.org/schema/aop"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+           http://www.springframework.org/schema/beans/spring-beans-2.5.xsd http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-2.0.xsd">
+
+    <!--<aop:aspectj-autoproxy/>-->
+
+    <bean id="simplePojoManagerBD" class="it.aco.mandragora.bd.impl.pojo.SimplePojoManagerBD">
+        <property name="serviceFacade">
+            <ref bean="simplePojoFacade"/>
+        </property>
+    </bean>
+    <bean id="simplePojoFacade" class="it.aco.mandragora.serviceFacade.pojoFacade.SimplePojoFacade">
+        <property name="dao">
+            <ref bean="ojbPbDAO"/>
+        </property>
+        <property name="applicationService">
+            <ref bean="simpleApplicationService"/>
+        </property>
+    </bean>
+    <bean id="simpleApplicationService" class="it.aco.mandragora.as.impl.SimpleApplicationService">
+        <property name="dao">
+            <ref bean="ojbPbDAO"/>
+        </property>
+    </bean>
+    <!--
+    <bean id="ojbPbDAO" class="it.aco.mandragora.dao.impl.ojb.pb.AdvisedOjbPbDAO">
+        <property name="persistenceBrokerSupport">
+            <ref bean="basePersistenceBrokerSupport"/>
+        </property>
+        <property name="ojbPbCore">
+            <ref bean="baseOjb105rc1PbCore"/>
+        </property>
+    </bean>
+    -->
+    <bean id="ojbPbDAO" class="it.aco.mandragora.dao.impl.ojb.pb.SimpleOjbPbDAO">
+        <property name="persistenceBrokerSupport">
+            <ref bean="basePersistenceBrokerSupport"/>
+        </property>
+        <property name="ojbPbCore">
+            <ref bean="baseOjb105rc1PbCore"/>
+        </property>
+    </bean>
+    <bean id="basePersistenceBrokerSupport" class="it.aco.mandragora.dao.impl.ojb.pb.support.impl.BasePersistenceBrokerSupport">
+        <property name="ojbPbCloseAtTheEndOfMethod" value="true"/>
+        <property name="isInManagedEnvironment" value="false"/>
+    </bean>
+    <bean id="baseOjb105rc1PbCore" class="it.aco.mandragora.dao.impl.ojb.pb.core.impl.BaseOjb105rc1PbCore"/>
+    <!--
+    <bean id="ojbPbDAOAspect" class="it.aco.mandragora.dao.impl.ojb.pb.aspect.OjbPbDAOAspect">
+       configure properties of aspect here as normal
+    </bean>
+    -->
+</beans>
+<!--private PersistenceBrokerSupport persistenceBrokerSupport;
+    private OjbPbCore ojbPbCore;-->

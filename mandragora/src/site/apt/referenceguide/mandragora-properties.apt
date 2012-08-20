@@ -1,0 +1,221 @@
+ -----
+ Mandragora.properties
+ -----
+ Alessandro Colantoni
+ -----
+
+Mandragora.properties
+
+    Mandragora.properties is the configuration file of Mandragora.
+    It must be in the classpath, so for example in a web application it could be in WEB-INF\classes.
+    The Mandragora.properties that come with the distribution mandragora-blank.zip in the {{{../download.html}download section}}
+    in the directory WEB-INF\classes is the following:
+
+*-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+|DAOFactoryDefaultClass=it.aco.mandragora.dao.concreteFactory.DefaultDAOFactory                                                                                                                               |
+DefaultDAOFactory.DefaultDAOImpl=it.aco.mandragora.dao.impl.ojb.pb.OjbPbDAO                                                                                                                                   |
+|                                                                                                                                                                                                             |
+OjbPbDAOClass=it.aco.mandragora.dao.impl.ojb.pb.OjbPbDAO                                                                                                                                                      |
+|OjbPbDAODefaultClass=it.aco.mandragora.dao.impl.ojb.pb.OjbPbDAO                                                                                                                                              |
+\                                                                                                                                                                                                             |
+|                                                                                                                                                                                                             |
+\                                                                                                                                                                                                             |
+BDFactoryDefaultClass=it.aco.mandragora.bd.concreteFactory.DefaultBDFactory                                                                                                                                   |
+|DefaultBDFactory.BDClass=it.aco.mandragora.bd.impl.pojo.PojoManagerBD                                                                                                                                        |
+PojoManagerBDTest.BDFactoryClass=it.aco.mandragora.bd.concreteFactory.DefaultBDFactory                                                                                                                        |
+|PojoManagerBDTest.BDClass=it.aco.mandragora.bd.impl.pojo.PojoManagerBD                                                                                                                                       |
+\                                                                                                                                                                                                             |
+|SecurityManagerImplBDTest.BDFactoryClass=it.aco.mandragora.bd.concreteFactory.DefaultBDFactory                                                                                                               |
+SecurityManagerImplBDTest.BDClass=it.aco.mandragora.security.bd.impl.SecurityManagerImplBD                                                                                                                    |
+|                                                                                                                                                                                                             |
+SecurityBDFactoryClass=it.aco.mandragora.bd.concreteFactory.DefaultBDFactory                                                                                                                                  |
+\SecurityBDClass=it.aco.mandragora.security.bd.impl.SecurityManagerImplBD                                                                                                                                     |
+|                                                                                                                                                                                                             |
+PojoManagerBD.DAOFactoryClass=it.aco.mandragora.dao.concreteFactory.DefaultDAOFactory                                                                                                                         |
+|PojoManagerBD.DAOClass=it.aco.mandragora.dao.impl.ojb.pb.OjbPbDAO                                                                                                                                            |
+\                                                                                                                                                                                                             |
+|PojoManagerBD.ServiceFacadeFactoryClass=it.aco.mandragora.serviceFacade.concreteFactory.DefaultServiceFacadeFactory                                                                                          |
+PojoManagerBD.ServiceFacadeClass=it.aco.mandragora.serviceFacade.pojoFacade.PojoFacade                                                                                                                        |
+|                                                                                                                                                                                                             |
+PojoFacade.ApplicationServiceFactoryClass=it.aco.mandragora.as.concreteFactory.DefaultApplicationServiceFactory                                                                                               |
+|PojoFacade.ApplicationServiceClass=it.aco.mandragora.as.impl.ImplApplicationService                                                                                                                          |
+\                                                                                                                                                                                                             |
+|                                                                                                                                                                                                             |
+PojoFacade.DAOFactoryClass=it.aco.mandragora.dao.concreteFactory.DefaultDAOFactory                                                                                                                            |
+|PojoFacade.DAOClass=it.aco.mandragora.dao.impl.ojb.pb.OjbPbDAO                                                                                                                                               |
+\                                                                                                                                                                                                             |
+|ImplApplicationService.DAOFactoryClass=it.aco.mandragora.dao.concreteFactory.DefaultDAOFactory                                                                                                               |
+ImplApplicationService.DAOClass=it.aco.mandragora.dao.impl.ojb.pb.OjbPbDAO                                                                                                                                    |
+|                                                                                                                                                                                                             |
+\                                                                                                                                                                                                             |
+|                                                                                                                                                                                                             |
+##################### start Security Module#################v                                                                                                                                                 |
+|                                                                                                                                                                                                             |
+SecurityManagerImplBD.ServiceFacadeFactoryClass=it.aco.mandragora.serviceFacade.concreteFactory.DefaultServiceFacadeFactory                                                                                   |
+|SecurityManagerImplBD.ServiceFacadeClass=it.aco.mandragora.security.serviceFacade.pojoFacade.SecurityPojoFacade                                                                                              |
+\                                                                                                                                                                                                             |
+|SecurityPojoFacade.ApplicationServiceFactoryClass=it.aco.mandragora.as.concreteFactory.DefaultApplicationServiceFactory                                                                                      |
+SecurityPojoFacade.ApplicationServiceClass=it.aco.mandragora.security.as.impl.ImplSecurityApplicationService                                                                                                  |
+|                                                                                                                                                                                                             |
+ImplSecurityApplicationService.DAOFactoryClass=it.aco.mandragora.dao.concreteFactory.DefaultDAOFactory                                                                                                        |
+|ImplSecurityApplicationService.DAOClass=it.aco.mandragora.dao.impl.ojb.pb.OjbPbDAO                                                                                                                           |
+\                                                                                                                                                                                                             |
+|#userVO.class= put year your fully qualified name of your user class                                                                                                                                         |
+userVO.class= it.aco.mandragora.vo.UserVO                                                                                                                                                                     |
+|#user.permissions.path=userRolesVOs.rolVO.rolPermissionVOs.permissionVO                                                                                                                                      |
+user.permissions.path=userRoleVOs.roleVO.rolePermissionVOs.permissionVO                                                                                                                                       |
+\                                                                                                                                                                                                             |
+|##################### end  Security Module#################v                                                                                                                                                 |
+\                                                                                                                                                                                                             |
+|                                                                                                                                                                                                             |
+\                                                                                                                                                                                                             |
+|                                                                                                                                                                                                             |
+#classes used in CrudSLSBFacadeBean                                                                                                                                                                           |
+|CrudSLSBFacadeBean.ServiceFacadeFactoryClass=it.aco.mandragora.serviceFacade.concreteFactory.DefaultServiceFacadeFactory                                                                                     |
+CrudSLSBFacadeBean.ServiceFacadeClass=it.aco.mandragora.serviceFacade.pojoFacade.PojoFacade                                                                                                                   |
+|                                                                                                                                                                                                             |
+#classes used in BusinessSLSBFacadeBean                                                                                                                                                                       |
+|BusinessSLSBFacadeBean.ServiceFacadeFactoryClass=it.aco.mandragora.serviceFacade.concreteFactory.DefaultServiceFacadeFactory                                                                                 |
+BusinessSLSBFacadeBean.ServiceFacadeClass=it.aco.mandragora.serviceFacade.pojoFacade.PojoFacade                                                                                                               |
+|                                                                                                                                                                                                             |
+\                                                                                                                                                                                                             |
+|SLSBManagerBD.crudManager=CrudSLSBFacadeBean                                                                                                                                                                 |
+CrudSLSBFacadeBean=it.aco.mandragora.serviceFacade.sessionFacade.remoteFacade.SLSB.crud.CrudSLSBFacadeHome                                                                                                    |
+|                                                                                                                                                                                                             |
+SLSBManagerBD.businessManager=BusinessSLSBFacadeBean                                                                                                                                                          |
+|BusinessSLSBFacadeBean=it.aco.mandragora.serviceFacade.sessionFacade.remoteFacade.SLSB.business.BusinessSLSBFacadeHome                                                                                       |
+\                                                                                                                                                                                                             |
+|                                                                                                                                                                                                             |
+SLSBManagerContextBD.contextCrudManager=ContextCrudSLSBFacadeBean                                                                                                                                             |
+|ContextCrudSLSBFacadeBean=it.aco.mandragora.serviceFacade.context.sessionFacade.remoteFacade.SLSB.crud.ContextCrudSLSBFacadeHome                                                                             |
+\                                                                                                                                                                                                             |
+|SLSBManagerContextBD.contextBusinessManager=ContextBusinessSLSBFacadeBean                                                                                                                                    |
+ContextBusinessSLSBFacadeBean=it.aco.mandragora.serviceFacade.context.sessionFacade.remoteFacade.SLSB.business.ContextBusinessSLSBFacadeHome                                                                  |
+|                                                                                                                                                                                                             |
+\                                                                                                                                                                                                             |
+|IsInManagedEnvironment=false                                                                                                                                                                                 |
+#IsInManagedEnvironment=true                                                                                                                                                                                  |
+|                                                                                                                                                                                                             |
+\                                                                                                                                                                                                             |
+|instanceServiceLocator.scheduler=false                                                                                                                                                                       |
+\                                                                                                                                                                                                             |
+|ojbPb.close.at.the.end.of.method=true                                                                                                                                                                        |
+\                                                                                                                                                                                                             |
+|OjbPbCoreFactoryDefaultClass=it.aco.mandragora.dao.impl.ojb.pb.core.concreteFactory.DefaultOjbPbCoreFactory                                                                                                  |
+#DefaultOjbPbCoreFactory.DefaultOjbPbCoreImpl=it.aco.mandragora.dao.impl.ojb.pb.core.impl.OjbPbCoreDefaultImpl                                                                                                |
+|DefaultOjbPbCoreFactory.DefaultOjbPbCoreImpl=it.aco.mandragora.dao.impl.ojb.pb.core.impl.Ojb105rc1PbCoreImpl                                                                                                 |
+\                                                                                                                                                                                                             |
+|PersistenceBrokerSupportFactoryDefaultClass=it.aco.mandragora.dao.impl.ojb.pb.support.concreteFactory.DefaultPersistenceBrokerSupportFactory                                                                 |
+DefaultPersistenceBrokerSupportFactory.DefaultPersistenceBrokerSupportImpl=it.aco.mandragora.dao.impl.ojb.pb.support.impl.PersistenceBrokerSupportDefaultImpl                                                 |
+|                                                                                                                                                                                                             |
+OjbPbDAO.PersistenceBrokerSupportFactoryClass=it.aco.mandragora.dao.impl.ojb.pb.support.concreteFactory.DefaultPersistenceBrokerSupportFactory                                                                |
+|OjbPbDAO.PersistenceBrokerSupportClass=it.aco.mandragora.dao.impl.ojb.pb.support.impl.PersistenceBrokerSupportDefaultImpl                                                                                    |
+OjbPbDAO.OjbPbCoreFactoryClass=it.aco.mandragora.dao.impl.ojb.pb.core.concreteFactory.DefaultOjbPbCoreFactory                                                                                                 |
+|#OjbPbDAO.OjbPbCoreClass=it.aco.mandragora.dao.impl.ojb.pb.core.impl.OjbPbCoreDefaultImpl                                                                                                                    |
+OjbPbDAO.OjbPbCoreClass=it.aco.mandragora.dao.impl.ojb.pb.core.impl.Ojb105rc1PbCoreImpl                                                                                                                       |
+|                                                                                                                                                                                                             |
+OjbPbContextDAO.PersistenceBrokerSupportFactoryClass=it.aco.mandragora.dao.impl.ojb.pb.support.concreteFactory.DefaultPersistenceBrokerSupportFactory                                                         |
+|OjbPbContextDAO.PersistenceBrokerSupportClass=it.aco.mandragora.dao.impl.ojb.pb.support.impl.PersistenceBrokerSupportDefaultImpl                                                                             |
+OjbPbContextDAO.OjbPbCoreFactoryClass=it.aco.mandragora.dao.impl.ojb.pb.core.concreteFactory.DefaultOjbPbCoreFactory                                                                                          |
+|#OjbPbContextDAO.OjbPbCoreClass=it.aco.mandragora.dao.impl.ojb.pb.core.impl.OjbPbCoreDefaultImpl                                                                                                             |
+OjbPbContextDAO.OjbPbCoreClass=it.aco.mandragora.dao.impl.ojb.pb.core.impl.Ojb105rc1PbCoreImpl                                                                                                                |
+|                                                                                                                                                                                                             |
+ProxyBDHandlerFactoryClass=it.aco.mandragora.bd.concreteFactory.ProxyBDHandlerFactory                                                                                                                         |
+|                                                                                                                                                                                                             |
+\                                                                                                                                                                                                             |
+|                                                                                                                                                                                                             |
+############################  MethodInterceptor  start ######################                                                                                                                                 |
+|ProxyBDHandlerFactory.ProxyBDHandlerDefaultClass.methodInterceptorFactoryClassName=it.aco.mandragora.bd.impl.proxy.methodInterceptor.concreteFactory.DefaultMethodInterceptorFactory                         |
+ProxyBDHandlerFactory.ProxyBDHandlerDefaultClass.methodInterceptorClassName=it.aco.mandragora.bd.impl.proxy.methodInterceptor.impl.MethodInterceptorDefaultImpl                                               |
+|ProxyBDHandlerFactory.ProxyBDHandlerDefaultClass.realBDClassName=it.aco.mandragora.bd.impl.pojo.PojoManagerBD                                                                                                |
+\                                                                                                                                                                                                             |
+|                                                                                                                                                                                                             |
+MethodInterceptorFactoryDefaultClass=it.aco.mandragora.bd.impl.proxy.methodInterceptor.concreteFactory.DefaultMethodInterceptorFactory                                                                        |
+|DefaultMethodInterceptorFactory.DefaultMethodInterceptorImpl=it.aco.mandragora.bd.impl.proxy.methodInterceptor.impl.MethodInterceptorDefaultImpl                                                             |
+\                                                                                                                                                                                                             |
+|                                                                                                                                                                                                             |
+#DefaultMethodInterceptorFactory.ProxyBDHandlerFactory.ProxyBDHandlerDefaultClass.methodInterceptorClassName.bdFactoryClassName=it.aco.mandragora.bd.standard.StandardBDFactory                               |
+|DefaultMethodInterceptorFactory.ProxyBDHandlerFactory.ProxyBDHandlerDefaultClass.methodInterceptorClassName.contextBDFactoryClassName=it.aco.mandragora.bd.context.concreteFactory.DefaultContextBDFactory   |
+#DefaultMethodInterceptorFactory.ProxyBDHandlerFactory.ProxyBDHandlerDefaultClass.methodInterceptorClassName.bdClassName=it.aco.mandragora.bd.standard.StandardManagerBD                                      |
+|DefaultMethodInterceptorFactory.ProxyBDHandlerFactory.ProxyBDHandlerDefaultClass.methodInterceptorClassName.contextBDClassName=it.aco.mandragora.bd.context.impl.pojo.PojoManagerContextBD                   |
+\                                                                                                                                                                                                             |
+|                                                                                                                                                                                                             |
+MethodInterceptorDefaultImpl.ContextBDFactoryClassName=it.aco.mandragora.bd.context.concreteFactory.DefaultContextBDFactory                                                                                   |
+|MethodInterceptorDefaultImpl.ContextBDClassName=it.aco.mandragora.bd.context.impl.pojo.PojoManagerContextBD                                                                                                  |
+\                                                                                                                                                                                                             |
+|                                                                                                                                                                                                             |
+\                                                                                                                                                                                                             |
+|                                                                                                                                                                                                             |
+\                                                                                                                                                                                                             |
+|DefaultMethodInterceptorFactory.DefaultMethodInterceptorFactory.DefaultMethodInterceptorImpl.contextBDFactoryClassName=it.aco.mandragora.bd.context.concreteFactory.DefaultContextBDFactory                  |
+DefaultMethodInterceptorFactory.DefaultMethodInterceptorFactory.DefaultMethodInterceptorImpl.contextBDClassName=it.aco.mandragora.bd.context.impl.pojo.PojoManagerContextBD                                   |
+|############################  MethodInterceptor  end ######################                                                                                                                                  |
+\                                                                                                                                                                                                             |
+|                                                                                                                                                                                                             |
+ApplicationServiceFactoryDefaultClass=it.aco.mandragora.as.concreteFactory.DefaultApplicationServiceFactory                                                                                                   |
+|DefaultApplicationServiceFactory.DefaultApplicationServiceImpl=it.aco.mandragora.as.impl.ImplApplicationService                                                                                              |
+\                                                                                                                                                                                                             |
+|ServiceFacadeFactoryDefaultClass=it.aco.mandragora.serviceFacade.concreteFactory.DefaultServiceFacadeFactory                                                                                                 |
+DefaultServiceFacadeFactory.DefaultServiceFacadeImpl=it.aco.mandragora.serviceFacade.pojoFacade.PojoFacade                                                                                                    |
+|                                                                                                                                                                                                             |
+\                                                                                                                                                                                                             |
+|                                                                                                                                                                                                             |
+\                                                                                                                                                                                                             |
+|ContextDAOFactoryDefaultClass=it.aco.mandragora.dao.context.concreteFactory.DefaultContextDAOFactory                                                                                                         |
+DefaultContextDAOFactory.DefaultContextDAOImpl=it.aco.mandragora.dao.context.impl.ojb.pb.OjbPbContextDAO                                                                                                      |
+|                                                                                                                                                                                                             |
+ApplicationServiceContextDefaultImpl.ContextDAOFactoryClass=it.aco.mandragora.dao.context.concreteFactory.DefaultContextDAOFactory                                                                            |
+|ApplicationServiceContextDefaultImpl.ContextDAOClass=it.aco.mandragora.dao.context.impl.ojb.pb.OjbPbContextDAO                                                                                               |
+\                                                                                                                                                                                                             |
+|                                                                                                                                                                                                             |
+\                                                                                                                                                                                                             |
+|ContextApplicationServiceFactoryDefaultClass=it.aco.mandragora.as.context.concreteFactory.DefaultContextApplicationServiceFactory                                                                            |
+DefaultContextApplicationServiceFactory.DefaultContextApplicationServiceImpl=it.aco.mandragora.as.context.impl.ContextApplicationServiceDefaultImpl                                                           |
+|                                                                                                                                                                                                             |
+\                                                                                                                                                                                                             |
+|                                                                                                                                                                                                             |
+ContextPojoFacade.ContextApplicationServiceFactoryClass=it.aco.mandragora.as.context.concreteFactory.DefaultContextApplicationServiceFactory                                                                  |
+|ContextPojoFacade.ContextApplicationServiceClass=it.aco.mandragora.as.context.impl.ContextApplicationServiceDefaultImpl                                                                                      |
+\                                                                                                                                                                                                             |
+|                                                                                                                                                                                                             |
+ContextPojoFacade.ContextDAOFactoryClass=it.aco.mandragora.dao.context.concreteFactory.DefaultContextDAOFactory                                                                                               |
+|ContextPojoFacade.ContextDAOClass=it.aco.mandragora.dao.context.impl.ojb.pb.OjbPbContextDAO                                                                                                                  |
+\                                                                                                                                                                                                             |
+|ContextPojoFacade.ApplicationServiceFactoryClass=it.aco.mandragora.as.concreteFactory.DefaultApplicationServiceFactory                                                                                       |
+ContextPojoFacade.ApplicationServiceClass=it.aco.mandragora.as.impl.ImplApplicationService                                                                                                                    |
+|                                                                                                                                                                                                             |
+\                                                                                                                                                                                                             |
+|                                                                                                                                                                                                             |
+ContextServiceFacadeFactoryDefaultClass=it.aco.mandragora.serviceFacade.context.concreteFactory.DefaultContextServiceFacadeFactory                                                                            |
+|DefaultContextServiceFacadeFactory.DefaultContextServiceFacadeImpl=it.aco.mandragora.serviceFacade.context.pojoFacade.ContextPojoFacade                                                                      |
+\                                                                                                                                                                                                             |
+|                                                                                                                                                                                                             |
+\                                                                                                                                                                                                             |
+|PojoManagerBDContextBD.ContextServiceFacadeFactoryClass=it.aco.mandragora.serviceFacade.context.concreteFactory.DefaultContextServiceFacadeFactory                                                           |
+PojoManagerBDContextBD.ContextServiceFacadeClass=it.aco.mandragora.serviceFacade.context.pojoFacade.ContextPojoFacade                                                                                         |
+|                                                                                                                                                                                                             |
+PojoManagerContextBD.ContextServiceFacadeFactoryClass=it.aco.mandragora.serviceFacade.context.concreteFactory.DefaultContextServiceFacadeFactory                                                              |
+|PojoManagerContextBD.ContextServiceFacadeClass=it.aco.mandragora.serviceFacade.context.pojoFacade.ContextPojoFacade                                                                                          |
+\                                                                                                                                                                                                             |
+|ContextBusinessSLSBFacadeBean.ContextServiceFacadeFactoryClass=it.aco.mandragora.serviceFacade.context.concreteFactory.DefaultContextServiceFacadeFactory                                                    |
+ContextBusinessSLSBFacadeBean.ContextServiceFacadeClass=it.aco.mandragora.serviceFacade.context.pojoFacade.ContextPojoFacade                                                                                  |
+|                                                                                                                                                                                                             |
+ContextCrudSLSBFacadeBean.ContextServiceFacadeFactoryClass=it.aco.mandragora.serviceFacade.context.concreteFactory.DefaultContextServiceFacadeFactory                                                         |
+|ContextCrudSLSBFacadeBean.ContextServiceFacadeClass=it.aco.mandragora.serviceFacade.context.pojoFacade.ContextPojoFacade                                                                                     |
+\                                                                                                                                                                                                             |
+|                                                                                                                                                                                                             |
+\                                                                                                                                                                                                             |
+|ContextBDFactoryDefaultClass=it.aco.mandragora.bd.context.concreteFactory.DefaultContextBDFactory                                                                                                            |
+DefaultContextBDFactory.DefaultContextBDImpl=it.aco.mandragora.bd.context.impl.pojo.PojoManagerContextBD                                                                                                      |
+|                                                                                                                                                                                                             |
+\                                                                                                                                                                                                             |
+|                                                                                                                                                                                                             |
+\                                                                                                                                                                                                             |
+*-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+
+    You can modify (or not) this file and put it in your classpath.
+
+
+
+
+=======================================================================

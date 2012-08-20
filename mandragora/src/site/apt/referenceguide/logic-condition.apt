@@ -1,0 +1,381 @@
+ -----
+ Logic condition
+ -----
+ Alessandro Colantoni
+ -----
+
+Logic condition
+
+    * {{{#Introduction}1 - Introduction}}
+
+    * {{{#Logic_Condition}2 - Logic Condition}}
+
+    * {{{#Simple_Condition}3 - Simple Condition}}
+
+    * {{{#Operator}4 - Operator}}
+
+    * {{{#How_to_model_logic_conditions_using_the_three_class_LogicCondition_SimpleCondition_and_Operator}5 - How to model logic conditions using the three class LogicCondition, SimpleCondition and Operator}}
+
+    * {{{#Where_is_used_in_Madragora}6 - Where is used in Madragora}}
+
+
+* {Introduction}
+
+    A logic condition can be considered a chain of simple conditions in AND/OR between them, where a simple condition is
+    an assertion that can be evaluated  true of false.
+    In this section logic condition we are interested to are ones that can be considered as the WHERE clause of a SQL query.
+    We would express logic conditions like this:
+
+*-----------------------------------+
+|fieldname1 = value1 AND            |
+fieldname2 \<\> value3 OR           |
+|....                               |
+fieldnameK \>= valueK AND           |
+|....                               |
+fieldnameN \< valueN                |
+|                                   |
+*-----------------------------------+
+
+    To do that madragora provides a package it.aco.mandragora.query to build generic logic conditions.
+    The following diagram describe the logic condition.
+
+[../images/it_aco_mandragora_query.gif]
+
+=======================================================================
+
+* {Logic Condition}
+
+    As you can see the principal class is LogicCondition, that is an abstract recursive class. Ir is recursive as one of his attribute is an instance
+    of the same class LogicCondition. This class has other two attribute, one named simpleCondition, instance of the class SimpleCondition, and a string
+    named andOR. As can be sawn in the diagram recursive relationship of the LogicCondition is named andOr too, that's of course. is to express if the two
+    instance of LogicCondition are in AND or in OR between them. With the recursive relationship, we can build a chain of instances of LogicCondition as long
+    as we want, each one specifying if it is in AND or in OR with the next one through the string attribute andOr, that of course should  assume just the values "AND" or "OR".
+    The attribute simpleCondition, instance of the Class SimpleCondition, represents an atomic condition, that in other words is a condition with no AND/OR inside.
+    'fieldnameK \>= valueK' is an example of atomic,or simple condition.
+
+    So the idea we can say that what the LogicCondition represents with his three attributes his a simple condition in AND/OR with a recursive logicCondition.
+    For example an instance of this class could be used to represent the following logic condition:
+
+*---------------------------------------------------------+
+|logicCondition1 = simpleCondition1 AND (logicCondition2) |
+*---------------------------------------------------------+
+
+    This could be :
+
+*--------------------------------------------------------------------------------------------------------------------------+
+|logicCondition1 = simpleCondition1 AND (simpleCondition2 OR (simpleCondition3 OR (simpleCondition4 AND simpleCondition5)))|
+*--------------------------------------------------------------------------------------------------------------------------+
+
+    Note that each nested logic condition should be considered include between parenthesis.
+
+    Let's see now in detail what is the class SimpleCondition
+
+=======================================================================
+
+* {Simple Condition}
+
+    An instance of the class SimpleCondition can be viewed as the representation of a condition of every kind, made of an operator and a collection of arguments.
+    Examples of simple conditions could be: a\<b, a==3, !a, or a between b and c.
+    A simple condition can have any number of arguments, as a==3 has two, !a has one and 'a between b and c' has three.
+    Arguments can be of any kind of type or class; a simple condition can have just one operator.
+    This class just represents the simple condition, not his interpretation, nor his value (true or false).
+    His interpretation must be performed by an other class, so to maintain the general purpose of this one.
+    For example this following simple condition could be used as condition to use in the where clause of sql query; the condition:
+
+*---------------+
+|price \< 10000 |
+*---------------+
+
+    could be easily represented by this class, and could be one of the conditions of the where clause of an sql query. To represent this condition with
+    an instance of the class SimpleCondition you just has to set his collection of arguments with a collection holding the string "price" and the integer 10000,
+    and set someway his attribute that represent the operator to represent '\<'.
+    As can be saw in the diagram the operator is represented by the class Operator that we show in the following; the arguments  are represented
+    by the collection attribute <parameter>.
+
+=======================================================================
+
+* {Operator}
+
+    The class Operator represents an operator.
+    The concept is abstract, (not the class that is not), so it can be used for math, logic operators or other.
+    This class has four attributes: <name>, <shortName>, <mathSymbol>,<identifier>
+    An examples of instance of Operator could be the operator lessThan (\<) that could be so defined :
+
+*-----------------------------------------+
+|Operator operator = new Operator();      |
+operator.setName("lessThan");             |
+|operator.setMathSymbol("\<");            |
+operator.setShortName("LT");              |
+*-----------------------------------------+
+
+    The four attributes are what really represent the operator, and they can be used as you want, as this class just represent the operator and do not
+    perform any operation, nor any interpretation , and it doesn't consider any semantic value of the four attributes.
+    So you can represent the operator lessThan just doing:
+
+*-----------------------------------------+
+|Operator operator = new Operator();      |
+operator.setName("\<");                   |
+*-----------------------------------------+
+
+    using as name the symbol, if you think that for your purpose is best.
+    How the four attributes (not all of them are necessary, as for your purpose just one could be enough) will be used will depend by methods of other
+    classes that will use it.
+    Concretly using logic condition as the WHERE clause in SQL query mandragora often use to set the name with symbols.
+    The attribute name of the class Operator can be set directly on instantiation using the constructor Operator(String name). The above example will
+    be reduced at:
+
+*-----------------------------------------+
+|Operator operator = new Operator("\<");  |
+*-----------------------------------------+
+
+
+=======================================================================
+
+
+* {How to model logic conditions using the three class LogicCondition SimpleCondition and Operator}
+
+    As we talked about in the beginning, logic conditions we are interested in are which can be considered WHERE clause of a SQL query.
+    Logic conditions are chain of simple conditions in AND/OR between them, and to be considered as a WHERE clause, each simple condition of a logic
+    condition must have one of his arguments (elements of the collection attribute parameter) that be a string representing the name of a field mapped to some column of a table.
+    LogicCondition is an abstract class. The only concrete class that extend it up now id LogicSqlCondition, as can be saw in the diagram of the {{{#Introduction}Introduction}}.
+    To model your logic condition you can use one of the constructors of LogicSqlCondition, that initialize, one, two or the three of his attributes, simpleCondition, andOr, logicCondition.
+    Instead of use a constructor to initialize them you can use the relative setter methods.
+
+    Before to proceed to show the details of the constructors of LogicSqlCondition  , should be understood how to instantiate the class SimpleCondition.
+
+    The list of constructors of SimpleCondition is:
+
+        * SimpleCondition(Collection parameter,Operator operator)
+
+        * SimpleCondition(Collection parameter,String operator)
+
+        * SimpleCondition(String field,String operator, Object value)
+
+    With the constructor <<SimpleCondition(Collection parameter,Operator operator)>> will be created a new simple condition, specifying
+    directly which are his arguments and which is his operator.
+    For example if you want to represent the simple condition that the variable with name 'price' is less than the Integer 100 you could do:
+
+*-----------------------------------------------------------------------------+
+|Vector parameter = new Vector();                                             |
+parameter.add("price");                                                       |
+|parameter.add(new Integer(100);                                              |
+Operator operator = new Operator("\<");                                       |
+|SimpleCondition simpleCondition = new SimpleCondition(parameter,operator);   |
+*-----------------------------------------------------------------------------+
+
+    With the constructor <<SimpleCondition(Collection parameter,String operator)>>  will be created a new simple condition specifying
+    directly which are his arguments and which is the name of his operator. This constructor will create  new instance of the class Operator
+    with the <name> operator and will use as to fill the attribute <operator>.
+    For example as the above example if you want to represent the simple condition that the variable with name price is less than the Integer 100 you could do:
+
+*-----------------------------------------------------------------------------+
+|Vector parameter = new Vector();                                             |
+parameter.add("price");                                                       |
+|parameter.add(new Integer(100);                                              |
+SimpleCondition simpleCondition = new SimpleCondition(parameter,"\<");        |
+*-----------------------------------------------------------------------------+
+
+    With the constructor <<SimpleCondition(String field,String operator, Object value)>> will be created a new SimpleCondition with two operands, specified in the input,
+    the first of which is a String and the second is a generic object; the operator's name is specified in input too. This constructor will create a new instance
+    of the class Operator with the <name> operator  and will use as the attribute <operator>.
+    The arguments will be the two input parameters <field> and <value>. It creates a new SimpleCondition where the <operator.name> is operator, the first parameter is <field> and the second is <value>.
+    So if you would express the condition of the above two examples price \< 10000 you just should do:
+
+*-----------------------------------------------------------------------------------------+
+|SimpleCondition simpleCondition = new SimpleCondition("price","\<", new Integer(10000)); |
+*-----------------------------------------------------------------------------------------+
+
+
+    We show now the list of the constructors of LogicSqlCondition
+
+        * LogicSqlCondition(SimpleCondition simpleCondition)
+
+        * LogicSqlCondition(Collection parameter,String operator)
+
+        * LogicSqlCondition(String field,String operator, Object value)
+
+        * LogicSqlCondition(SimpleCondition simpleCondition,LogicCondition logicCondition)
+
+        * LogicSqlCondition(SimpleCondition simpleCondition,String andOr,LogicCondition logicCondition)
+
+        * LogicSqlCondition(Collection parameter,String operator,String andOr,LogicCondition logicCondition)
+
+        * LogicSqlCondition(String field,String operator, Object value,String andOr,LogicCondition logicCondition)
+
+
+
+
+    With the constructor <<LogicSqlCondition(SimpleCondition simpleCondition)>> will be created a new instance of LogicSqlCondition setting the attribute
+    <simpleCondition>, with the input parameter <simpleCondition>.
+    So before has to be instantiated  an object of the class SimpleCondition.
+    With this constructor the new instance of LogicSqlCondition will be actually as a SimpleCondition. Of course using the setter methods it can be transformed in a more complex logic condition
+    So if you wish to model a logic condition that was just the simple condition 'price' \< 10000  you should just do:
+
+*-----------------------------------------------------------------------------------------+
+|SimpleCondition simpleCondition = new SimpleCondition("price","\<", new Integer(10000)); |
+LogicSqlCondition logicCondition = new LogicSqlCondition(simpleCondition);                |
+*-----------------------------------------------------------------------------------------+
+
+    or, more easy:
+
+*-----------------------------------------------------------------------------------------------------------------+
+|LogicSqlCondition logicCondition = new LogicSqlCondition(new SimpleCondition("price","\<", new Integer(10000))); |
+*-----------------------------------------------------------------------------------------------------------------+
+
+    With the constructor <<LogicSqlCondition(Collection parameter,String operator)>> will be created a new instance of LogicSqlCondition setting the attribute
+    <simpleCondition> with the new instance of SimpleCondition that will be created using the input Collection <parameter> and the input string <operator>.
+    Resuming this constructor creates a new instance of the class Operator setting the his attribute <name> with the input string <operator>,
+    then it will create a new instance  of SimpleCondition setting his attribute <operator> with the newly created instance of Operator, and his attribute <parameter>
+    with the input collection <parameter>; at the end set the attribute <simpleCondition> of instance of LogicSqlCondition it is creating with the  created instance of SimpleCondition
+    With this constructor the new instance of LogicSqlCondition will be actually as a SimpleCondition. Of course using the setter methods it can be transformed in a more complex logic condition
+    So if you wish to model a logic condition that was just the simple condition 'price' \< 10000  you should just do:
+
+*-----------------------------------------------------------------------------+
+|Vector parameter = new Vector();                                             |
+parameter.add("price");                                                       |
+|parameter.add(new Integer(100);                                              |
+LogicSqlCondition logicCondition = new LogicSqlCondition(parameter,"\<");     |
+*-----------------------------------------------------------------------------+
+
+    With the constructor <<LogicSqlCondition(String field,String operator, Object value)>> will be created a new instance of LogicSqlCondition
+    setting the attribute <simpleCondition>, with the  new instance of SimpleCondition that will be created using the input string <field>,
+    the input string <operator>, and the input object <value> using the constructor <SimpleCondition(String field,String operator, Object value)>.
+    Resuming this constructor creates a new instance of the class Operator setting the his attribute <name> with the input string <operator>,
+    then it will create a collection with two elements, the first one will be the input string <field> and the second one will be the input object <value>;
+    then it will create  a new instance  of SimpleCondition setting his attribute <operator> with the newly created instance of Operator and  and his attribute <parameter>
+    with the created collection;  at the end set the attribute <simpleCondition> of instance of LogicSqlCondition it is creating with the  created instance of SimpleCondition;
+    With this constructor the new instance of LogicSqlCondition will be actually as a SimpleCondition. Of course using the setter methods it can be transformed in a more complex logic condition
+    So if you wish to model a logic condition that was just the simple condition 'price' \< 10000  you should just do:
+
+*-----------------------------------------------------------------------------------------------------------------+
+|LogicSqlCondition logicCondition = new LogicSqlCondition("price","\<", new Integer(10000));                      |
+*-----------------------------------------------------------------------------------------------------------------+
+
+    With the constructor <<LogicSqlCondition(SimpleCondition simpleCondition,LogicCondition logicCondition)>> will be created a new instance of LogicSqlCondition
+    setting the attribute <simpleCondition>, with the input parameter <simpleCondition> and the nested attribute <logicCondition> with the input parameter <logicCondition>.
+    The attribute <andOr> is kept unspecified, and must be set with the setter method <setAndOr(String andOr> to make the created instance
+    express properly a logic condition.
+    Suppose you want to model the logic condition 'age \<= 35 AND (salary \>= 35000)' you could just do:
+
+*--------------------------------------------------------------------------------------------------------+
+|SimpleCondition simpleCondition = new SimpleCondition("age","\<=", new Integer(35));                    |
+LogicSqlCondition logicCondition1 = new LogicSqlCondition("salary","\>=", new Integer(35000));           |
+|LogicSqlCondition logicCondition2 = new LogicSqlCondition(simpleCondition, logicCondition1);            |
+logicCondition2.setAndOr("AND") ;                                                                        |
+|// logicCondition2 express the logic condition  'age \<= 35 AND (salary \>= 35000)'                     |
+*--------------------------------------------------------------------------------------------------------+
+
+    or, more easy:
+
+*------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+|LogicSqlCondition logicCondition = new LogicSqlCondition(new SimpleCondition("age","\<=", new Integer(35)), new LogicSqlCondition("salary","\>=", new Integer(35000)));             |
+logicCondition.setAndOr("AND") ;                                                                                                                                                     |
+|// logicCondition express the logic condition  'age \<= 35 AND (salary \>= 35000)'                                                                                                  |
+*------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+
+    Each nested LogicCondition is considered include between parenthesis.
+
+
+    With the constructor <<LogicSqlCondition(SimpleCondition simpleCondition,String andOr,LogicCondition logicCondition)>> will be created a new instance of LogicSqlCondition
+    setting the attribute <simpleCondition>, with the input parameter <simpleCondition>, the attribute <andOr> with the input string <andOr>,  and
+    the nested attribute <logicCondition> with the input parameter <logicCondition>.
+    The expressed logic condition is :
+
+*--------------------------------------------------+
+|simpleCondition andOr (logicCondition)            |
+*--------------------------------------------------+
+
+    Note that each nested logic condition is considered include between parenthesis.
+
+    If you wish to model the logic condition 'age \<= 35 AND (salary \>= 35000)'  you could just do:
+
+*--------------------------------------------------------------------------------------------------------+
+|SimpleCondition simpleCondition = new SimpleCondition("age","\<=", new Integer(35));                    |
+LogicSqlCondition logicCondition1 = new LogicSqlCondition("salary","\>=", new Integer(35000));           |
+|LogicSqlCondition logicCondition2 = new LogicSqlCondition(simpleCondition, "AND", logicCondition1);     |
+// logicCondition2 express the logic condition  'age \<= 35 AND (salary \>= 35000)'                      |
+*--------------------------------------------------------------------------------------------------------+
+
+    or, more easy:
+
+*------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+|LogicSqlCondition logicCondition = new LogicSqlCondition(new SimpleCondition("age","\<=", new Integer(35)), "AND", new LogicSqlCondition("salary","\>=", new Integer(35000)));      |
+// logicCondition express the logic condition  'age \<= 35 AND (salary \>= 35000)'                                                                                                   |
+*------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+
+    With the constructor <<LogicSqlCondition(Collection parameter,String operator,String andOr,LogicCondition logicCondition)>> will be created a new instance of LogicSqlCondition setting the attribute
+    <simpleCondition> with the new instance of SimpleCondition that will be created using the input Collection <parameter> and the input string <operator>.
+    Resuming this constructor creates a new instance of the class Operator setting the his attribute <name> with the input string <operator>,
+    then it will create a new instance  of SimpleCondition setting his attribute <operator> with the newly created instance of Operator, and his attribute <parameter>
+    with the input collection <parameter>; then set the attribute <simpleCondition> of instance of LogicSqlCondition it is creating with the  created instance of SimpleCondition
+    Then will set the attribute <andOr> with the input string <andOr>, and the nested attribute <logicCondition> with the input parameter <logicCondition>.
+    The expressed logic condition is :
+
+*--------------------------------------------------+
+|simpleCondition andOr (logicCondition)            |
+*--------------------------------------------------+
+
+    Note that each nested logic condition is considered include between parenthesis.
+
+    If you wish to model the logic condition 'age \<= 35 AND (salary \>= 35000)'  you could just do:
+
+*--------------------------------------------------------------------------------------------------------+
+|Vector parameter = new Vector();                                                                        |
+parameter.add("age");                                                                                    |
+|parameter.add(new Integer(35);                                                                          |
+LogicSqlCondition logicCondition1 = new LogicSqlCondition("salary","\>=", new Integer(35000));           |
+|LogicSqlCondition logicCondition2 = new LogicSqlCondition(parameter,"\<", "AND", logicCondition1);      |
+// logicCondition2 express the logic condition  'age \<= 35 AND (salary \>= 35000)'                      |
+*--------------------------------------------------------------------------------------------------------+
+
+    or, more easy:
+
+*-----------------------------------------------------------------------------------------------------------------------------------------------+
+|Vector parameter = new Vector();                                                                                                               |
+parameter.add("age");                                                                                                                           |
+|parameter.add(new Integer(35);                                                                                                                 |
+LogicSqlCondition logicCondition = new LogicSqlCondition(parameter,"\<", "AND", new LogicSqlCondition("salary","\>=", new Integer(35000)));     |
+|// logicCondition express the logic condition  'age \<= 35 AND (salary \>= 35000)'                                                             |
+*-----------------------------------------------------------------------------------------------------------------------------------------------+
+
+    With the constructor <<LogicSqlCondition(String field,String operator, Object value,String andOr,LogicCondition logicCondition)>> will be created a new instance of LogicSqlCondition setting the attribute
+    <simpleCondition>, with the  new instance of SimpleCondition that will be created using the input string <field>,
+    the input string <operator>, and the input object <value> using the constructor <SimpleCondition(String field,String operator, Object value)>.
+    Resuming this constructor creates a new instance of the class Operator setting the his attribute <name> with the input string <operator>,
+    then it will create a collection with two elements, the first one will be the input string <field> and the second one will be the input object <value>;
+    then it will create  a new instance  of SimpleCondition setting his attribute <operator> with the newly created instance of Operator and  and his attribute <parameter>
+    with the created collection; then set the attribute <simpleCondition> of instance of LogicSqlCondition it is creating with the  created instance of SimpleCondition;
+    Then will set the attribute <andOr> with the input string <andOr>,  and the nested attribute <logicCondition> with the input parameter <logicCondition>.
+    The expressed logic condition is :
+
+*--------------------------------------------------+
+|field operator value andOr (logicCondition)       |
+*--------------------------------------------------+
+
+     Note that each nested logic condition is considered include between parenthesis.
+
+     If you wish to model the logic condition 'age \<= 35 AND (salary \>= 35000)'  you could just do:
+
+*-----------------------------------------------------------------------------------------------------------------+
+|LogicSqlCondition logicCondition1 = new LogicSqlCondition("salary","\>=", new Integer(35000));                   |
+LogicSqlCondition logicCondition2 = new LogicSqlCondition("age", "\<", new Integer(35), "AND", logicCondition1);  |
+|// logicCondition2 express the logic condition  'age \<= 35 AND (salary \>= 35000)'                              |
+*-----------------------------------------------------------------------------------------------------------------+
+
+     or, more easy:
+
+*----------------------------------------------------------------------------------------------------------------------------------------------------------+
+LogicSqlCondition logicCondition = new LogicSqlCondition("age", "\<", new Integer(35), "AND", new LogicSqlCondition("salary","\>=", new Integer(35000)));  |
+|// logicCondition express the logic condition  'age \<= 35 AND (salary \>= 35000)'                                                                        |
+*----------------------------------------------------------------------------------------------------------------------------------------------------------+
+
+=======================================================================
+
+
+* {Where is used in Madragora}
+
+    * {{{bd-api-guide.html#findCollectionByLogicCondition}findCollectionByLogicCondition}}
+
+    * {{{bd-api-guide.html#Report_methods} Report methods}}
+
+

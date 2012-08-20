@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ProjectTreeState projectID="Z_rfAGiGAqACIgN9" projectPath="D:\sviluppo\Maven\mandragora\design\visualparadigm\mandragora.vpp">
+	<TreeState name="ModelRepository" viewX="60" viewY="18">
+		<ExpandedPath>ModelRepository</ExpandedPath>
+	</TreeState>
+	<TreeState name="DiagramNavigator" viewX="0" viewY="56">
+		<ExpandedPath>DiagramNavigator</ExpandedPath>
+		<ExpandedPath>DiagramNavigator,UML Diagrams</ExpandedPath>
+		<ExpandedPath>ActivityDiagram</ExpandedPath>
+		<SelectedPath>ActivityDiagram,W2Yab9iGAqACIkOL</SelectedPath>
+	</TreeState>
+	<TreeState name="ClassBrowser" viewX="40" viewY="18">
+		<ExpandedPath>ClassBrowser</ExpandedPath>
+	</TreeState>
+	<TreeState name="LogicalView" viewX="0" viewY="0"/>
+</ProjectTreeState>

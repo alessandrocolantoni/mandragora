@@ -1,0 +1,563 @@
+ -----
+ Overview
+ -----
+ Alessandro Colantoni
+ -----
+
+Overview
+
+    * {{{#Summary}Summary}}
+
+    * {{{#More_details}More details}}
+
+    * {{{#BD_Lookup}BD Lookup}}
+
+    * {{{#ServiceFacade_Lookup}ServiceFacade Lookup}}
+
+    * {{{#ApplicationService_and_DAO_lookup}ApplicationService and DAO lookup}}
+
+    * {{{#If_you_do_not_find_a_method}If you do not find a method}}
+
+    * {{{#How_to_write_the_BD_method_doTheCoreJobOfMyApplicationThatItIsImpossibleBeAlreadyWritten}How to write the BD method doTheCoreJobOfMyApplicationThatItIsImpossibleBeAlreadyWritten}}
+
+    * {{{#How_to_write_the_ServiceFacade_method_doTheCoreJobOfMyApplicationThatItIsImpossibleBeAlreadyWritten}How to write the ServiceFacade method doTheCoreJobOfMyApplicationThatItIsImpossibleBeAlreadyWritten}}
+
+    * {{{#How_to_write_the_ApplicationService_methods_doPartialPartOfTheCoreJobOfMyApplicationThatItIsImpossibleBeAlreadyWritten}How to write the ApplicationService methods doPartialPartOfTheCoreJobOfMyApplicationThatItIsImpossibleBeAlreadyWritten}}
+
+    * {{{#How_to_write_new_DAO_methods}How to write new DAO methods}}
+
+    * {{{#Conclusion}Conclusion}}
+
+
+
+
+* {Summary}
+
+
+    Mandragora is a framework that helps building applications providing a business layer implemented
+    with BD (Business Delegate) , Facade, Application Service, DAO, Service Locator and Transfer Object patterns;
+    Mandragora business layer provides 100 of generic methods suitable for the most common purposes, and helps implementing your core business
+    keeping the j2ee patterns structure ({{http://www.corej2eepatterns.com/Patterns2ndEd/index.htm}}).
+
+    Typically, with MVC, the Controller has to update or query the Model, and the View can query the Model as well.\
+    The Model should be decoupled from Controller or View by a Business Delegate tier. So all accesses to the model should pass trough the BD (Business Delegate).\
+    If you use a MVC pattern in the application that you have to design and implement, you can choose between lots of frameworks , as Struts, for the controller and the view;
+    Mandragora framework would be the infrastructure for the Model providing more than one hundred of business delegate methods, that your controller, has just to call,
+    without worrying about their implementation, but you can trust that the entire structure follows the J2ee patterns, as suggested by the structure presented at {{http://www.corej2eepatterns.com/Patterns2ndEd/index.htm}}.\
+    So just do <bd.findByPrimarykey(....)> or <bd.storePathsCascade(...)>, or <bd.addAllToCollection(...)>, or <bd.addTreeToTree(...)>,
+    <bd.addToRetainInCollectionTreeLeaves(...)>, <bd.findCollectionByLogicCondition(..)> and much more, to execute very complex operations and
+    queries such storing or modifying very complex objects in one shot.
+    For example if in your controller you do:
+
+*----------------------------------------------------------------------------------------------+
+|try \{                                                                                        |
+\ \ \ \ BD bd = ServiceLocator.getInstance().getManagerBD();                                   |
+|\ \ \ \ AuthorVO authorVO = (AuthorVO)bd.findByPrimaryKey(Author.class,"manzoni");            |
+\} catch (ApplicationException e) \{                                                           |
+|\ \ \ \ //manage the exception                                                                |
+\}                                                                                             |
+*----------------------------------------------------------------------------------------------+
+
+    authorVO will be the instance of the Author class with key "manzoni" that is stored in your database.\
+    (see {{{quickstart.html}quickstart}} to see how to start quickly, and {{{referenceguide/bd-api-guide.html}bd-api-guide}}, or
+    /and {{{apidocs/index.html}apidocs}} looking for BD to see all the bd methods available).
+
+
+* {More details}
+    
+    The core of Mandragora are four interfaces: <<BD>>, <<ServiceFacade>>, <<ApplicationService>> and <<DAO>>.\
+    The methods of the BD implementation use, to do their job, methods of some ServiceFacade implementation, that use some methods of some ApplicationService
+    and DAO implementations; the ApplicationService implementation use method of some DAO implementation.\
+    We said ServiceFacade, and not Session Facade, because as suggested in   {{http://www.corej2eepatterns.com/Patterns2ndEd/ServiceFacade.htm}}
+    when you design enterprise applications that do not use EJB components, you still need to provide a behavior similar to the Session Facades. But, instead of using session beans,
+    one can use POJOs to implement the facades, and in order to provide a common vocabulary to discuss both POJO Facades and Session Façades, they introduce the term service facades.\
+    Service facades are business-tier facades that are implemented either as POJOs or session beans.\
+    The client of Mandragora accesses the models trough the BD, calling its methods and providing input parameters, that are pushed down into the structure,
+    where each tier does its job to collaborate to the final result.\
+    Each tier lookup the right implementation of the next needed tier using the ServiceLocator. The client looks up the right BD implementation with ServiceLocator as well.
+
+
+* {BD Lookup}
+
+
+    In the above example we saw how the default BD implementation is returned by
+
+*----------------------------------------------------------------------------------------------+
+|BD bd = ServiceLocator.getInstance().getManagerBD();                                           |
+*----------------------------------------------------------------------------------------------+
+
+    and this default BD implementation is the class <it.aco.mandragora.bd.impl.pojo.PojoManagerBD>, but this can be changed to have a different default BD.
+    ({{{referenceguide/lookup-and-mapping.html#Look_up_a_BD_implementation}See Look up a BDimplementation}}).\
+    To lookup a BD implementation there is an other ServiceLocator method:
+
+        * getManagerBD(String bdFactoryClassName, String bdClassName)
+
+    The ServiceLocator doesn't look up the BD implementation directly, but trough a factory of BD implementation, so <bdFactoryClassName> specifies which is the BD factory,
+    while <bdClassName> specifies which BD implementation the specified BD factory has to look up.\
+    Both the input string parameter have to be mapped in {{{referenceguide/mandragora-properties.html}Mandragora.properties}} with the real BDFactory and with the real BD.\
+    So for example if we do:
+
+*----------------------------------------------------------------------------------------------+
+|BD bd = ServiceLocator.getInstance().getManagerBD("myBDFactory", "myImplBD")                  |
+*----------------------------------------------------------------------------------------------+
+
+    putting in {{{referenceguide/mandragora-properties.html}Mandragora.properties}} the entries:
+
+*----------------------------------------------------------------------------------------------+
+|myBDFactory=myPath.someBDFactory                                                              |
+myImplBD=myPath.someImplBD                                                                     |
+*----------------------------------------------------------------------------------------------+
+
+    <bd> will be an instance of <myPath.someImplBD> and it will be instanced by <myPath.someBDFactory>.\
+    So just changing the mapping we change the implementation without affecting the client.\
+    You can choose one of the existing BD implementation, with its <<100 methods ready to be used>>, or write your own implementation,
+    or extending some existing one with some method that you need and not exists, allowing you, if you are generic enough, to reuse more and more time.
+    (See {{{referenceguide/how-to-extend.html}how toextend}}).
+
+
+* {ServiceFacade Lookup}
+
+    In the same way as just described, BD to do its job needs ServiceFacade, and of course each BD implementation lookup the needed ServiceFacade implementation
+    trough the ServiceLocator with the same mechanism. For example for the BD implementation PojoManagerBD,  the ServiceFacadeFactory is specified
+    in {{{referenceguide/mandragora-properties.html}Mandragora.properties}} by the entry <PojoManagerBD.ServiceFacadeFactoryClass>, while the serviceFacade implementation
+    is specified by <PojoManagerBD.ServiceFacadeClass>. So in {{{referenceguide/mandragora-properties.html}Mandragora.properties}} (that must be in your classpath of course) there is:
+
+*--------------------------------------------------------------------------------------------------------------------------+
+|PojoManagerBD.ServiceFacadeFactoryClass=it.aco.mandragora.serviceFacade.concreteFactory.DefaultServiceFacadeFactory       |
+PojoManagerBD.ServiceFacadeClass=it.aco.mandragora.serviceFacade.pojoFacade.PojoFacade                                     |
+*--------------------------------------------------------------------------------------------------------------------------+
+
+    But changing it for other mappings you can use other factories and other implementations, that you can write. For example doing:
+
+*----------------------------------------------------------------------------------------------+
+|PojoManagerBD.ServiceFacadeFactoryClass=myPath.MyServiceFacadeFactory                          |
+PojoManagerBD.ServiceFacadeClass=myPath.MyServiceFacade.                                       |
+*----------------------------------------------------------------------------------------------+
+
+    you are choosing which ServiceFacade factory and implementation PojoFacade has to use, without touching it.
+    We are going now to follow this discussion with ApplicationService and DAO.
+
+
+
+
+* {ApplicationService and DAO lookup}
+
+
+
+    We said before that the ServiceFacade must use ApplicationService and DAO factories and implementations. How to specify them? Well in the same way.
+    In {{{referenceguide/mandragora-properties.html}Mandragora.properties}} there are the entries:
+
+*--------------------------------------------------------------------------------------------------------------------------+
+|PojoFacade.ApplicationServiceFactoryClass=it.aco.mandragora.as.concreteFactory.DefaultApplicationServiceFactory           |
+PojoFacade.ApplicationServiceClass=it.aco.mandragora.as.impl.ImplApplicationService                                        |
+|                                                                                                                          |
+PojoFacade.DAOFactoryClass=it.aco.mandragora.dao.concreteFactory.DefaultDAOFactory                                         |
+|PojoFacade.DAOClass=it.aco.mandragora.dao.impl.ojb.pb.OjbPbDAO                                                            |
+*--------------------------------------------------------------------------------------------------------------------------+
+
+
+
+    Just changing these mappings you decide which ApplicationService and DAO the PojoFacade will have to use.
+    Analogously the chosen it.aco.mandragora.as.impl.ImplApplicationService need a DAO to work as well, and this is specified by the entries:
+
+*--------------------------------------------------------------------------------------------------------------------------+
+|ImplApplicationService.DAOFactoryClass=it.aco.mandragora.dao.concreteFactory.DefaultDAOFactory                            |
+ ImplApplicationService.DAOClass=it.aco.mandragora.dao.impl.ojb.pb.OjbPbDAO                                                |
+*--------------------------------------------------------------------------------------------------------------------------+
+
+    So as we stated at the beginning, when you call a business delegate method, for example:
+
+*--------------------------------------------------------------------------------------------------------------------------+
+|bd.createMissingRelationshipElement(aValueObject, "aCollectionName", "anAttributeName")                                   |
+*--------------------------------------------------------------------------------------------------------------------------+
+
+
+    this method will do all your job respecting the structure of the J2ee patterns, and you can configure externally with {{{referenceguide/mandragora-properties.html}Mandragora.properties}} file,
+    at each tier which is the real implementation that have to do the work, and who is the factory responsible to instance.\
+    For example, the only DAO implementation coming with Mandragora <is it.aco.mandragora.dao.impl.ojb.pb.OjbPbDAO>, that is implemented with the O/R mapper Apache Ojb,
+    but if you want to use Hibernate, just get the DAO interface and implement it with Hibernate, specify for example:
+
+*--------------------------------------------------------------------------------------------------------------------------+
+|PojoFacade.DAOClass=myPath.MyHibernateDAO                                                                                 |
+ImplApplicationService.DAOClass=myPath.MyHibernateDAO                                                                      |
+*--------------------------------------------------------------------------------------------------------------------------+
+
+    and if you want you can compare, or improve the existing implementations.
+    The structure already exists, it follow the j2ee patterns, you have ready to be used 100 methods of the most common and reusable ones,
+    so just focus your attention on the core logic of your application, and save the lot of time you use to spend repeating the same annoying things.
+
+
+
+* {If you do not find a method}
+
+    For example, of course in your application you will need some method such: <<doTheCoreJobOfMyApplicationThatItIsImpossibleBeAlreadyWritten(...)>>.\
+    How can Mandragora help? Easy.({{{referenceguide/how-to-extend.html}see how to extend}})
+
+        1 - Write a new interface that extend BD with your method. Let's call it UserBD.\\
+        2 - Write a new class that implements UserBD, extend the BD implementation that you prefer, and of course implement your method
+            doTheCoreJobOfMyApplicationThatItIsImpossibleBeAlreadyWritten(...). Let's call it ImplUserBD.\
+        3 - Map it in {{{referenceguide/mandragora-properties.html}Mandragora.properties}} and use it.
+
+    So, for example, if you want to use as BD factory the class <it.aco.mandragora.bd.concreteFactory.DefaultBDFactory>
+    just put in {{{referenceguide/mandragora-properties.html}Mandragora.properties}}
+
+*--------------------------------------------------------------------------------------------------------------------------+
+|MyClient.BDFactoryClass=it.aco.mandragora.bd.concreteFactory.DefaultBDFactory                                             |
+MyClient.BDClass=myPath.ImplUserBD                                                                                         |
+*--------------------------------------------------------------------------------------------------------------------------+
+
+    then in your client
+
+*-------------------------------------------------------------------------------------------------------------------------------------+
+|try \{                                                                                                                               |
+\ \ \ \ ImplUserBD bd = (ImplUserBD)ServiceLocator.getInstance().getManagerBD("MyClient.BDFactoryClass", "MyClient.BDClass");         |
+|\ \ \ \ bd.doTheCoreJobOfMyApplicationThatItIsImpossibleBeAlreadyWritten(...);                                                       |
+\} catch (ApplicationException e) \{                                                                                                  |
+|\ \ \ \ //manage the exception                                                                                                       |
+\}                                                                                                                                    |
+*-------------------------------------------------------------------------------------------------------------------------------------+
+
+    Well, on a side, this keeps very clean your controller, so it can be very useful, but on an other side you could complain that Mandragora is not helpful,
+    when you can't find a method suitable for you in the existing ones, because nothing can't avoid you to write your method.\
+    That's true, of course,but let's go on, to see how Mandragora can help you to write you very complex method, core of all your application.
+
+
+
+
+* {How to write the BD method doTheCoreJobOfMyApplicationThatItIsImpossibleBeAlreadyWritten}
+
+
+    First of all, your new class myPath.ImplUserBD is a BD class, so it should use a ServiceFacade, and your new method must too.\
+    Let's suppose you are extending the <it.aco.mandragora.bd.impl.pojo.PojoManagerBD> or <it.aco.mandragora.security.bd.impl.SecurityManagerImplBD>
+    (for the other implementation <it.aco.mandragora.bd.impl.SLSB.SLSBManagerBD> see {{referenceguide/ejb.html}}).\
+    Of course you want to use the ServiceFacade in the same above way, forcing your ImplUserBD to read the ServiceFacade to be used,
+    and the factory that have to instance it, in {{{referenceguide/mandragora-properties.html}Mandragora.properties}}. This can be done in two ways:
+
+        1) initializing the two protected static variables ServiceFacadeFactoryClassName and ServiceFacadeClassName when ImplUserBD is instanced (see {{referenceguide/how-to-extend.html#BD}})
+
+*-------------------------------------------------------------------------------------------------------------------------------------+
+|ServiceFacadeFactoryClassName = "ImplUserBD.ServiceFacadeFactoryClass" ;                                                             |
+ServiceFacadeClassName = "ImplUserBD.ServiceFacadeClass" ;                                                                            |
+*-------------------------------------------------------------------------------------------------------------------------------------+
+
+        2) Overwrite in ImplUserBD the getServiceFacade() method in this way:
+
+*----------------------------------------------------------------------------------------------------------------------------------------------------+
+|protected ServiceFacade getServiceFacade()throws ApplicationException\{                                                                             |
+\ \ \ \ try\{                                                                                                                                        |
+|\ \ \ \ \ \ \ \return ServiceLocator.getInstance().getServiceFacade("ImplUserBD.ServiceFacadeFactoryClass","ImplUserBD.ServiceFacadeClass");        |
+\ \ \ \ \}catch (ServiceLocatorException e) \{                                                                                                       |
+|\ \ \ \ \ \ \ \ log.error("ServiceLocatorException caught in ImplUserBD.getContextServiceFacade(): " + e.toString());                               |
+\ \ \ \ \ \ \ \ throw new ApplicationException("ApplicationException thrown in ImplUserBD.getContextServiceFacade()" + e.toString(),e);              |
+|\ \ \ \ \}                                                                                                                                          |
+\}                                                                                                                                                   |
+*----------------------------------------------------------------------------------------------------------------------------------------------------+
+
+    In both case put in {{{referenceguide/mandragora-properties.html}Mandragora.properties}}
+
+*----------------------------------------------------------------------------------------------------------------------------------------------------+
+|ImplUserBD.ServiceFacadeFactoryClass=it.aco.mandragora.serviceFacade.concreteFactory.DefaultServiceFacadeFactory                                    |
+#this is the ServiceFacade implementation you have to write                                                                                          |
+|ImplUserBD.ServiceFacadeClass=myPath.ImplUserServiceFacade                                                                                          |
+*----------------------------------------------------------------------------------------------------------------------------------------------------+
+
+    Now your new method should use some ServiceFacade method to do the job, but if you could not find a BD method suitable, probably there is not a ServiceFacade method too.
+    That's why you have to write a new ServiceFacade implementation, that we call myPath.ImplUserServiceFacade,
+    with the famous method doTheCoreJobOfMyApplicationThatItIsImpossibleBeAlreadyWritten that has to be called by your BD implementation.\
+    So the implementation of the your method doTheCoreJobOfMyApplicationThatItIsImpossibleBeAlreadyWritten(...) in your ImplUserBD should just be:
+
+*-------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+|public void doTheCoreJobOfMyApplicationThatItIsImpossibleBeAlreadyWritten(...)  throws ApplicationException\{                                                            |
+\ \ \ \ try\{                                                                                                                                                             |
+|\ \ \ \ \ \ \ \ UserServiceFacade userServiceFacade = (UserServiceFacade) getServiceFacade();                                                                            |
+\ \ \ \ \ \ \ \ userServiceFacade.doTheCoreJobOfMyApplicationThatItIsImpossibleBeAlreadyWritten(...);                                                                     |
+|\ \ \ \ \}catch (Exception e) \{                                                                                                                                         |
+\ \ \ \ \ \ \ \ throw new ApplicationException("Exception thrown in ImplUserBD.doTheCoreJobOfMyApplicationThatItIsImpossibleBeAlreadyWritten(...)" + e.toString(),e);     |
+|\ \ \ \ \}                                                                                                                                                               |
+\}                                                                                                                                                                        |
+*-------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+
+    You still can't see the benefits of Mandragora, moreover you had to write classes, interfaces, configure a properties file etc.
+    (well if you fix in the job done, you can see it can't take more than 10 minutes, you still didn't do nothing), and you still did not implement the method,
+    as you just delegated to the ServiceFacade (I think this tier is called business delegate because it delegates).
+
+
+* {How to write the ServiceFacade method doTheCoreJobOfMyApplicationThatItIsImpossibleBeAlreadyWritten}
+
+    We have to write a new ServiceFacade implementation, and let's suppose that we want to do that extending the PojoFacade
+    (if you wish to use the Session Facade have look at {{referenceguide/ejb.html}}. So you have to do:
+
+        1) Write a new interface that extend ServiceFacade with your method. Let's call it UserServiceFacade\
+        2) Write a new class that implements UserServiceFacade, extends the it.aco.mandragora.serviceFacade.pojoFacade.PojoFacade, and of course implement your method <<doTheCoreJobOfMyApplicationThatItIsImpossibleBeAlreadyWritten(...)>>. Let's call it ImplUserServiceFacade\
+        3) We saw above how to map it in {{{referenceguide/mandragora-properties.html}Mandragora.properties}} to use it in ImplUserBD:
+
+*----------------------------------------------------------------------------------------------------------------------------------------------------+
+|ImplUserBD.ServiceFacadeFactoryClass=it.aco.mandragora.serviceFacade.concreteFactory.DefaultServiceFacadeFactory                                    |
+ImplUserBD.ServiceFacadeClass=myPath.ImplUserServiceFacade                                                                                           |
+*----------------------------------------------------------------------------------------------------------------------------------------------------+
+
+    Being ImplUserServiceFacade a ServiceFacade implementation, it will need an ApplicationService implementation and a DAO implementation,
+    with its factory to be specified, and as always, we want such implementations and factories could be specified in Mandragora.properties.\
+    This can be done in the now usual two ways :
+
+        1) initializing the four protected static variables ApplicationServiceFactoryClassName, ApplicationServiceClassName, DAOFactoryClassName, DAOClassName when ImplUserServiceFacade is instanced (see http://mandragora.sourceforge.net/referenceguide/how-to-extend.html)
+
+*----------------------------------------------------------------------------------------------------------------------------------------------------+
+|ApplicationServiceFactoryClassName = "ImplUserServiceFacade.ApplicationServiceFactoryClass" ;                                                       |
+ApplicationServiceClassName = "ImplUserServiceFacade.ApplicationServiceClass" ;                                                                      |
+|DAOFactoryClassName = "ImplUserServiceFacade.DAOFactoryClass" ;                                                                                     |
+DAOClassName =   "ImplUserServiceFacade.DAOClass" ;                                                                                                  |
+*----------------------------------------------------------------------------------------------------------------------------------------------------+
+
+        2) Overwrite in ImplUserServiceFacade the getApplicationService() and getDAO() methods in this way:
+
+*--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+|protected ApplicationService getApplicationService()throws ServiceFacadeException\{                                                                                                   |
+\ \ \ \ try\{                                                                                                                                                                          |
+|\ \ \ \ \ \ \ \ return ServiceLocator.getInstance().getApplicationService("ImplUserServiceFacade.ApplicationServiceFactoryClass","ImplUserServiceFacade.ApplicationServiceClass");    |
+\ \ \ \ \}catch (ServiceLocatorException e) \{                                                                                                                                         |
+|\ \ \ \ \ \ \ \ log.error("ServiceLocatorException caught in ImplUserServiceFacade.getApplicationService(): " + e.toString());                                                        |
+\ \ \ \ \ \ \ \ throw new ServiceFacadeException("ServiceFacadeException thrown in ImplUserServiceFacade.getApplicationService()" + e.toString(),e);                                   |
+|\ \ \ \ \}                                                                                                                                                                            |
+\}                                                                                                                                                                                     |
+|                                                                                                                                                                                      |
+\                                                                                                                                                                                      |
+|                                                                                                                                                                                      |
+protected DAO getDAO()throws ServiceFacadeException\{                                                                                                                                  |
+|\ \ \ \ try\{                                                                                                                                                                         |
+\ \ \ \ \ \ \ \ return ServiceLocator.getInstance().getDAO("ImplUserServiceFacade.DAOFactoryClass","ImplUserServiceFacade.DAOClass");                                                  |
+|\ \ \ \ \}catch (ServiceLocatorException e) \{                                                                                                                                        |
+\ \ \ \ \ \ \ \ log.error("ServiceLocatorException caught in ImplUserServiceFacade.getDAO(): " + e.toString());                                                                        |
+|\ \ \ \ \ \ \ \ throw new ServiceFacadeException("ServiceFacadeException thrown in ImplUserServiceFacade.getDAO()" + e.toString(),e);                                                 |
+\ \ \ \ \}                                                                                                                                                                             |
+|\}                                                                                                                                                                                    |
+*--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+
+        In both case put in {{{referenceguide/mandragora-properties.html}Mandragora.properties}}
+
+*------------------------------------------------------------------------------------------------------------------------------------------------------+
+|ImplUserServiceFacade.ApplicationServiceFactoryClass=it.aco.mandragora.as.concreteFactory.DefaultApplicationServiceFactory                            |
+ImplUserServiceFacade.ApplicationServiceClass=myPath.ImplUserApplicationService                                                                        |
+|ImplUserServiceFacade.DAOFactoryClass=it.aco.mandragora.dao.concreteFactory.DefaultDAOFactory                                                         |
+ImplUserServiceFacade.DAOClass=myPath.ImplUserDAO                                                                                                      |
+*------------------------------------------------------------------------------------------------------------------------------------------------------+
+
+
+    Note that myPath.ImplUserApplicationService and myPath.ImplUserDAO can be existing implementations coming with Mandragora, or be written by your own.\
+    This is the point where Mandragora helps, when you can't find a suitable BD method. Now that in your ServiceFacade implementation you have to write it,
+    probably you don't have to do all the works, because you can write it in terms of the existing ApplicationService and DAO methods.\
+    For example it could be that your method could be something like this:
+
+*-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+|public void doTheCoreJobOfMyApplicationThatItIsImpossibleBeAlreadyWritten(...) throws ServiceFacadeExceptio\{                                                                                        |
+\ \ \ \     try \{                                                                                                                                                                                    |
+|\ \ \ \ \ \ \ \ DAO dao = getDAO();                                                                                                                                                                  |
+\ \ \ \ \ \ \ \ ApplicationService applicationService = getApplicationService();                                                                                                                      |
+|\ \ \ \ \ \ \ \ applicationService.method1(...);                                                                                                                                                     |
+\ \ \ \ \ \ \ \ dao.method2(...);                                                                                                                                                                     |
+|\ \ \ \ \ \ \ \ ....                                                                                                                                                                                 |
+\ \ \ \ \ \ \ \ applicationService.methodN(...);                                                                                                                                                      |
+|\ \ \ \ \} catch (ApplicationServiceException e) \{                                                                                                                                                  |
+\ \ \ \ \ \ \ \ log.error("ApplicationServiceException caught in ImplUserServiceFacade.doTheCoreJobOfMyApplicationThatItIsImpossibleBeAlreadyWritten(...): " + e.toString());                         |
+|\ \ \ \ \ \ \ \ throw new ServiceFacadeException("ServiceFacadeException thrown in ImplUserServiceFacade.doTheCoreJobOfMyApplicationThatItIsImpossibleBeAlreadyWritten(...)" + e.toString(),e);      |
+\ \ \ \ \}catch (DataAccessException e) \{                                                                                                                                                            |
+|\ \ \ \ \ \ \ \ log.error("DataAccessException caught in ImplUserServiceFacade.doTheCoreJobOfMyApplicationThatItIsImpossibleBeAlreadyWritten(...): " + e.toString());                                |
+\ \ \ \ \ \ \ \ throw new ServiceFacadeException("ServiceFacadeException thrown in ImplUserServiceFacade.doTheCoreJobOfMyApplicationThatItIsImpossibleBeAlreadyWritten(...)" + e.toString(),e);       |
+|\ \ \ \ \} catch (Exception e) \{                                                                                                                                                                    |
+\ \ \ \ \ \ \ \ log.error("Exception caught in ImplUserServiceFacade.doTheCoreJobOfMyApplicationThatItIsImpossibleBeAlreadyWritten(...): " + e.toString());                                           |
+|\ \ \ \ \ \ \ \ throw new ServiceFacadeException("ServiceFacadeException thrown in ImplUserServiceFacade.doTheCoreJobOfMyApplicationThatItIsImpossibleBeAlreadyWritten(...)" + e.toString(),e);      |
+\ \ \ \ \}                                                                                                                                                                                            |
+|\}                                                                                                                                                                                                   |
+*-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+
+
+    Now, of course you can say that it could be the case you are not so lucky, so it is impossible to express your method just in terms of the existing ones. Right.\
+    But this is the point: not just in terms of. I mean that surely the existing methods can do part of your work. \
+    Surely, being such methods so usual, and so many, that if you decompose properly the logic of the job you have to do,
+    surely the existing ApplicationService and DAO can do a big part of your work.\
+    So probably the doTheCoreJobOfMyApplicationThatItIsImpossibleBeAlreadyWritten in the ServiceFacade tier will be something like this:
+
+
+*-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+                                                                                                                                                                                                      |
+|public void doTheCoreJobOfMyApplicationThatItIsImpossibleBeAlreadyWritten(...) throws ServiceFacadeException\{                                                                                       |
+\ \ \ \ try \{                                                                                                                                                                                        |
+|\ \ \ \ \ \ \ \ UserDAO userDao = (UserDAO)getDAO();                                                                                                                                                 |
+\ \ \ \ \ \ \ \ UserApplicationService userApplicationService = (UserApplicationService)getApplicationService();                                                                                      |
+|\ \ \ \ \ \ \ \ userApplicationService.method1(...);                                                                                                                                                 |
+\ \ \ \ \ \ \ \ userDao.method2(...);                                                                                                                                                                 |
+|\ \ \ \ \ \ \ \ ....                                                                                                                                                                                 |
+\ \ \ \ \ \ \ \ userApplicationService.methodN(...);                                                                                                                                                  |
+|\ \ \ \ \ \ \ \ userApplicationService.doPartialPartOfTheCoreJobOfMyApplicationThatItIsImpossibleBeAlreadyWritten1(....);                                                                            |
+\ \ \ \ \ \ \ \ userDao.doPartialPartOfTheCoreJobOfMyApplicationThatItIsImpossibleBeAlreadyWritten2(...) ;                                                                                            |
+|\ \ \ \ \} catch (ApplicationServiceException e) \{                                                                                                                                                  |
+\ \ \ \ \ \ \ \ log.error("ApplicationServiceException caught in ImplUserServiceFacade.doTheCoreJobOfMyApplicationThatItIsImpossibleBeAlreadyWritten(...): " + e.toString());                         |
+|\ \ \ \ \ \ \ \ throw new ServiceFacadeException("ServiceFacadeException thrown in ImplUserServiceFacade.doTheCoreJobOfMyApplicationThatItIsImpossibleBeAlreadyWritten(...)" + e.toString(),e);      |
+\ \ \ \ \}catch (DataAccessException e) \{                                                                                                                                                            |
+|\ \ \ \ \ \ \ \ log.error("DataAccessException caught in ImplUserServiceFacade.doTheCoreJobOfMyApplicationThatItIsImpossibleBeAlreadyWritten(...): " + e.toString());                                |
+\ \ \ \ \ \ \ \ throw new ServiceFacadeException("ServiceFacadeException thrown in ImplUserServiceFacade.doTheCoreJobOfMyApplicationThatItIsImpossibleBeAlreadyWritten(...)" + e.toString(),e);       |
+|\ \ \ \ \} catch (Exception e) \{                                                                                                                                                                    |
+\ \ \ \ \ \ \ \ log.error("Exception caught in ImplUserServiceFacade.doTheCoreJobOfMyApplicationThatItIsImpossibleBeAlreadyWritten(...): " + e.toString());                                           |
+|\ \ \ \ \ \ \ \ throw new ServiceFacadeException("ServiceFacadeException thrown in ImplUserServiceFacade.doTheCoreJobOfMyApplicationThatItIsImpossibleBeAlreadyWritten(...)" + e.toString(),e);      |
+\ \ \ \ \}                                                                                                                                                                                            |
+|\}                                                                                                                                                                                                   |
+*-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+
+    As you have seen you need some ApplicationService and DAO methods that doesn't exist. To write them you have to do the same done for BD and ServiceFacade.
+
+
+* {How to write the ApplicationService methods doPartialPartOfTheCoreJobOfMyApplicationThatItIsImpossibleBeAlreadyWritten}
+
+    We have to write a new ApplicationService implementation with the new methods, and let's suppose that we want to do that extending
+    <it.aco.mandragora.as.impl.ImplApplicationService>.
+
+        1) Write a new interface that extend ApplicationService with your method. Let's call it UserApplicationService\
+        2) Write a new class that implements UserApplicationService, extends ImplApplicationServiceand and of course implement your methods doPartialPartOfTheCoreJobOfMyApplicationThatItIsImpossibleBeAlreadyWritten(...). Let's call it ImplUserApplicationService\
+        3) We saw above how to map it in {{{referenceguide/mandragora-properties.html}Mandragora.properties}} to use it in ImplUserBD:
+*---------------------------------------------------------------------------------------------------------------------------------------+
+|ImplUserServiceFacade.ApplicationServiceFactoryClassit.aco.mandragora.as.concreteFactory.DefaultApplicationServiceFactory              |
+ImplUserServiceFacade.ApplicationServiceClass=myPath.ImplUserApplicationService                                                         |
+*---------------------------------------------------------------------------------------------------------------------------------------+
+
+    All ApplicationService implementations, so ImplUserApplicationService as well, need DAO to do the job, and which implementation to use, with its factory,
+    again we want to be configurable in {{{referenceguide/mandragora-properties.html}Mandragora.properties}}. Again this can be done in two ways:
+
+        1) initializing the two protected static variables DAOFactoryClassName, DAOClassName when ImplUserApplicationService is instanced (see {{{referenceguide/how-to-extend.html}how to extend}})
+
+*-------------------------------------------------------------------------------------------------------+
+|DAOFactoryClassName = "ImplUserApplicationService.DAOFactoryClass" ;                                   |
+DAOClassName =   "ImplUserApplicationService.DAOClass" ;                                                |
+*-------------------------------------------------------------------------------------------------------+
+
+        2) Overwrite in ImplUserApplicationService the getDAO() methods in this way:
+
+*----------------------------------------------------------------------------------------------------------------------------------------------------------------+
+|protected DAO getDAO()throws ServiceFacadeException\{                                                                                                           |
+\ \ \ \ try\{                                                                                                                                                    |
+|\ \ \ \ \ \ \ \ return ServiceLocator.getInstance().getDAO("ImplUserApplicationService.DAOFactoryClass","ImplUserApplicationService.DAOClass");                 |
+\ \ \ \ \}catch (ServiceLocatorException e) \{                                                                                                                   |
+|\ \ \ \ \ \ \ \ log.error("ServiceLocatorException caught in ImplUserApplicationService.getDAO(): " + e.toString());                                            |
+\ \ \ \ \ \ \ \ throw new ServiceFacadeException("ServiceFacadeException thrown in ImplUserApplicationService.getDAO()" + e.toString(),e);                       |
+|\ \ \ \ \}                                                                                                                                                      |
+\}                                                                                                                                                               |
+*----------------------------------------------------------------------------------------------------------------------------------------------------------------+
+
+        In both case put in {{{referenceguide/mandragora-properties.html}Mandragora.properties}}
+
+*-----------------------------------------------------------------------------------------------------------+
+|ImplUserApplicationService.DAOFactoryClass=it.aco.mandragora.dao.concreteFactory.DefaultDAOFactory         |
+ImplUserApplicationService.DAOClass=myPath.ImplUserDAO                                                      |
+*-----------------------------------------------------------------------------------------------------------+
+
+
+    Again <myPath.ImplUserDAO> could be the existing <it.aco.mandragora.dao.impl.ojb.pb.OjbPbDAO> coming with Mandragora or can be one of your own DAO implementations.\
+    About the DAOFactory, just to say that (as we have done for the other tiers) we use the existing one, to not complicate to much.
+    Anyway if you want to change it see {{referenceguide/how-to-extend.html#Write_your_DAO_Factory}}\
+    Let's write now in the ImplUserApplicationService the new methods <<doPartialPartOfTheCoreJobOfMyApplicationThatItIsImpossibleBeAlreadyWritten>>
+
+
+*----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+|public void doPartialPartOfTheCoreJobOfMyApplicationThatItIsImpossibleBeAlreadyWritten(...) throws ApplicationServiceException\{                                                                                                                                |
+\ \ \ \ try\{                                                                                                                                                                                                                                                    |
+|                                                                                                                                                                                                                                                                |
+\ \ \ \ \ \ \ \ DAO dao = getDAO();                                                                                                                                                                                                                              |
+|\ \ \ \ \ \ \ \ do a piece of work                                                                                                                                                                                                                              |
+\ \ \ \ \ \ \ \ ......                                                                                                                                                                                                                                           |
+|\ \ \ \ \ \ \ \ dao.method1(....);                                                                                                                                                                                                                              |
+\ \ \ \ \ \ \ \ .....                                                                                                                                                                                                                                            |
+|\ \ \ \ \ \ \ \ do an other piece of work                                                                                                                                                                                                                       |
+\ \ \ \ \ \ \ \ .....                                                                                                                                                                                                                                            |
+|\ \ \ \ \ \ \ \ dao.method2(....);                                                                                                                                                                                                                              |
+\ \ \ \ \ \ \ \ ........                                                                                                                                                                                                                                         |
+|                                                                                                                                                                                                                                                                |
+\ \ \ \ \}catch (DataAccessException e) \{                                                                                                                                                                                                                       |
+|\ \ \ \ \ \ \ \ log.error("DataAccessException caught in ImplUserApplicationService.doPartialPartOfTheCoreJobOfMyApplicationThatItIsImpossibleBeAlreadyWritten(...): " + e.toString());                                                                         |
+\ \ \ \ \ \ \ \ throw new ApplicationServiceException("ApplicationServiceException thrown in ImplUserApplicationService.doPartialPartOfTheCoreJobOfMyApplicationThatItIsImpossibleBeAlreadyWritten(...)" + e.toString(),e);                                      |
+|\ \ \ \ \}catch (Exception e) \{                                                                                                                                                                                                                                |
+\ \ \ \ \ \ \ \ log.error("Exception caught in ImplUserApplicationService.doPartialPartOfTheCoreJobOfMyApplicationThatItIsImpossibleBeAlreadyWritten(...): " + e.toString());                                                                                    |
+|\ \ \ \ \ \ \ \ throw new ApplicationServiceException("ApplicationServiceException thrown in ImplUserApplicationService.rdoPartialPartOfTheCoreJobOfMyApplicationThatItIsImpossibleBeAlreadyWritten(...)" + e.toString(),e);                                    |
+\ \ \ \ \}                                                                                                                                                                                                                                                       |
+|\}                                                                                                                                                                                                                                                              |
+*----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+
+
+    Again you can see, that even if at the ServiceFacade tier I couldn't express the missing ServiceFacade method just in terms of
+    the existing ApplicationService and DAO methods, I could express part of the job in terms of the existing ApplicationService and DAO methods,
+    and to do the other part of the job I need new ApplicationService and DAO methods, but, about the new ApplicationService methods, probably,
+    I don't have to do the whole job, becuase probably I can express the <<doPartialPartOfTheCoreJobOfMyApplicationThatItIsImpossibleBeAlreadyWritten>>
+    in the ApplicationService in terms of existing DAO methods. Again, it could be I'm not so lucky and the existing DAO methods are not enough for the partial
+    job at ApplicationService tier, but I'm sure that they can give you an hand, and do a part of the job, and for the remaining part, you have to write some DAO methods more.\
+    In such case the  <doPartialPartOfTheCoreJobOfMyApplicationThatItIsImpossibleBeAlreadyWritten> at the ApplicationService tier would be:
+
+
+*----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+public void doPartialPartOfTheCoreJobOfMyApplicationThatItIsImpossibleBeAlreadyWritten(...) throws ApplicationServiceException\{                                                                                                                                 |
+|\ \ \ \ try\{                                                                                                                                                                                                                                                   |
+\                                                                                                                                                                                                                                                                |
+|\ \ \ \ \ \ \ \ UserDAO userDao = (UserDAO)getDAO();                                                                                                                                                                                                            |
+\                                                                                                                                                                                                                                                                |
+|\ \ \ \ \ \ \ \ do a piece of work                                                                                                                                                                                                                              |
+\ \ \ \ \ \ \ \ ......                                                                                                                                                                                                                                           |
+|\ \ \ \ \ \ \ \ userDao.existingmethod1(....);                                                                                                                                                                                                                  |
+\ \ \ \ \ \ \ \ .....                                                                                                                                                                                                                                            |
+|\ \ \ \ \ \ \ \ do an other piece of work here at ApplicationService tier                                                                                                                                                                                       |
+\ \ \ \ \ \ \ \ .....                                                                                                                                                                                                                                            |
+|\ \ \ \ \ \ \ \ userDao.existingmethod2(....);                                                                                                                                                                                                                  |
+\                                                                                                                                                                                                                                                                |
+|\ \ \ \ \ \ \ \ do an other piece of work at ApplicationService tier                                                                                                                                                                                            |
+\ \ \ \ \ \ \ \ ........                                                                                                                                                                                                                                         |
+|\ \ \ \ \ \ \ \ userDao.myNewDAOMethod(....);                                                                                                                                                                                                                   |
+\ \ \ \ \ \ \ \ .........                                                                                                                                                                                                                                        |
+|                                                                                                                                                                                                                                                                |
+\ \ \ \ \}catch (DataAccessException e) \{                                                                                                                                                                                                                       |
+|\ \ \ \ \ \ \ \ log.error("DataAccessException caught in ImplUserApplicationService.doPartialPartOfTheCoreJobOfMyApplicationThatItIsImpossibleBeAlreadyWritten(...): " + e.toString());                                                                         |
+\ \ \ \ \ \ \ \ throw new ApplicationServiceException("ApplicationServiceException thrown in ImplUserApplicationService.doPartialPartOfTheCoreJobOfMyApplicationThatItIsImpossibleBeAlreadyWritten(...)" + e.toString(),e);                                      |
+|\ \ \ \ \}catch (Exception e) \{                                                                                                                                                                                                                                |
+\ \ \ \ \ \ \ \ log.error("Exception caught in ImplUserApplicationService.doPartialPartOfTheCoreJobOfMyApplicationThatItIsImpossibleBeAlreadyWritten(...): " + e.toString());                                                                                    |
+|\ \ \ \ \ \ \ \ throw new ApplicationServiceException("ApplicationServiceException thrown in ImplUserApplicationService.rdoPartialPartOfTheCoreJobOfMyApplicationThatItIsImpossibleBeAlreadyWritten(...)" + e.toString(),e);                                    |
+\ \ \ \ \}                                                                                                                                                                                                                                                       |
+|\}                                                                                                                                                                                                                                                              |
+*----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+
+
+    Let's see now how to write the new DAO methods
+
+* {How to write new DAO methods}
+
+    To have more detail about this you can have a look at {{referenceguide/how-to-extend.html#DAO}}\
+    We have to write a new DAO implementation with the new methods, and let's suppose that we want to do that extending <it.aco.mandragora.dao.impl.ojb.pb.OjbPbDAO>.
+
+        1) Write a new interface that extend DAO with your method. Let's call it UserDAO\
+        2) Write a new class that implements UserDAO, extends OjbPbDAO and of course implement your new methods.Let's call it  ImplUserDAO\
+        3) We saw above how to map it in {{{referenceguide/mandragora-properties.html}Mandragora.properties}} to use it in ImplUserApplicationService and in ImplUserServiceFacade:
+
+*--------------------------------------------------------------------------------------------------------------+
+|ImplUserApplicationService.DAOFactoryClass=it.aco.mandragora.dao.concreteFactory.DefaultDAOFactory            |
+ImplUserApplicationService.DAOClass=myPath.ImplUserDAO                                                         |
+|ImplUserServiceFacade.DAOFactoryClass=it.aco.mandragora.dao.concreteFactory.DefaultDAOFactory                 |
+ImplUserServiceFacade.DAOClass=myPath.ImplUserDAO                                                              |
+*--------------------------------------------------------------------------------------------------------------+
+
+
+
+
+
+
+* {Conclusion}
+
+    Resuming a bit, BD uses ServiceFacade, ServiceFacade uses ApplicationService and DAO, ApplicationService uses DAO.\
+    When you miss a BD method you have to write a new ServiceFacade method as well, that can be expressed part in terms of existing ApplicationService and DAO methods,
+    and part in terms of new ApplicationService and DAO methods that you have to implement by your own.\
+    You will implement the new ApplicationService methods, part in term of the existing DAO methods, and part in terms of the new DAO methods you have to implement.\
+    Should be clear now, how Mandragora can help.\
+    In the most of cases you will find listed the right method you need, and so just do bd.someBDMethod(...) and forget about implementation details, connections,
+    if used ejb or not, forget about technology and patterns too. Of course forget just in the client using BD, because then you have to
+    configure {{{referenceguide/mandragora-properties.html}Mandragora.properties}} (but if you use default implementation it is already configured), ejb-jar.xml,
+    repository file if you use OjbPbDAO (the mapping file for Apache Ojb) etc.\
+    But if you for example are using it in a controller, forget all about that, just fix on your controller logic, you will configure later, or someone else will do.
+    And change configuration when you want without affecting the controller code.\
+    If you miss some method, don't worry, decompose the logic of the method you need in smaller units,
+    and try to use the most possible the methods at the different tiers, and you will get part of the job done, and moreover you are keeping the j2ee pattern well done structure.\
+    Moreover if you do an effort to write the missing methods at all the tiers as general as possible, you have good chance to reuse them next time,
+    so the list of available methods at all tier will grow up, and if everybody do that and share, we can get a time where we can have available thousands of methods,
+    at all tiers, and above all we could have the interfaces implemented with many technologies, and user must just choose the most suitable for his needing.

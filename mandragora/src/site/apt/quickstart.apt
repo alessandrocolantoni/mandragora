@@ -1,0 +1,63 @@
+ -----
+ The Site
+ -----
+ Alessandro Colantoni
+ -----
+
+Quick Start
+
+ The only available implementation of DAO is  OjbPbDAO class.
+ So to start quickly with mandragora you should have some skill with Ojb.
+ Apache ObJectRelationalBridge (OJB) is an Object/Relational mapping tool that allows transparent persistence for Java Objects
+ against relational databases (visit {{http://db.apache.org/ojb/}})
+
+ OjbPbDAO class use ojb PersistenceBroker to implement DAO interface so you don't need all Ojb but just the  the PersistenceBroker API that is the one that provides the lowest level access to OJB's persistence engine.
+ So if you are new with Obj and his PersistenceBroker  you you should spend some time in it. {{href=http://db.apache.org/ojb/docu/tutorials/pb-tutorial.html}}
+ Don't forget that the idea of mandragora is to provide a set o Business and DAO  operation hiding technology details.
+ So theoretically you could start using mandragora without studying the persistence broker.
+ What you absolutely must be skilled with is ojb repository.xml.
+ Don't worry!!, that's the easiest of ojb, and in my opinion, is what more make ojb great. repository.xml is the xml file where you map java objects with tables.
+ More, repository.xml is the xml file where you map your Java class diagram with java objects with your relational database.
+ So before to follow reading jump to {{http://db.apache.org/ojb/docu/guides/repository.html}}.
+
+ We suppose that if you're reading here, you know enough about repository.xml file of Ojb.
+ Now do the following :
+
+  * 1 - Download the last release of mandragora-blank.
+
+  * 2 - Put all files you find in the WEB-INF\lib directory in your lib directory.
+
+  * 3 - Put all files you find in WEB-INF\classes directory in classes directory of your web application.
+
+  * 4 - Write your repository.xml file.
+
+ Now you are ready. !
+ In your class, where you want to use mandragora, just import three files:
+
+  * import it.aco.mandragora.bd.BD;
+
+  * import it.aco.mandragora.common.ServiceLocator;
+
+  * import it.aco.mandragora.common.ApplicationException;
+
+ now you can do:
+
+*-------------------------------------------------------------------------------------------------------------+
+|try \{                                                                                                       |
+\ \ \ \ BD bd = ServiceLocator.getInstance().getManagerBD();  |
+| \} catch (ApplicationException e) \{                                                                        |
+\ \ \ \ //manage the exception                                                                                |
+| \}                                                                                                          |
+*-------------------------------------------------------------------------------------------------------------+
+
+ now in bd you have available all operations of mandragora.<br>
+ For example:
+
+*-------------------------------------------------------------------------------------------------------------+
+|bd.findByPrimaryKey(Author.class,"manzoni");                                                                 |
+*-------------------------------------------------------------------------------------------------------------+
+
+ return the instance of the Author class with key "manzoni"
+ Find out all methods available in bd in javadoc. Look at class it.aco.mandragora.bd.BD or go to the {{{referenceguide/bd-api-guide.html}bd apis guide}}
+
+

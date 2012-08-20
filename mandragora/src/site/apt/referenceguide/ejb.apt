@@ -1,0 +1,831 @@
+ -----
+ Ejb use
+ -----
+ Alessandro Colantoni
+ -----
+
+
+Ejb Use
+
+    * {{{#Use_of_ejb_BD_implementation_provided_by_Mandragora}1 - Use of ejb BD implementation provided by Mandragora}}
+
+    * {{{#Add_methods_to_ejb_BD_implementation}2 - Add methods to ejb BD implementation}}
+
+        * {{{#Write_a_new_ejb}2.1 - Write a new ejb}}
+
+        * {{{#Extend_ejb_BD_implementation}2.2 - Extend ejb BD implementation}}
+
+        * {{{#Distributed_transactions}2.3 - Distributed transactions}}
+
+    * {{{#Further_configurations}3 - Further configurations}}
+
+
+
+
+* {Use of ejb BD implementation provided by Mandragora}
+
+    Right now, the only ejb implementation of BD provided by Mandragora is just stateless session beans implementation, but it is not hard to write the right implementation
+    for other kind of ejb beans.
+    The ejb stateless session bean implementation of BD is:
+
+*-------------------------------------------------------------------------------------------------------------+
+|it.aco.mandragora.bd.impl.SLSB.SLSBManagerBD                                                                 |
+*-------------------------------------------------------------------------------------------------------------+
+
+    So if in your class you want to use this BD implementation you have for example to do:
+
+*-------------------------------------------------------------------------------------------------------------+
+|BD bd= ServiceLocator.getInstance().getManagerBD("MyClassBDFactoryClassName","MyClassBDClassName");          |
+*-------------------------------------------------------------------------------------------------------------+
+
+    and put the following in {{{mandragora-properties.html}Mandragora.properties}}.
+
+*-------------------------------------------------------------------------------------------------------------+
+MyClassBDFactoryClassName=it.aco.mandragora.bd.concreteFactory.DefaultBDFactory                               |
+|MyClassBDClassName=it.aco.mandragora.bd.impl.SLSB.SLSBManagerBD                                              |
+*-------------------------------------------------------------------------------------------------------------+
+
+
+    The SLSBManagerBD uses ejb session facade bean in place of pojo facade bean.
+    Concretely it uses the ejb beans BusinessSLSBFacadeHome and CrudSLSBFacadeHome.
+    To make SLSBManagerBD use these two beans you have to specify their use in {{{mandragora-properties.html}Mandragora.properties}}, adding (if they are not yet) the following entries:
+
+*--------------------------------------------------------------------------------------------------------------------------+
+|SLSBManagerBD.crudManager=CrudSLSBFacadeBean                                                                              |
+CrudSLSBFacadeBean=it.aco.mandragora.serviceFacade.sessionFacade.remoteFacade.SLSB.crud.CrudSLSBFacadeHome                 |
+|\                                                                                                                         |
+SLSBManagerBD.businessManager=BusinessSLSBFacadeBean                                                                       |
+|BusinessSLSBFacadeBean=it.aco.mandragora.serviceFacade.sessionFacade.remoteFacade.SLSB.business.BusinessSLSBFacadeHome    |
+*--------------------------------------------------------------------------------------------------------------------------+
+
+    The two beans together have the same methods (the same signatures) of the BD interface.\
+    Both BusinessSLSBFacade and CrudSLSBFacade beans use a ServiceFacade implementation to make their job. To specify which is the ServiceFacade implementation the user wants to use,
+    the following four entries have to be added to {{{mandragora-properties.html}Mandragora.properties}} (See {{{lookup-and-mapping.html}lookup and mapping section}}).
+
+*-----------------------------------------------------------------------------------------------------------------------------------+
+|#classes used in CrudSLSBFacadeBean                                                                                                |
+CrudSLSBFacadeBean.ServiceFacadeFactoryClass=it.aco.mandragora.serviceFacade.concreteFactory.DefaultServiceFacadeFactory            |
+|CrudSLSBFacadeBean.ServiceFacadeClass=it.aco.mandragora.serviceFacade.pojoFacade.PojoFacade                                        |
+\                                                                                                                                   |
+|#classes used in BusinessSLSBFacadeBean                                                                                            |
+BusinessSLSBFacadeBean.ServiceFacadeFactoryClass=it.aco.mandragora.serviceFacade.concreteFactory.DefaultServiceFacadeFactory        |
+|BusinessSLSBFacadeBean.ServiceFacadeClass=it.aco.mandragora.serviceFacade.pojoFacade.PojoFacade                                    |
+*-----------------------------------------------------------------------------------------------------------------------------------+
+
+    or, of course other ServiceFacadeFactory concrete extensions and ServiceFacade implementation can be specified.
+
+    The main difference between SLSBManagerBD and PojoManagerBD, is that the PojoManagerBD uses directly a <ServiceFacade> implementation
+    (for example it.aco.mandragora.serviceFacade.pojoFacade.PojoFacade) to make its job, while the SLSBManagerBD delegates its job to the two session beans
+    that in turns use a ServiceFacade implementation. At the end it is always the ServiceFacade doing the job, but in the SLSBManagerBD case, the same job
+    is done inside the Ejb container.
+    For both ejb session bean BusinessSLSBFacade and CrudSLSBFacade the transaction type is Container, and their methods have transaction attribute <required>.
+
+
+
+
+
+* {Add methods to ejb BD implementation}
+
+    Mandragora's user, or client, has access to many business delegate methods trough the interface BD.\
+    The user can write its own BD implementation, extending for example some provided one(see {{{how-to-extend.html}how to extend}}).
+    All the methods provided are transactional, that means that each one of them is executed in one transaction.
+    But the user can need to use two or more of that methods in the same transaction. For example it could need to do something like this:
+
+*-------------------------------------------------------------------------------------------------------------+
+|bd.insert(object1);                                                                                          |
+bd.insert(object2);                                                                                           |
+|Object object3 = bd.findByPrimaryKey(......);                                                                |
+// modify object3                                                                                             |
+|bd.update(object3);                                                                                          |
+\                                                                                                             |
+|bd.updateCreateTrees(someObject, sometree)                                                                   |
+*-------------------------------------------------------------------------------------------------------------+
+
+    All in one transaction, with the isolation level he wants.
+
+    The BD interface provide lots of generic  methods, the most useful, and the idea is to make its number growing up, so that the user has always
+    more probabilities to find out the method he needs for his purposes already written. Of course in every application always there will be
+    some business method that belong to the core business logic of the application that can't be generalized, and that is impossible to find in
+    the list of generic methods. Even so the most probable is that the method we need to write can be expressed in terms of the existing ones.
+    Let's see now how, with the help of the Ejb container, how can such new methods be executed in one transaction.
+
+
+    All that we have to do is to make a new ejb bean with the new methods, then write an extension of SLSBManagerBD with the
+    new methods, and expose it to the user registering it in {{{mandragora-properties.html}Mandragora.properties}}.
+    Let's see it in detail.
+
+
+    
+
+** {Write a new ejb}
+
+
+    Here is the code for UserExampleSLSBFacadeHome
+
+*---------------------------------------------------------------------------------------------------------------------------+
+package it.aco.mandragora.userExample.serviceFacade.sessionFacade.remoteFacade.SLSB;                                        |
+|\                                                                                                                          |
+import javax.ejb.CreateException;                                                                                           |
+|import javax.ejb.EJBHome;                                                                                                  |
+import java.rmi.RemoteException;                                                                                            |
+|\                                                                                                                          |
+public interface UserExampleSLSBFacadeHome extends EJBHome \{                                                               |
+|\                                                                                                                          |
+\ \ \ \ UserExampleSLSBFacade create() throws RemoteException,CreateException;                                              |
+|\                                                                                                                          |
+\}                                                                                                                          |
+*---------------------------------------------------------------------------------------------------------------------------+
+
+    Here is the code for UserExampleSLSBFacade
+
+*---------------------------------------------------------------------------------------------------------------------------+
+|package it.aco.mandragora.userExample.serviceFacade.sessionFacade.remoteFacade.SLSB;                                       |
+\                                                                                                                           |
+|import javax.ejb.EJBObject;                                                                                                |
+import java.rmi.RemoteException;                                                                                            |
+|\                                                                                                                          |
+public interface UserExampleSLSBFacade extends EJBObject \{                                                                 |
+|\ \ \ \ public void insertTwoValueobjects(Object insert1VO, Object insert2VO) throws RemoteException;                      |
+\ \ \ \ public void insertAndUpdate(Object insertVO, Object updateVO) throws RemoteException;                               |
+|\ \ \ \ public void insertUpdateAndDelete(Object insertVO, Object updateVO, Object deleteVO)throws RemoteException;        |
+\}                                                                                                                          |
+*---------------------------------------------------------------------------------------------------------------------------+
+
+    And here is the code for UserExampleSLSBFacadeBean
+
+*-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+|package it.aco.mandragora.userExample.serviceFacade.sessionFacade.remoteFacade.SLSB;                                                                                                                         |
+\                                                                                                                                                                                                             |
+|import it.aco.mandragora.serviceFacade.ServiceFacade;                                                                                                                                                        |
+import it.aco.mandragora.exception.ServiceLocatorException;                                                                                                                                                   |
+|import it.aco.mandragora.exception.ServiceFacadeException;                                                                                                                                                   |
+import it.aco.mandragora.common.ServiceLocator;                                                                                                                                                               |
+|\                                                                                                                                                                                                            |
+import javax.ejb.SessionContext;                                                                                                                                                                              |
+|import javax.ejb.SessionBean;                                                                                                                                                                                |
+import java.rmi.RemoteException;                                                                                                                                                                              |
+|\                                                                                                                                                                                                            |
+public class UserExampleSLSBFacadeBean  implements SessionBean \{                                                                                                                                             |
+|\                                                                                                                                                                                                            |
+\ \ \ \ private SessionContext sc;                                                                                                                                                                            |
+|\ \ \ \ protected static String ServiceFacadeFactoryClassName = "UserExampleSLSBFacadeBean.ServiceFacadeFactoryClass" ;                                                                                      |
+\ \ \ \ protected static String ServiceFacadeClassName = "UserExampleSLSBFacadeBean.ServiceFacadeClass" ;                                                                                                     |
+|\                                                                                                                                                                                                            |
+\                                                                                                                                                                                                             |
+|\ \ \ \ static private org.apache.log4j.Category log = org.apache.log4j.Logger.getLogger(UserExampleSLSBFacadeBean.class.getName());                                                                         |
+\ \ \ \ public UserExampleSLSBFacadeBean()\{\}                                                                                                                                                                |
+|\                                                                                                                                                                                                            |
+\ \ \ \ public void ejbCreate()\{\}                                                                                                                                                                           |
+|\ \ \ \ public void ejbRemove()\{\}                                                                                                                                                                          |
+\ \ \ \ public void ejbActivate()\{\}                                                                                                                                                                         |
+|\ \ \ \ public void ejbPassivate()\{\}                                                                                                                                                                       |
+\ \ \ \ public void setSessionContext(SessionContext sc)\{this.sc=sc; \}                                                                                                                                      |
+|\                                                                                                                                                                                                            |
+\ \ \ \ protected ServiceFacade getServiceFacade()throws RemoteException \{                                                                                                                                   |
+|\ \ \ \ \ \ \ \ try\{                                                                                                                                                                                        |
+\ \ \ \ \ \ \ \ \ \ \ \ return ServiceLocator.getInstance().getServiceFacade(ServiceFacadeFactoryClassName,ServiceFacadeClassName);                                                                           |
+|\ \ \ \ \ \ \ \ \}catch (ServiceLocatorException e) \{                                                                                                                                                       |
+\ \ \ \ \ \ \ \ \ \ \ \ log.error("ServiceLocatorException caught in UserExampleSLSBFacadeBean.getContextServiceFacade(): " + e.toString());                                                                  |
+|\ \ \ \ \ \ \ \ \ \ \ \ throw new RemoteException("RemoteException thrown in UserExampleSLSBFacadeBean.getContextServiceFacade()" + e.toString(),e);                                                         |
+\ \ \ \ \ \ \ \ \}                                                                                                                                                                                            |
+|\ \ \ \ \}                                                                                                                                                                                                   |
+\                                                                                                                                                                                                             |
+|\ \ \ \ public void insertTwoValueobjects(Object insert1VO, Object insert2VO) throws RemoteException\{                                                                                                       |
+\ \ \ \ \ \ \ \ try \{                                                                                                                                                                                        |
+|\ \ \ \ \ \ \ \ \ \ \ \ ServiceFacade serviceFacade = getServiceFacade();                                                                                                                                    |
+\ \ \ \ \ \ \ \ \ \ \ \ serviceFacade.insert(insert1VO);                                                                                                                                                      |
+|\ \ \ \ \ \ \ \ \ \ \ \ serviceFacade.insert(insert2VO);                                                                                                                                                     |
+\ \ \ \ \ \ \ \ \} catch (ServiceFacadeException e) \{                                                                                                                                                        |
+|\ \ \ \ \ \ \ \ \ \ \ \ log.error("ServiceFacadeException caught in UserExampleSLSBFacadeBean.insertTwoValueobjects(Object insert1VO, Object insert2VO) : " + e.toString());                                 |
+\ \ \ \ \ \ \ \ \ \ \ \ throw new RemoteException("RemoteException thrown in UserExampleSLSBFacadeBean.insertTwoValueobjects(Object insert1VO, Object insert2VO) " + e.toString(),e);                         |
+|\ \ \ \ \ \ \ \ \} catch (Exception e) \{                                                                                                                                                                    |
+\ \ \ \ \ \ \ \ \ \ \ \ log.error("Exception caught in UserExampleSLSBFacadeBean.insertTwoValueobjects(Object insert1VO, Object insert2VO): " + e.toString());                                                |
+|\ \ \ \ \ \ \ \ \ \ \ \ throw new RemoteException("RemoteException thrown in UserExampleSLSBFacadeBean.insertTwoValueobjects(Object insert1VO, Object insert2VO) " + e.toString(),e);                        |
+\ \ \ \ \ \ \ \ }                                                                                                                                                                                             |
+|\ \ \ \ }                                                                                                                                                                                                    |
+\                                                                                                                                                                                                             |
+|\ \ \ \ public void insertAndUpdate(Object insertVO, Object updateVO) throws RemoteException \{                                                                                                              |
+\ \ \ \ \ \ \ \ try \{                                                                                                                                                                                        |
+|\ \ \ \ \ \ \ \ \ \ \ \ ServiceFacade serviceFacade = getServiceFacade();                                                                                                                                    |
+\ \ \ \ \ \ \ \ \ \ \ \ serviceFacade.insert(insertVO);                                                                                                                                                       |
+|\ \ \ \ \ \ \ \ \ \ \ \ serviceFacade.update(updateVO);                                                                                                                                                      |
+\ \ \ \ \ \ \ \ \} catch (ServiceFacadeException e) \{                                                                                                                                                        |
+|\ \ \ \ \ \ \ \ \ \ \ \ log.error("ServiceFacadeException caught in UserExampleSLSBFacadeBean.insertAndUpdate(Object insertVO, Object updateVO) : " + e.toString());                                         |
+\ \ \ \ \ \ \ \ \ \ \ \  throw new RemoteException("RemoteException thrown in UserExampleSLSBFacadeBean.insertAndUpdate(Object insertVO, Object updateVO) " + e.toString(),e);                                |
+|\ \ \ \ \ \ \ \ \} catch (Exception e) \{                                                                                                                                                                    |
+\ \ \ \ \ \ \ \ \ \ \ \ log.error("Exception caught in UserExampleSLSBFacadeBean.insertAndUpdate(Object insertVO, Object updateVO): " + e.toString());                                                        |
+|\ \ \ \ \ \ \ \ \ \ \ \ throw new RemoteException("RemoteException thrown in UserExampleSLSBFacadeBean.insertAndUpdate(Object insertVO, Object updateVO) " + e.toString(),e);                                |
+\ \ \ \ \ \ \ \ \}                                                                                                                                                                                            |
+|\ \ \ \ \}                                                                                                                                                                                                   |
+\                                                                                                                                                                                                             |
+|\ \ \ \ public void insertUpdateAndDelete(Object insertVO, Object updateVO, Object deleteVO) throws RemoteException\{                                                                                        |
+\ \ \ \ \ \ \ \ try \{                                                                                                                                                                                        |
+|\ \ \ \ \ \ \ \ \ \ \ \ ServiceFacade serviceFacade = getServiceFacade();                                                                                                                                    |
+\
+|\ \ \ \ \ \ \ \ \ \ \ \ serviceFacade.insert(insertVO);                                                                                                                                                      |
+\ \ \ \ \ \ \ \ \ \ \ \ serviceFacade.update(updateVO);                                                                                                                                                       |
+|\ \ \ \ \ \ \ \ \ \ \ \ serviceFacade.delete(deleteVO);                                                                                                                                                      |
+\ \ \ \ \ \ \ \ \} catch (ServiceFacadeException e) \{                                                                                                                                                        |
+|\ \ \ \ \ \ \ \ \ \ \ \ log.error("ServiceFacadeException caught in UserExampleSLSBFacadeBean.insertUpdateAndDelete(Object insertVO, Object updateVO, Object deleteVO) : " + e.toString());                  |
+\ \ \ \ \ \ \ \ \ \ \ \ throw new RemoteException("RemoteException thrown in UserExampleSLSBFacadeBean.insertUpdateAndDelete(Object insertVO, Object updateVO, Object deleteVO) " + e.toString(),e);          |
+|\ \ \ \ \ \ \ \ \} catch (Exception e) \{                                                                                                                                                                    |
+\ \ \ \ \ \ \ \ \ \ \ \ log.error("Exception caught in UserExampleSLSBFacadeBean.insertUpdateAndDelete(Object insertVO, Object updateVO, Object deleteVO): " + e.toString());                                 |
+|\ \ \ \ \ \ \ \ \ \ \ \ throw new RemoteException("RemoteException thrown in UserExampleSLSBFacadeBean.insertUpdateAndDelete(Object insertVO, Object updateVO, Object deleteVO) " + e.toString(),e);         |
+\ \ \ \ \ \ \ \ \}                                                                                                                                                                                            |
+|\ \ \ \ \}                                                                                                                                                                                                   |
+\}                                                                                                                                                                                                            |
+*-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+
+    As we said the real job is done by the ServiceFacade implementation, so we have to specify which will be such implementation. As we can see this information is specified by the the two entries
+    <UserExampleSLSBFacadeBean.ServiceFacadeFactoryClass> and <UserExampleSLSBFacadeBean.ServiceFacadeClass>.
+    If we choose <it.aco.mandragora.serviceFacade.concreteFactory.DefaultServiceFacadeFactory> as ServiceFacade factory class and <it.aco.mandragora.serviceFacade.pojoFacade.PojoFacade> as ServiceFacade class, we
+    have to add to {{{mandragora-properties.html}Mandragora.properties}}:
+
+
+*-----------------------------------------------------------------------------------------------------------------------------------+
+UserExampleSLSBFacadeBean.ServiceFacadeFactoryClass=it.aco.mandragora.serviceFacade.concreteFactory.DefaultServiceFacadeFactory     |
+|UserExampleSLSBFacadeBean.ServiceFacadeClass=it.aco.mandragora.serviceFacade.pojoFacade.PojoFacade                                 |
+*-----------------------------------------------------------------------------------------------------------------------------------+
+
+    As can be seen in the <insertUpdateAndDelete> method for example, the right ServiceFacade implementation is looked up, and then it is used to execute the <insert>, <update>, and <delete> methods on the
+    three value objects <insertVO>, <updateVO> and <deleteVO>.
+    An other way is to write an interface (let's call it <UserExampleServiceFacade>) that extends ServiceFacade adding the method <insertUpdateAndDelete>
+    (and all the other ones if one wants), to write then its implementation (let's call it UserExamplePojoFacade) and call the added method from the ejb bean.
+    In such case, the method <insertUpdateAndDelete> in the class <UserExampleSLSBFacadeBean> would be:
+
+*------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+|public void insertUpdateAndDelete(Object insertVO, Object updateVO, Object deleteVO) throws RemoteException\{                                                                                                |
+\ \ \ \ try \{                                                                                                                                                                                               |
+|\ \ \ \ \ \ \ \ UserExampleServiceFacade serviceFacade = (UserExampleServiceFacade)getServiceFacade();                                                                                                      |
+\ \ \ \ \ \ \ \ serviceFacade.insertUpdateAndDelete(insertVO, updateVO, deleteVO);                                                                                                                           |
+|\ \ \ \ \} catch (ServiceFacadeException e) \{                                                                                                                                                              |
+\ \ \ \ \ \ \ \ log.error("ServiceFacadeException caught in UserExampleSLSBFacadeBean.insertUpdateAndDelete(Object insertVO, Object updateVO, Object deleteVO) : " + e.toString());                          |
+|\ \ \ \ \ \ \ \ throw new RemoteException("RemoteException thrown in UserExampleSLSBFacadeBean.insertUpdateAndDelete(Object insertVO, Object updateVO, Object deleteVO) " + e.toString(),e);                |
+\ \ \ \ \} catch (Exception e) \{                                                                                                                                                                            |
+|\ \ \ \ \ \ \ \ log.error("Exception caught in UserExampleSLSBFacadeBean.insertUpdateAndDelete(Object insertVO, Object updateVO, Object deleteVO): " + e.toString());                                       |
+\ \ \ \ \ \ \ \ throw new RemoteException("RemoteException thrown in UserExampleSLSBFacadeBean.insertUpdateAndDelete(Object insertVO, Object updateVO, Object deleteVO) " + e.toString(),e);                 |
+|\ \ \ \ \}                                                                                                                                                                                                  |
+\ \ \ \ \}                                                                                                                                                                                                   |
+*------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+
+    Of course we have to provide an <<ejb-jar.xml>>
+
+*----------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+|\<?xml version="1.0" encoding="UTF-8"?\>                                                                                                                                    |
+\<ejb-jar xmlns="http://java.sun.com/xml/ns/j2ee" version="2.1"                                                                                                              |
+|\ \ \ xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee http://java.sun.com/xml/ns/j2ee/ejb-jar_2_1.xsd"\>          |
+\ \ \ \ \<display-name\>MandragoraTESTEJBJAR\</display-name\>                                                                                                                |
+|\ \ \ \ \<enterprise-beans\>                                                                                                                                                |
+\ \ \ \ \ \ \ \ \<session\>                                                                                                                                                  |
+|\ \ \ \ \ \ \ \ \ \ \ \ \<ejb-name\>UserExampleSLSBFacadeBean\</ejb-name\>                                                                                                  |
+\ \ \ \ \ \ \ \ \ \ \ \ \<home\>it.aco.mandragora.userExample.serviceFacade.sessionFacade.remoteFacade.SLSB.userExample.UserExampleSLSBFacadeHome\</home\>                   |
+|\ \ \ \ \ \ \ \ \ \ \ \ \<remote\>it.aco.mandragora.userExample.serviceFacade.sessionFacade.remoteFacade.SLSB.userExample.UserExampleSLSBFacade\</remote\>                  |
+\ \ \ \ \ \ \ \ \ \ \ \ \<ejb-class\>it.aco.mandragora.userExample.serviceFacade.sessionFacade.remoteFacade.SLSB.userExample.UserExampleSLSBFacadeBean\</ejb-class\>         |
+|\ \ \ \ \ \ \ \ \ \ \ \ \<session-type\>Stateless\</session-type\>                                                                                                          |
+\ \ \ \ \ \ \ \ \ \ \ \ \<transaction-type\>Container\</transaction-type\>                                                                                                   |
+|\ \ \ \ \ \ \ \ \</session\>                                                                                                                                                |
+\ \ \ \ \</enterprise-beans\>                                                                                                                                                |
+|\ \ \ \ \<assembly-descriptor\>                                                                                                                                             |
+\ \ \ \ \ \ \ \ \<container-transaction\>                                                                                                                                    |
+|\ \ \ \ \ \ \ \ \ \ \ \ \<method\>                                                                                                                                          |
+\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \<ejb-name\>UserExampleSLSBFacadeBean\</ejb-name\>                                                                                           |
+|\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \<method-name\>*\</method-name\>                                                                                                            |
+\ \ \ \ \ \ \ \ \ \ \ \ \</method\>                                                                                                                                          |
+|\ \ \ \ \ \ \ \ \ \ \ \ \<trans-attribute\>Required\</trans-attribute\>                                                                                                     |
+\ \ \ \ \ \ \ \ \</container-transaction\>                                                                                                                                   |
+|\ \ \ \ \</assembly-descriptor\>                                                                                                                                            |
+\</ejb-jar>                                                                                                                                                                  |
+*----------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+
+
+    Now we have just to write an extension of the BD implementation <SLSBManagerBD>, with the new methods that delegate
+    to the UserExampleSLSBFacadeBean.
+    So we have to write new BD methods (see {{{how-to-extend.html}how to extend}}) and we have to write a new interface that extend the BD interface
+
+
+** {Extend ejb BD implementation}
+
+    Here is an example of an interface extending the BD interface adding three new methods:
+
+*----------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+|package it.aco.mandragora.userExample.bd;                                                                                                                                   |
+\                                                                                                                                                                            |
+|import it.aco.mandragora.exception.ApplicationException;                                                                                                                    |
+import it.aco.mandragora.bd.BD;                                                                                                                                              |
+|\                                                                                                                                                                           |
+\                                                                                                                                                                            |
+|public interface UserExampleBD extends BD\{                                                                                                                                 |
+\ \ \ \ public void insertTwoValueobjects(Object insert1VO, Object insert2VO)   throws ApplicationException;                                                                 |
+|\ \ \ \ public void insertAndUpdate(Object insertVO, Object updateVO)   throws ApplicationException;                                                                        |
+\ \ \ \ public void insertUpdateAndDelete(Object insertVO, Object updateVO, Object deleteVO)  throws ApplicationException;                                                   |
+|\}                                                                                                                                                                          |
+*----------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+
+    As we can see the user need three methods not provided by the BD interface, but all of them can be expressed in terms of the provided ones.
+
+    Now we have to write the implementation that extend SLSBManagerBD and implements  UserExampleBD
+
+*------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+|package it.aco.mandragora.userExample.bd.impl.SLSB;                                                                                                                                                               |
+\                                                                                                                                                                                                                  |
+|import it.aco.mandragora.userExample.bd.UserExampleBD;                                                                                                                                                            |
+import it.aco.mandragora.exception.ApplicationException;                                                                                                                                                           |
+|import it.aco.mandragora.exception.ServiceLocatorException;                                                                                                                                                       |
+import it.aco.mandragora.userExample.serviceFacade.sessionFacade.remoteFacade.SLSB.userExample.UserExampleSLSBFacadeHome;                                                                                          |
+|import it.aco.mandragora.userExample.serviceFacade.sessionFacade.remoteFacade.SLSB.userExample.UserExampleSLSBFacade;                                                                                             |
+import it.aco.mandragora.serviceFacade.sessionFacade.remoteFacade.SLSB.crud.CrudSLSBFacadeHome;                                                                                                                    |
+|import it.aco.mandragora.serviceFacade.sessionFacade.remoteFacade.SLSB.business.BusinessSLSBFacadeHome;                                                                                                           |
+import it.aco.mandragora.common.ServiceLocator;                                                                                                                                                                    |
+|import it.aco.mandragora.common.Utils;                                                                                                                                                                            |
+import javax.ejb.CreateException;                                                                                                                                                                                  |
+|import javax.ejb.EJBException;                                                                                                                                                                                    |
+import java.rmi.RemoteException;                                                                                                                                                                                   |
+|\                                                                                                                                                                                                                 |
+public class UserExampleSLSBManagerBD extends SLSBManagerBD implements UserExampleBD \{                                                                                                                            |
+|\                                                                                                                                                                                                                 |
+\ \ \ \ static private org.apache.log4j.Logger log = org.apache.log4j.Logger.getLogger(UserExampleSLSBManagerBD.class.getName());                                                                                  |
+|\                                                                                                                                                                                                                 |
+\ \ \ \ protected UserExampleSLSBFacadeHome userExampleSLSBFacadeHome;                                                                                                                                             |
+|\                                                                                                                                                                                                                 |
+\ \ \ \ protected static UserExampleSLSBManagerBD userExampleSLSBManagerBD = null;                                                                                                                                 |
+|\                                                                                                                                                                                                                 |
+\ \ \ \ static \{                                                                                                                                                                                                  |
+|\ \ \ \ \ \ \ \ try \{                                                                                                                                                                                            |
+\ \ \ \ \ \ \ \ \ \ \ \ if (userExampleSLSBManagerBD!=null) throw new ApplicationException("thrown in the static block of UserExampleSLSBManagerBD: static instance is already set");                              |
+|\ \ \ \ \ \ \ \ \ \ \ \ userExampleSLSBManagerBD = new UserExampleSLSBManagerBD();                                                                                                                                |
+\ \ \ \ \ \ \ \ \}catch (Exception e)\{                                                                                                                                                                            |
+|\ \ \ \ \ \ \ \ \ \ \ \ throw new RuntimeException("Exception thrown in the static block of UserExampleSLSBManagerBD "+ e.toString(),e);                                                                          |
+\ \ \ \ \ \ \ \ \}                                                                                                                                                                                                 |
+|\ \ \ \ \}                                                                                                                                                                                                        |
+\                                                                                                                                                                                                                  |
+|\ \ \ \ protected UserExampleSLSBManagerBD() throws ApplicationException \{                                                                                                                                       |
+\ \ \ \ \ \ \ \ try\{                                                                                                                                                                                              |
+|\ \ \ \ \ \ \ \ \ \ \ \ ServiceLocator serviceLocator = ServiceLocator.getInstance();                                                                                                                             |
+\ \ \ \ \ \ \ \ \ \ \ \ businessSLSBFacadeHome = (BusinessSLSBFacadeHome)serviceLocator.getEJBHome(Utils.getStringFromMandragoraProperties("UserExampleSLSBManagerBD.businessManager"));                           |
+|\ \ \ \ \ \ \ \ \ \ \ \ crudSLSBFacadeHome = (CrudSLSBFacadeHome)serviceLocator.getEJBHome(Utils.getStringFromMandragoraProperties("UserExampleSLSBManagerBD.crudManager"));                                      |
+\ \ \ \ \ \ \ \ \ \ \ \ userExampleSLSBFacadeHome = (UserExampleSLSBFacadeHome)serviceLocator.getEJBHome(Utils.getStringFromMandragoraProperties("UserExampleSLSBManagerBD.userExampleManager"));                  |
+|\ \ \ \ \ \ \ \ \} catch(ServiceLocatorException e)\{                                                                                                                                                             |
+\ \ \ \ \ \ \ \ \ \ \ \ throw new ApplicationException("ServiceLocator Exception en el constructor de UserExampleSLSBManagerBD "+ e.toString());                                                                   |
+|\ \ \ \ \ \ \ \ \} catch(Exception e)\{                                                                                                                                                                           |
+\ \ \ \ \ \ \ \ \ \ \ \ e.printStackTrace();                                                                                                                                                                       |
+|\ \ \ \ \ \ \ \ \ \ \ \ log.error("ERROR in Constructor UserExampleSLSBManagerBD "+e);                                                                                                                            |
+\ \ \ \ \ \ \ \ \ \ \ \ throw new ApplicationException("Error in UserExampleSLSBManagerBD "+ e.toString());                                                                                                        |
+|\ \ \ \ \ \ \ \ \}                                                                                                                                                                                                |
+\ \ \ \ \}                                                                                                                                                                                                         |
+|\                                                                                                                                                                                                                 |
+\ \ \ \ public static SLSBManagerBD getInstance() \{/*It has to return SLSBManagerBD to not clash with getInstance of SLSBManagerBD */                                                                             |
+|\ \ \ \ \ \ \ \ return userExampleSLSBManagerBD;                                                                                                                                                                  |
+\ \ \ \ \}                                                                                                                                                                                                         |
+|\                                                                                                                                                                                                                 |
+\ \ \ \ public void insertTwoValueobjects(Object insert1VO, Object insert2VO) throws ApplicationException\{                                                                                                        |
+|\ \ \ \ \ \ \ \ try \{                                                                                                                                                                                            |
+\ \ \ \ \ \ \ \ \ \ \ \ UserExampleSLSBFacade userExampleSLSBFacade= userExampleSLSBFacadeHome.create();                                                                                                           |
+|\ \ \ \ \ \ \ \ \ \ \ \ userExampleSLSBFacade.insertTwoValueobjects( insert1VO,  insert2VO);                                                                                                                      |
+\ \ \ \ \ \ \ \ \} catch (RemoteException e) \{                                                                                                                                                                    |
+|\ \ \ \ \ \ \ \ \ \ \ \ log.error("RemoteException caught in UserExampleSLSBManagerBD.insertTwoValueobjects(Object insert1VO, Object insert2VO) : " + e.toString());                                              |
+\ \ \ \ \ \ \ \ \ \ \ \ throw new ApplicationException("ApplicationException thrown in UserExampleSLSBManagerBD.insertTwoValueobjects(Object insert1VO, Object insert2VO) " + e.toString(),e);                     |
+|\ \ \ \ \ \ \ \ \} catch (CreateException e) \{                                                                                                                                                                   |
+\ \ \ \ \ \ \ \ \ \ \ \ log.error("CreateException caught in UserExampleSLSBManagerBD.insertTwoValueobjects(Object insert1VO, Object insert2VO) : " + e.toString());                                               |
+|\ \ \ \ \ \ \ \ \ \ \ \ throw new ApplicationException("ApplicationException thrown in UserExampleSLSBManagerBD.insertTwoValueobjects(Object insert1VO, Object insert2VO) " + e.toString(),e);                    |
+\ \ \ \ \ \ \ \ \} catch (EJBException e) \{                                                                                                                                                                       |
+|\ \ \ \ \ \ \ \ \ \ \ \ log.error("EJBException caught in UserExampleSLSBManagerBD.insertTwoValueobjects(Object insert1VO, Object insert2VO) : " + e.toString());                                                 |
+\ \ \ \ \ \ \ \ \ \ \ \ throw new ApplicationException("ApplicationException thrown in UserExampleSLSBManagerBD.insertTwoValueobjects(Object insert1VO, Object insert2VO) " + e.toString(),e);                     |
+|\ \ \ \ \ \ \ \ \}                                                                                                                                                                                                |
+\ \ \ \ \}                                                                                                                                                                                                         |
+|\                                                                                                                                                                                                                 |
+\ \ \ \ public void insertAndUpdate(Object insertVO, Object updateVO) throws ApplicationException\{                                                                                                                |
+|\ \ \ \ \ \ \ \ try \{                                                                                                                                                                                            |
+\ \ \ \ \ \ \ \ \ \ \ \ UserExampleSLSBFacade userExampleSLSBFacade= userExampleSLSBFacadeHome.create();                                                                                                           |
+|\ \ \ \ \ \ \ \ \ \ \ \ userExampleSLSBFacade.insertAndUpdate( insertVO,  updateVO);                                                                                                                              |
+\ \ \ \ \ \ \ \ \} catch (RemoteException e) \{                                                                                                                                                                    |
+|\ \ \ \ \ \ \ \ \ \ \ \ log.error("RemoteException caught in UserExampleSLSBManagerBD.insertAndUpdate(Object insertVO, Object updateVO) : " + e.toString());                                                      |
+\ \ \ \ \ \ \ \ \ \ \ \ throw new ApplicationException("ApplicationException thrown in UserExampleSLSBManagerBD.insertAndUpdate(Object insertVO, Object updateVO) " + e.toString(),e);                             |
+|\ \ \ \ \ \ \ \ \} catch (CreateException e) \{                                                                                                                                                                   |
+\ \ \ \ \ \ \ \ \ \ \ \ log.error("CreateException caught in UserExampleSLSBManagerBD.insertAndUpdate(Object insertVO, Object updateVO) : " + e.toString());                                                       |
+|\ \ \ \ \ \ \ \ \ \ \ \ throw new ApplicationException("ApplicationException thrown in UserExampleSLSBManagerBD.insertAndUpdate(Object insertVO, Object updateVO) " + e.toString(),e);                            |
+\ \ \ \ \ \ \ \ \} catch (EJBException e) \{                                                                                                                                                                       |
+|\ \ \ \ \ \ \ \ \ \ \ \ log.error("EJBException caught in UserExampleSLSBManagerBD.insertAndUpdate(Object insertVO, Object updateVO): " + e.toString());                                                          |
+\ \ \ \ \ \ \ \ \ \ \ \ throw new ApplicationException("ApplicationException thrown in UserExampleSLSBManagerBD.insertAndUpdate(Object insertVO, Object updateVO) " + e.toString(),e);                             |
+|\ \ \ \ \ \ \ \ \}                                                                                                                                                                                                |
+\ \ \ \ \}                                                                                                                                                                                                         |
+|\                                                                                                                                                                                                                 |
+\ \ \ \ public void insertUpdateAndDelete(Object insertVO, Object updateVO, Object deleteVO)  throws ApplicationException\{                                                                                        |
+|\ \ \ \ \ \ \ \ try \{                                                                                                                                                                                            |
+\ \ \ \ \ \ \ \ \ \ \ \ UserExampleSLSBFacade userExampleSLSBFacade= userExampleSLSBFacadeHome.create();                                                                                                           |
+|\ \ \ \ \ \ \ \ \ \ \ \ userExampleSLSBFacade.insertUpdateAndDelete( insertVO,  updateVO,  deleteVO) ;                                                                                                            |
+\ \ \ \ \ \ \ \ \} catch (RemoteException e) \{                                                                                                                                                                    |
+|\ \ \ \ \ \ \ \ \ \ \ \ log.error("RemoteException caught in UserExampleSLSBManagerBD.insertUpdateAndDelete(Object insertVO, Object updateVO, Object deleteVO)  : " + e.toString());                              |
+\ \ \ \ \ \ \ \ \ \ \ \ throw new ApplicationException("ApplicationException thrown in UserExampleSLSBManagerBD.insertUpdateAndDelete(Object insertVO, Object updateVO, Object deleteVO) " + e.toString(),e);      |
+|\ \ \ \ \ \ \ \ \} catch (CreateException e) \{                                                                                                                                                                   |
+\ \ \ \ \ \ \ \ \ \ \ \ log.error("CreateException caught in UserExampleSLSBManagerBD.insertUpdateAndDelete(Object insertVO, Object updateVO, Object deleteVO)  : " + e.toString());                               |
+|\ \ \ \ \ \ \ \ \ \ \ \ throw new ApplicationException("ApplicationException thrown in UserExampleSLSBManagerBD.insertUpdateAndDelete(Object insertVO, Object updateVO, Object deleteVO)  " + e.toString(),e);    |
+\ \ \ \ \ \ \ \ \} catch (EJBException e) \{                                                                                                                                                                       |
+|\ \ \ \ \ \ \ \ \ \ \ \ log.error("EJBException caught in UserExampleSLSBManagerBD.insertUpdateAndDelete(Object insertVO, Object updateVO, Object deleteVO) : " + e.toString());                                  |
+\ \ \ \ \ \ \ \ \ \ \ \ throw new ApplicationException("ApplicationException thrown in UserExampleSLSBManagerBD.insertUpdateAndDelete(Object insertVO, Object updateVO, Object deleteVO)  " + e.toString(),e);     |
+|\ \ \ \ \ \ \ \ \}                                                                                                                                                                                                |
+\ \ \ \ \}                                                                                                                                                                                                         |
+|\}                                                                                                                                                                                                                |
+*------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+
+
+
+    As we can see in the constructor <UserExampleSLSBManagerBD()>, it is looked up the ejb bean UserExampleSLSBFacade, moreover than the beans
+    BusinessSLSBFacade and CrudSLSBFacade (these two beans are still needed because the methods inherited still use them).
+    To allow our UserExampleSLSBManagerBD to use these three ejb beans we have to add the following entries to {{{mandragora-properties.html}Mandragora.properties}}
+
+
+*------------------------------------------------------------------------------------------------------------------------------------------------+
+|UserExampleSLSBManagerBD.crudManager=CrudSLSBFacadeBean                                                                                         |
+CrudSLSBFacadeBean=it.aco.mandragora.serviceFacade.sessionFacade.remoteFacade.SLSB.crud.CrudSLSBFacadeHome                                       |
+|\                                                                                                                                               |
+UserExampleSLSBManagerBD.businessManager=BusinessSLSBFacadeBean                                                                                  |
+|BusinessSLSBFacadeBean=it.aco.mandragora.serviceFacade.sessionFacade.remoteFacade.SLSB.business.BusinessSLSBFacadeHome                          |
+\                                                                                                                                                |
+|UserExampleSLSBManagerBD.userExampleManager=UserExampleSLSBFacadeBean                                                                           |
+UserExampleSLSBFacadeBean=it.aco.mandragora.userExample.serviceFacade.sessionFacade.remoteFacade.SLSB.userExample.UserExampleSLSBFacadeHome      |
+*------------------------------------------------------------------------------------------------------------------------------------------------+
+
+
+
+   So now you have just to make a jar of the userExample package, putting the <ejb-jar.xml> in the META-INF directory, specify the ejb module in the <application.xml>, and that's all.
+   Now, to use the new methods in your client, (for example some controller class), just do
+
+
+
+*--------------------------------------------------------------------------------------------------------------------------------------------------+
+|try \{                                                                                                                                            |
+\ \ \ \ BD bd= ServiceLocator.getInstance().getManagerBD("MyClassBDFactoryClassName","MyClassBDClassName");                                        |
+|\ \ \ \ (UserExampleBD)bd.insertUpdateAndDelete(insertVO, updateVO, deleteVO);                                                                    |
+\                                                                                                                                                  |
+|} catch (ServiceLocatorException e) \{                                                                                                            |
+\ \ \ \ \ //manage the exception                                                                                                                   |
+|} catch (ApplicationException e) \{                                                                                                               |
+\ \ \ \ \ //manage the exception                                                                                                                   |
+|}                                                                                                                                                 |
+*--------------------------------------------------------------------------------------------------------------------------------------------------+
+
+    Of course you have to add in {{{mandragora-properties.html}Mandragora.properties}}
+
+*------------------------------------------------------------------------------------------------------------------------------------------------+
+|MyClassBDFactoryClassName.BDFactoryClass=it.aco.mandragora.bd.concreteFactory.DefaultBDFactory                                                  |
+MyClassBDClassName=it.aco.mandragora.userExample.bd.impl.SLSB.UserExampleSLSBManagerBD                                                           |
+*------------------------------------------------------------------------------------------------------------------------------------------------+
+
+
+    To see the example , you can have a look at the userExample package of the test directory in the CVS.
+
+=======================================================================
+
+
+* {Distributed transactions}
+
+    In this section we show how we can {{{how-to.extend.html#Extend_the_BD_interface}extend BD}} with a method to insert in two different databases in an unique transaction.\
+    First of all we have to extend the BD interface with the new wanted methods.
+
+*------------------------------------------------------------------------------------------------------------------------------------------------+
+|package it.aco.mandragora.userExample.bd;                                                                                                       |
+\                                                                                                                                                |
+|import it.aco.mandragora.bd.BD;                                                                                                                 |
+import it.aco.mandragora.exception.ApplicationException;                                                                                         |
+\                                                                                                                                                |
+|                                                                                                                                                |
+public interface UserExample2BD extends BD \{                                                                                                    |
+\                                                                                                                                                |
+|\ \ \ \ public void insertInTwoDB(Object insert1VO, Object insert2VO, String dbAlias1, String dbAlias2) throws ApplicationException;            |
+\ \ \ \ public void insertInTwoDBAndRollback(Object insert1VO, Object insert2VO, String dbAlias1, String dbAlias2) throws ApplicationException;  |
+\                                                                                                                                                |
+|\}                                                                                                                                              |
+*------------------------------------------------------------------------------------------------------------------------------------------------+
+
+
+    The second method insertInTwoDBAndRollback has just testing purpose.\
+
+    Now we have to write an implementation for UserExample2BD. We will extend the SLSBManagerBD.
+
+*-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+|package it.aco.mandragora.userExample.bd.impl.SLSB;                                                                                                                                                                                  |
+\                                                                                                                                                                                                                                     |
+|import it.aco.mandragora.userExample.bd.UserExample2BD;                                                                                                                                                                              |
+import it.aco.mandragora.bd.impl.SLSB.SLSBManagerBD;                                                                                                                                                                                  |
+|import it.aco.mandragora.exception.ApplicationException;                                                                                                                                                                             |
+import it.aco.mandragora.exception.ServiceLocatorException;                                                                                                                                                                           |
+|import it.aco.mandragora.userExample.serviceFacade.sessionFacade.remoteFacade.SLSB.userExample2.UserExample2SLSBFacadeHome;                                                                                                          |
+import it.aco.mandragora.userExample.serviceFacade.sessionFacade.remoteFacade.SLSB.userExample2.UserExample2SLSBFacade;                                                                                                               |
+|import it.aco.mandragora.serviceFacade.sessionFacade.remoteFacade.SLSB.crud.CrudSLSBFacadeHome;                                                                                                                                      |
+import it.aco.mandragora.serviceFacade.sessionFacade.remoteFacade.SLSB.business.BusinessSLSBFacadeHome;                                                                                                                               |
+|import it.aco.mandragora.common.ServiceLocator;                                                                                                                                                                                      |
+import it.aco.mandragora.common.Utils;                                                                                                                                                                                                |
+|                                                                                                                                                                                                                                     |
+import javax.ejb.CreateException;                                                                                                                                                                                                     |
+|import javax.ejb.EJBException;                                                                                                                                                                                                       |
+import java.rmi.RemoteException;                                                                                                                                                                                                      |
+|                                                                                                                                                                                                                                     |
+\                                                                                                                                                                                                                                     |
+|public class UserExample2SLSBManagerBD extends SLSBManagerBD implements UserExample2BD \{                                                                                                                                            |
+\                                                                                                                                                                                                                                     |
+|\ \ \ \ static private org.apache.log4j.Logger log = org.apache.log4j.Logger.getLogger(UserExample2SLSBManagerBD.class.getName());                                                                                                   |
+\                                                                                                                                                                                                                                     |
+|\ \ \ \ protected UserExample2SLSBFacadeHome userExample2SLSBFacadeHome;                                                                                                                                                             |
+\                                                                                                                                                                                                                                     |
+|\ \ \ \ protected static UserExample2SLSBManagerBD userExample2SLSBManagerBD = null;                                                                                                                                                 |
+\                                                                                                                                                                                                                                     |
+|\ \ \ \ static \{                                                                                                                                                                                                                    |
+\ \ \ \ \ \ \ \ try \{                                                                                                                                                                                                                |
+|\ \ \ \ \ \ \ \ \ \ \ \ if (userExample2SLSBManagerBD!=null) throw new ApplicationException("thrown in the static block of UserExample2SLSBManagerBD: static instance is already set");                                              |
+\ \ \ \ \ \ \ \ \ \ \ \ userExample2SLSBManagerBD = new UserExample2SLSBManagerBD();                                                                                                                                                  |
+|\ \ \ \ \ \ \ \ \}catch (Exception e)\{                                                                                                                                                                                              |
+\ \ \ \ \ \ \ \ \ \ \ \ throw new RuntimeException("Exception thrown in the static block of UserExample2SLSBManagerBD "+ e.toString(),e);                                                                                             |
+|\ \ \ \ \ \ \ \ \}                                                                                                                                                                                                                   |
+\ \ \ \ \}                                                                                                                                                                                                                            |
+|                                                                                                                                                                                                                                     |
+\ \ \ \ protected UserExample2SLSBManagerBD()throws ApplicationException\{                                                                                                                                                            |
+|\ \ \ \ \ \ \ \ try\{                                                                                                                                                                                                                |
+\ \ \ \ \ \ \ \ \ \ \ \ ServiceLocator serviceLocator = ServiceLocator.getInstance();                                                                                                                                                 |
+|\ \ \ \ \ \ \ \ \ \ \ \ businessSLSBFacadeHome = (BusinessSLSBFacadeHome)serviceLocator.getEJBHome(Utils.getStringFromMandragoraProperties("UserExampleSLSBManagerBD.businessManager"));                                             |
+\ \ \ \ \ \ \ \ \ \ \ \ crudSLSBFacadeHome = (CrudSLSBFacadeHome)serviceLocator.getEJBHome(Utils.getStringFromMandragoraProperties("UserExampleSLSBManagerBD.crudManager"));                                                          |
+|\ \ \ \ \ \ \ \ \ \ \ \ userExample2SLSBFacadeHome = (UserExample2SLSBFacadeHome)serviceLocator.getEJBHome(Utils.getStringFromMandragoraProperties("UserExample2SLSBManagerBD.userExample2Manager"));                                |
+\ \ \ \ \ \ \ \ \} catch(ServiceLocatorException e)\{                                                                                                                                                                                 |
+|\ \ \ \ \ \ \ \ \ \ \ \ throw new ApplicationException("ServiceLocator Exception en el constructor de UserExample2SLSBManagerBD "+ e.toString());                                                                                    |
+\ \ \ \ \ \ \ \ \} catch(Exception e)\{                                                                                                                                                                                               |
+|\ \ \ \ \ \ \ \ \ \ \ \ e.printStackTrace();                                                                                                                                                                                         |
+\ \ \ \ \ \ \ \ \ \ \ \ log.error("ERROR in Constructor UserExample2SLSBManagerBD "+e);                                                                                                                                               |
+|\ \ \ \ \ \ \ \ \ \ \ \ throw new ApplicationException("Error in UserExample2SLSBManagerBD "+ e.toString());                                                                                                                         |
+\ \ \ \ \ \ \ \ \}                                                                                                                                                                                                                    |
+|\ \ \ \ \}                                                                                                                                                                                                                           |
+\                                                                                                                                                                                                                                     |
+|\ \ \ \ public static SLSBManagerBD getInstance() \{/*It has to return SLSBManagerBD to not clash with getInstance of SLSBManagerBD */                                                                                               |
+\ \ \ \ \ \ \ \ return userExample2SLSBManagerBD;                                                                                                                                                                                     |
+|\ \ \ \ \}                                                                                                                                                                                                                           |
+\                                                                                                                                                                                                                                     |
+|\ \ \ \ public void insertInTwoDB(Object insert1VO, Object insert2VO, String dbAlias1, String dbAlias2) throws ApplicationException\{                                                                                                |
+\ \ \ \ \ \ \ \ try \{                                                                                                                                                                                                                |
+|\ \ \ \ \ \ \ \ \ \ \ \ UserExample2SLSBFacade userExample2SLSBFacade= userExample2SLSBFacadeHome.create();                                                                                                                          |
+\ \ \ \ \ \ \ \ \ \ \ \ userExample2SLSBFacade.insertInTwoDB( insert1VO,  insert2VO,  dbAlias1,  dbAlias2);                                                                                                                           |
+|\ \ \ \ \ \ \ \ \} catch (RemoteException e) \{                                                                                                                                                                                      |
+\ \ \ \ \ \ \ \ \ \ \ \ log.error("RemoteException caught in UserExample2SLSBFacade.insertInTwoDB(Object insert1VO, Object insert2VO, String dbAlias1, String dbAlias2): " + e.toString());                                           |
+|\ \ \ \ \ \ \ \ \ \ \ \ throw new ApplicationException("ApplicationException thrown in UserExample2SLSBFacade.insertInTwoDB(Object insert1VO, Object insert2VO, String dbAlias1, String dbAlias2) " + e.toString(),e);               |
+\ \ \ \ \ \ \ \ \} catch (CreateException e) \{                                                                                                                                                                                       |
+|\ \ \ \ \ \ \ \ \ \ \ \ log.error("CreateException caught in UserExample2SLSBFacade.insertInTwoDB(Object insert1VO, Object insert2VO, String dbAlias1, String dbAlias2) : " + e.toString());                                         |
+\ \ \ \ \ \ \ \ \ \ \ \ throw new ApplicationException("ApplicationException thrown in UserExample2SLSBFacade.insertInTwoDB(Object insert1VO, Object insert2VO, String dbAlias1, String dbAlias2)" + e.toString(),e);                 |
+|\ \ \ \ \ \ \ \ \} catch (EJBException e) \{                                                                                                                                                                                         |
+\ \ \ \ \ \ \ \ \ \ \ \ log.error("EJBException caught in UserExample2SLSBFacade.insertInTwoDB(Object insert1VO, Object insert2VO, String dbAlias1, String dbAlias2) : " + e.toString());                                             |
+|\ \ \ \ \ \ \ \ \ \ \ \ throw new ApplicationException("ApplicationException thrown in UserExample2SLSBFacade.insertInTwoDB(Object insert1VO, Object insert2VO, String dbAlias1, String dbAlias2) " + e.toString(),e);               |
+\ \ \ \ \ \ \ \ \}                                                                                                                                                                                                                    |
+|\ \ \ \ \}                                                                                                                                                                                                                           |
+\                                                                                                                                                                                                                                     |
+|\ \ \ \ public void insertInTwoDBAndRollback(Object insert1VO, Object insert2VO, String dbAlias1, String dbAlias2) throws ApplicationException\{                                                                                     |
+\ \ \ \ \ \ \ \ try \{                                                                                                                                                                                                                |
+|\ \ \ \ \ \ \ \ \ \ \ \ UserExample2SLSBFacade userExample2SLSBFacade= userExample2SLSBFacadeHome.create();                                                                                                                          |
+\ \ \ \ \ \ \ \ \ \ \ \ userExample2SLSBFacade.insertInTwoDBAndRollback( insert1VO,  insert2VO,  dbAlias1,  dbAlias2);                                                                                                                |
+|\ \ \ \ \ \ \ \ \} catch (RemoteException e) \{                                                                                                                                                                                      |
+\ \ \ \ \ \ \ \ \ \ \ \ log.error("RemoteException caught in UserExample2SLSBFacade.insertInTwoDBAndRollback(Object insert1VO, Object insert2VO, String dbAlias1, String dbAlias2): " + e.toString());                                |
+|\ \ \ \ \ \ \ \ \ \ \ \ throw new ApplicationException("ApplicationException thrown in UserExample2SLSBFacade.insertInTwoDBAndRollback(Object insert1VO, Object insert2VO, String dbAlias1, String dbAlias2) " + e.toString(),e);    |
+\ \ \ \ \ \ \ \ \} catch (CreateException e) \{                                                                                                                                                                                       |
+|\ \ \ \ \ \ \ \ \ \ \ \ log.error("CreateException caught in UserExample2SLSBFacade.insertInTwoDBAndRollback(Object insert1VO, Object insert2VO, String dbAlias1, String dbAlias2) : " + e.toString());                              |
+\ \ \ \ \ \ \ \ \ \ \ \ throw new ApplicationException("ApplicationException thrown in UserExample2SLSBFacade.insertInTwoDBAndRollback(Object insert1VO, Object insert2VO, String dbAlias1, String dbAlias2)" + e.toString(),e);      |
+|\ \ \ \ \ \ \ \ \} catch (EJBException e) \{                                                                                                                                                                                         |
+\ \ \ \ \ \ \ \ \ \ \ \ log.error("EJBException caught in UserExample2SLSBFacade.insertInTwoDBAndRollback(Object insert1VO, Object insert2VO, String dbAlias1, String dbAlias2) : " + e.toString());                                  |
+|\ \ \ \ \ \ \ \ \ \ \ \ throw new ApplicationException("ApplicationException thrown in UserExample2SLSBFacade.insertInTwoDBAndRollback(Object insert1VO, Object insert2VO, String dbAlias1, String dbAlias2) " + e.toString(),e);    |
+\ \ \ \ \ \ \ \ \}                                                                                                                                                                                                                    |
+|\ \ \ \ \}                                                                                                                                                                                                                           |
+\}                                                                                                                                                                                                                                    |
+*-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+
+    Let's have a closer look at <userExample2SLSBFacadeHome>.\
+    It is looked up through the ServiceLocator method
+
+        * getEJBHome(Utils.getStringFromMandragoraProperties("UserExample2SLSBManagerBD.userExample2Manager"))
+
+    so in {{{mandragora-properties.html}Mandragora.properties}} there must be
+
+*-----------------------------------------------------------------------------------------------------------------------------------------------------+
+|UserExample2SLSBManagerBD.userExample2Manager=UserExample2SLSBFacadeBean                                                                             |
+UserExample2SLSBFacadeBean=it.aco.mandragora.userExample.serviceFacade.sessionFacade.remoteFacade.SLSB.userExample2.UserExample2SLSBFacadeHome        |
+*-----------------------------------------------------------------------------------------------------------------------------------------------------+
+
+    In the ejb-jar.xml we have to add under <\<enterprise-beans\>>
+
+*----------------------------------------------------------------------------------------------------------------------------------------------------------+
+|\<session\>                                                                                                                                               |
+\ \ \ \ \<ejb-name\>UserExample2SLSBFacadeBean\</ejb-name\>                                                                                                |
+|\ \ \ \ \<home\>it.aco.mandragora.userExample.serviceFacade.sessionFacade.remoteFacade.SLSB.userExample2.UserExample2SLSBFacadeHome\</home\>              |
+\ \ \ \ \<remote\>it.aco.mandragora.userExample.serviceFacade.sessionFacade.remoteFacade.SLSB.userExample2.UserExample2SLSBFacade\</remote\>               |
+|\ \ \ \ \<ejb-class\>it.aco.mandragora.userExample.serviceFacade.sessionFacade.remoteFacade.SLSB.userExample2.UserExample2SLSBFacadeBean\</ejb-class\>    |
+\ \ \ \ \<session-type\>Stateless\</session-type\>                                                                                                         |
+|\ \ \ \ \<transaction-type\>Container\</transaction-type\>                                                                                                |
+\</session\>                                                                                                                                               |
+*----------------------------------------------------------------------------------------------------------------------------------------------------------+
+
+    and under <\<assembly-descriptor\>>
+
+*------------------------------------------------------------------------------------------+
+|\<container-transaction\>                                                                 |
+\ \ \ \ \<method\>                                                                         |
+|\ \ \ \ \ \ \ \ \<ejb-name\>UserExample2SLSBFacadeBean\</ejb-name\>                       |
+\ \ \ \ \ \ \ \ \<method-name\>*\</method-name\>                                           |
+|\ \ \ \ \</method\>                                                                       |
+\ \ \ \ \<trans-attribute\>Required\</trans-attribute\>                                    |
+|\</container-transaction\>                                                                |
+*------------------------------------------------------------------------------------------+
+
+
+    In the following we show the <UserExample2SLSBFacade>, <UserExample2SLSBFacadeHome>, and <UserExample2SLSBFacadeBean>
+
+*----------------------------------------------------------------------------------------------------------------------------------------------------------+
+|package it.aco.mandragora.userExample.serviceFacade.sessionFacade.remoteFacade.SLSB.userExample2;                                                         |
+\                                                                                                                                                          |
+|import javax.ejb.EJBObject;                                                                                                                               |
+import java.rmi.RemoteException;                                                                                                                           |
+|                                                                                                                                                          |
+public interface UserExample2SLSBFacade extends EJBObject \{                                                                                               |
+\                                                                                                                                                          |
+|\ \ \ \ public void insertInTwoDB(Object insert1VO, Object insert2VO, String dbAlias1, String dbAlias2) throws RemoteException;                           |
+\ \ \ \ public void insertInTwoDBAndRollback(Object insert1VO, Object insert2VO, String dbAlias1, String dbAlias2) throws RemoteException;                 |
+|                                                                                                                                                          |
+\}                                                                                                                                                         |
+*----------------------------------------------------------------------------------------------------------------------------------------------------------+
+
+
+*----------------------------------------------------------------------------------------------------------------------------------------------------------+
+|package it.aco.mandragora.userExample.serviceFacade.sessionFacade.remoteFacade.SLSB.userExample2;                                                         |
+\                                                                                                                                                          |
+|import javax.ejb.CreateException;                                                                                                                         |
+import javax.ejb.EJBHome;                                                                                                                                  |
+|import java.rmi.RemoteException;                                                                                                                          |
+\                                                                                                                                                          |
+|public interface UserExample2SLSBFacadeHome extends EJBHome \{                                                                                            |
+\ \ \ \ UserExample2SLSBFacade create() throws RemoteException,CreateException;                                                                            |
+|\}                                                                                                                                                        |
+*----------------------------------------------------------------------------------------------------------------------------------------------------------+
+
+
+*------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+|package it.aco.mandragora.userExample.serviceFacade.sessionFacade.remoteFacade.SLSB.userExample2;                                                                                                                                   |
+\                                                                                                                                                                                                                                    |
+|import it.aco.mandragora.serviceFacade.ServiceFacade;                                                                                                                                                                               |
+import it.aco.mandragora.exception.ServiceLocatorException;                                                                                                                                                                          |
+|import it.aco.mandragora.exception.ServiceFacadeException;                                                                                                                                                                          |
+import it.aco.mandragora.common.ServiceLocator;                                                                                                                                                                                      |
+|import it.aco.mandragora.context.MandragoraContext;                                                                                                                                                                                 |
+import it.aco.mandragora.context.ContextHandler;                                                                                                                                                                                     |
+|                                                                                                                                                                                                                                    |
+import javax.ejb.SessionContext;                                                                                                                                                                                                     |
+|import javax.ejb.SessionBean;                                                                                                                                                                                                       |
+import java.rmi.RemoteException;                                                                                                                                                                                                     |
+|                                                                                                                                                                                                                                    |
+public class UserExample2SLSBFacadeBean implements SessionBean \{                                                                                                                                                                    |
+|                                                                                                                                                                                                                                    |
+\ \ \ \ private SessionContext sc;                                                                                                                                                                                                   |
+|\ \ \ \ protected static String ServiceFacadeFactoryClassName = "UserExample2SLSBFacadeBean.ServiceFacadeFactoryClass" ;                                                                                                            |
+\ \ \ \ protected static String ServiceFacadeClassName = "UserExample2SLSBFacadeBean.ServiceFacadeClass" ;                                                                                                                           |
+|                                                                                                                                                                                                                                    |
+\ \ \ \ static private org.apache.log4j.Category log = org.apache.log4j.Logger.getLogger(UserExample2SLSBFacadeBean.class.getName());                                                                                                |
+|\ \ \ \ public UserExample2SLSBFacadeBean()\{\}                                                                                                                                                                                     |
+\                                                                                                                                                                                                                                    |
+|\ \ \ \ public void ejbCreate()\{\}                                                                                                                                                                                                 |
+\ \ \ \ public void ejbRemove()\{\}                                                                                                                                                                                                  |
+|\ \ \ \ public void ejbActivate()\{\}                                                                                                                                                                                               |
+\ \ \ \ public void ejbPassivate()\{\}                                                                                                                                                                                               |
+|\ \ \ \ public void setSessionContext(SessionContext sc)\{this.sc=sc; \}                                                                                                                                                            |
+\                                                                                                                                                                                                                                    |
+|                                                                                                                                                                                                                                    |
+\ \ \ \ protected ServiceFacade getServiceFacade()throws RemoteException \{                                                                                                                                                          |
+|\ \ \ \ \ \ \ \ try\{                                                                                                                                                                                                               |
+\ \ \ \ \ \ \ \ \ \ \ \ return ServiceLocator.getInstance().getServiceFacade(ServiceFacadeFactoryClassName,ServiceFacadeClassName);                                                                                                  |
+|\ \ \ \ \ \ \ \ \}catch (ServiceLocatorException e) \{                                                                                                                                                                              |
+\ \ \ \ \ \ \ \ \ \ \ \ log.error("ServiceLocatorException caught in UserExample2SLSBFacadeBean.getServiceFacade(): " + e.toString());                                                                                               |
+|\ \ \ \ \ \ \ \ \ \ \ \ throw new RemoteException("RemoteException thrown in UserExample2SLSBFacadeBean.getServiceFacade()" + e.toString(),e);                                                                                      |
+\ \ \ \ \ \ \ \ \}                                                                                                                                                                                                                   |
+|\ \ \ \ \}                                                                                                                                                                                                                          |
+\                                                                                                                                                                                                                                    |
+|                                                                                                                                                                                                                                    |
+\ \ \ \ public void insertInTwoDB(Object insert1VO, Object insert2VO, String dbAlias1, String dbAlias2)   throws RemoteException\{                                                                                                   |
+|\ \ \ \ \ \ \ \ try \{                                                                                                                                                                                                              |
+\ \ \ \ \ \ \ \ \ \ \ \ ServiceFacade serviceFacade = getServiceFacade();                                                                                                                                                            |
+|\ \ \ \ \ \ \ \ \ \ \ \ MandragoraContext localSession = (MandragoraContext)((ContextHandler)serviceFacade).getLocalSession();                                                                                                      |
+\ \ \ \ \ \ \ \ \ \ \ \ localSession.put("jcdAlias",dbAlias1);                                                                                                                                                                       |
+|\ \ \ \ \ \ \ \ \ \ \ \ serviceFacade.insert(insert1VO);                                                                                                                                                                            |
+\ \ \ \ \ \ \ \ \ \ \ \ localSession.put("jcdAlias",dbAlias2);                                                                                                                                                                       |
+|\ \ \ \ \ \ \ \ \ \ \ \ serviceFacade.insert(insert2VO);                                                                                                                                                                            |
+\ \ \ \ \ \ \ \ \} catch (ServiceFacadeException e) \{                                                                                                                                                                               |
+|\ \ \ \ \ \ \ \ \ \ \ \ log.error("ServiceFacadeException caught in UserExample2SLSBFacadeBean.insertInTwoDB(Object insert1VO, Object insert2VO, String dbAlias1, String dbAlias2) : " + e.toString());                             |
+\ \ \ \ \ \ \ \ \ \ \ \  throw new RemoteException("RemoteException thrown in UserExample2SLSBFacadeBean.insertInTwoDB(Object insert1VO, Object insert2VO, String dbAlias1, String dbAlias2) " + e.toString(),e);                    |
+|\ \ \ \ \ \ \ \ \} catch (Exception e) \{                                                                                                                                                                                           |
+\ \ \ \ \ \ \ \ \ \ \ \ log.error("Exception caught in UserExample2SLSBFacadeBean.insertInTwoDB(Object insert1VO, Object insert2VO, String dbAlias1, String dbAlias2) : " + e.toString());                                           |
+|\ \ \ \ \ \ \ \ \ \ \ \ throw new RemoteException("RemoteException thrown in UserExample2SLSBFacadeBean.insertInTwoDB(Object insert1VO, Object insert2VO, String dbAlias1, String dbAlias2) " + e.toString(),e);                    |
+\ \ \ \ \ \ \ \ \}                                                                                                                                                                                                                   |
+|\ \ \ \ \}                                                                                                                                                                                                                          |
+\                                                                                                                                                                                                                                    |
+|                                                                                                                                                                                                                                    |
+\ \ \ \ public void insertInTwoDBAndRollback(Object insert1VO, Object insert2VO, String dbAlias1, String dbAlias2) throws RemoteException\{                                                                                          |
+|\ \ \ \ \ \ \ \  try \{                                                                                                                                                                                                             |
+\ \ \ \ \ \ \ \ \ \ \ \ ServiceFacade serviceFacade = getServiceFacade();                                                                                                                                                            |
+|\ \ \ \ \ \ \ \ \ \ \ \  MandragoraContext localSession = (MandragoraContext)((ContextHandler)serviceFacade).getLocalSession();                                                                                                     |
+\                                                                                                                                                                                                                                    |
+|\ \ \ \ \ \ \ \ \ \ \ \ localSession.put("jcdAlias",dbAlias1);                                                                                                                                                                      |
+\ \ \ \ \ \ \ \ \ \ \ \ serviceFacade.insert(insert1VO);                                                                                                                                                                             |
+|                                                                                                                                                                                                                                    |
+\ \ \ \ \ \ \ \ \ \ \ \ localSession.put("jcdAlias",dbAlias2);                                                                                                                                                                       |
+|\ \ \ \ \ \ \ \ \ \ \ \ serviceFacade.insert(insert2VO);                                                                                                                                                                            |
+\                                                                                                                                                                                                                                    |
+|\ \ \ \ \ \ \ \ \ \ \ \ localSession.put("jcdAlias",dbAlias1);                                                                                                                                                                      |
+\ \ \ \ \ \ \ \ \ \ \ \ Object testInserted1VO = serviceFacade.findObjectByTemplate(insert1VO);                                                                                                                                      |
+|\ \ \ \ \ \ \ \ \ \ \ \ log.info("UserExample2SLSBFacadeBean.iinsertInTwoDBAndRollback(Object insert1VO, Object insert2VO, String dbAlias1, String dbAlias2) : testInserted1VO is :"+testInserted1VO.toString());                   |
+\                                                                                                                                                                                                                                    |
+|\ \ \ \ \ \ \ \ \ \ \ \ localSession.put("jcdAlias",dbAlias2);                                                                                                                                                                      |
+\ \ \ \ \ \ \ \ \ \ \ \ Object testInserted2VO = serviceFacade.findObjectByTemplate(insert2VO);                                                                                                                                      |
+|\ \ \ \ \ \ \ \ \ \ \ \ log.info("UserExample2SLSBFacadeBean.insertInTwoDBAndRollback(Object insert1VO, Object insert2VO, String dbAlias1, String dbAlias2)  : testInserted2VO is :"+testInserted2VO.toString());                   |
+\ \ \ \ \ \ \ \ \ \ \ \ sc.setRollbackOnly();                                                                                                                                                                                        |
+|\ \ \ \ \ \ \ \ \} catch (ServiceFacadeException e) \{                                                                                                                                                                              |
+\ \ \ \ \ \ \ \ \ \ \ \ log.error("ServiceFacadeException caught in UserExample2SLSBFacadeBean.insertInTwoDBAndRollback(Object insert1VO, Object insert2VO, String dbAlias1, String dbAlias2) : " + e.toString());                   |
+|\ \ \ \ \ \ \ \ \ \ \ \ throw new RemoteException("RemoteException thrown in UserExample2SLSBFacadeBean.insertInTwoDBAndRollback(Object insert1VO, Object insert2VO, String dbAlias1, String dbAlias2)  " + e.toString(),e);        |
+\ \ \ \ \ \ \ \ \} catch (Exception e) \{                                                                                                                                                                                            |
+|\ \ \ \ \ \ \ \ \ \ \ \ log.error("Exception caught in UserExample2SLSBFacadeBean.insertInTwoDBAndRollback(Object insert1VO, Object insert2VO, String dbAlias1, String dbAlias2) : " + e.toString());                               |
+\ \ \ \ \ \ \ \ \ \ \ \ throw new RemoteException("RemoteException thrown in UserExample2SLSBFacadeBean.insertInTwoDBAndRollback(Object insert1VO, Object insert2VO, String dbAlias1, String dbAlias2)  " + e.toString(),e);         |
+|\ \ \ \ \ \ \ \ \}                                                                                                                                                                                                                  |
+\ \ \ \ \}                                                                                                                                                                                                                           |
+|\}                                                                                                                                                                                                                                  |
+*------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+
+    What you should note in the <UserExample2SLSBFacadeBean> are the following lines of code in the method insertInTwoDB:
+
+*--------------------------------------------------------------------------------------------------------------------+
+|MandragoraContext localSession = (MandragoraContext)((ContextHandler)serviceFacade).getLocalSession();              |
+localSession.put("jcdAlias",dbAlias1);                                                                               |
+*--------------------------------------------------------------------------------------------------------------------+
+
+    To have an idea of what <<ContextHandler>> and <<localSession>> have a look at {{advanced/context.html}}.\
+    Here you have just to know that ServiceFacade looked up is a {{{advanced/context.html#Proxy_Handler}ProxyServiceFacadeHandler}}; this means that the ServiceFacade implementation
+    is a ContextHandler instance as well, so it holds a localSession which parameters values will be used to do the job in place of the default ones.
+    So putting a new jcdAlias in the serviceFacade local session we forced this serviceFacade to use the provided jcdAlias. \
+    So the call <serviceFacade.insert(insert1VO)> will act on the DB specified by the input parameter dbAlias1.\
+
+    As we can see the ServiceFacade is looked up trough:
+
+        *  ServiceLocator.getInstance().getServiceFacade("UserExample2SLSBFacadeBean.ServiceFacadeFactoryClass","UserExample2SLSBFacadeBean.ServiceFacadeClass")
+
+    So if we want the ProxyServiceFacadeHandler we have to put in {{{mandragora-properties.html}Mandragora.properties}}
+
+*-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+|UserExample2SLSBFacadeBean.ServiceFacadeFactoryClass=it.aco.mandragora.serviceFacade.concreteFactory.ProxyServiceFacadeHandlerFactory                                                                                                                                                      |
+ProxyServiceFacadeHandlerFactory.UserExample2SLSBFacadeBean.ServiceFacadeClass.methodInterceptorFactoryClassName=it.aco.mandragora.serviceFacade.proxy.serviceFacadeMethodInterceptor.concreteFactory.DefaultServiceFacadeMethodInterceptorFactory                                          |
+|ProxyServiceFacadeHandlerFactory.UserExample2SLSBFacadeBean.ServiceFacadeClass.methodInterceptorClassName=it.aco.mandragora.serviceFacade.proxy.serviceFacadeMethodInterceptor.impl.ServiceFacadeMethodInterceptorDefaultImpl                                                              |
+ProxyServiceFacadeHandlerFactory.UserExample2SLSBFacadeBean.ServiceFacadeClass.realServiceFacadeClassName=it.aco.mandragora.serviceFacade.pojoFacade.PojoFacade                                                                                                                             |
+|DefaultServiceFacadeMethodInterceptorFactory.ProxyServiceFacadeHandlerFactory.UserExample2SLSBFacadeBean.ServiceFacadeClass.methodInterceptorClassName.contextServiceFacadeFactoryClassName=it.aco.mandragora.serviceFacade.context.concreteFactory.DefaultContextServiceFacadeFactory     |
+DefaultServiceFacadeMethodInterceptorFactory.ProxyServiceFacadeHandlerFactory.UserExample2SLSBFacadeBean.ServiceFacadeClass.methodInterceptorClassName.contextServiceFacadeClassName=it.aco.mandragora.serviceFacade.context.pojoFacade.ContextPojoFacade                                   |
+*-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+
+    For further details about ProxyServiceFacade have a look at {{{implementations.html#ProxyManagerBD}ProxyManagerBD}} and
+    {{{implementations.html#ProxyBDHandlerFactory}ProxyBDHandlerFactory}} that are very similar.
+
+=======================================================================
+
+* {Further configurations}
+
+    To use the ejb implementation you have to say to Mandragora that it going to work in a managed environment.\
+    As always this is done adding an entry to {{{mandragora-properties.html}Mandragora.properties}}
+
+*----------------------------------------------+
+|IsInManagedEnvironment=true                   |
+*----------------------------------------------+
+
+    Moreover if you are using the ojb implementation of the DAO (the only one provided by Mandragora right now) you have to configure properly
+    the OJB.properties (see {{http://db.apache.org/ojb/docu/guides/deployment.html#Configure+OJB+for+managed+environments+considering+as+JBoss+example}}).\
+    You should read properly that documentation, anyway you have to add these entries to OJB.properties.
+
+*-----------------------------------------------------------------------------------------------------+
+|PersistenceBrokerFactoryClass=org.apache.ojb.broker.core.PersistenceBrokerFactorySyncImpl            |
+\                                                                                                     |
+|ConnectionFactoryClass=org.apache.ojb.broker.accesslayer.ConnectionFactoryManagedImpl                |
+\                                                                                                     |
+|JTATransactionManagerClass=org.apache.ojb.broker.transaction.tm.JBossTransactionManagerFactory       |
+*-----------------------------------------------------------------------------------------------------+
+
+
+    If you want Ojb accessible via Jndi, you should first have a look {{{http://db.apache.org/ojb/docu/guides/deployment.html#Make+OJB+accessible+via+JNDI}here}}.\
+    If you want mandragora to use Jndi to access Ojb apis yo have to add to {{{mandragora-properties.html}Mandragora.properties}}
+
+*--------------------------------------------------------------------------------------------------------------------------+
+|OjbPbDAO.PersistenceBrokerSupportClass=it.aco.mandragora.dao.impl.ojb.pb.support.impl.PersistenceBrokerSupportJndiImpl    |
+*--------------------------------------------------------------------------------------------------------------------------+
+
+    PersistenceBrokerSupportJndiImpl get the <PersistenceBrokerFactoryIF> in this way:
+
+*--------------------------------------------------------------------------------------------------------------------------+
+|InitialContext context = new InitialContext();                                                                            |
+persistenceBrokerFactoryIF = ((OjbPbFactory)context.lookup("PBFactory")).getInstance();                                    |
+*--------------------------------------------------------------------------------------------------------------------------+
+
+    So we have to bind it to the name "PBFactory".\
+    To bind it to the name "PBFactory" you can add to your web.xml
+
+*--------------------------------------------------------------------------------------------------------------------------+
+|\<servlet\>                                                                                                               |
+\ \ \ \ \<servlet-name\>OjbPbStartup\</servlet-name\>                                                                      |
+|\ \ \ \ \<display-name\>Ojb PB startup class\</display-name\>                                                             |
+\ \ \ \ \<servlet-class\>it.aco.mandragora.startup.OjbPbStartup\</servlet-class\>                                          |
+|\ \ \ \ \<load-on-startup\>1\</load-on-startup\>                                                                          |
+\</servlet\>                                                                                                               |
+*--------------------------------------------------------------------------------------------------------------------------+
+
+    or follow the instruction {{{http://db.apache.org/ojb/docu/guides/deployment.html#Make+OJB+accessible+via+JNDI}here}}.

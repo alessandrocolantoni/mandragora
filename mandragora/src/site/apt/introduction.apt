@@ -1,0 +1,91 @@
+ -----
+ The Site
+ -----
+ Alessandro Colantoni
+ -----
+
+Introduction
+
+    Mandragora is a framework that helps building applications providing a business layer implemented with BD (Business Delegate) , Facade, Application Service and DAO patterns; Mandragora business layer
+    provides a lot of {{{referenceguide/bd-api-guide.html}generic methods}} suitable for the most common purposes, and helps making your own methods implementing the patterns.
+
+    The Business Delegate is the access point of the business layer, and it hides the implementation details of its methods.
+    The Business Delegate does its job using the Service Facade pattern, implemented in a bottom layer, that in turn uses the Application Service and DAO patterns.
+    From a component point of view we can see Mandragora as component made of other components wired together by provided and required interfaces.
+
+[images/PatternComponent_small.jpg]
+
+    So mandragora can be easily encapsulated in the application environment, as a client class using it has just to know the methods available in the BD.
+    Considering the above diagram just in terms of interfaces, and considering the DAO using some kind of ORM, we can resume the mandragora interaction with the environment and its internal
+    working in the following way: the client class calls a method of the BD interface,that uses some methods of the Service Facade interface, that uses some
+    methods of the Application Service and DAO interfaces; the Application Service calls DAO interfaces methods, DAO uses ORM methods that work directly on the
+    media store.
+
+[images/PatternInterfaces.jpg]
+
+
+    As told to satisfy a Business Delegate request mandragora does its job over a collaboration of BD, Service Facade, Application Service and DAO. To perform such behavior are just needed instances
+    playing the roles of the patterns as depicted in the following diagram.
+
+[images/PatternCollaboration_small.jpg]
+
+    Mandragora exposes its operations through an interface that represents the Business Delegate (the BD interface), so that the user doesn't
+    worry about the implementation technology,  about logic implementation and so on.
+    User must just fix on his control logic, in his controller layer(if he's using  MVC pattern). The controller layer doesn't need to know
+    if model layer is in a managed environment or not, if it is using session bean, if they are stateful or not or other...
+    Just mandragora knows it, and all this information is written in an unique configuration file: {{{referenceguide/mandragora-properties.html}Mandragora.properties}}. The file {{{referenceguide/mandragora-properties.html}Mandragora.properties}}
+    specifies which {{{referenceguide/implementations.html}implementations}} of interface to use so determining the technology and logic implementation.
+    If for some reason you need to change the technology of the business layer, you need just to change the {{{referenceguide/mandragora-properties.html}Mandragora.properties}} file, setting it for an other implementation, without needing to inform the classes accessing it (for example the control layer, or UI interfaces).
+
+    In the same way, every layer, or component, doesn't know nothing about the bottom layer, they just know them through their interface, so that we can decide which implementation to use
+    for each level, or component implementing each pattern, just modifying the correspondent entries in the configuration file {{{referenceguide/mandragora-properties.html}Mandragora.properties}}.
+    So we can easily specify which are the instances playing the roles, choosing them between the ones provided by Mandragora itself, or writing new ones and registering them in {{{referenceguide/mandragora-properties.html}Mandragora.properties}}.
+    For example in the following diagram is shown the use with some provided mandragora implementation.
+
+[images/PatternCollaborationUse_small.jpg]
+
+    An other diagram in the following, expresses the same in the term of interfaces and implementation. So that are shown implementation of a layer using interfaces of bottom layer (the only they know).
+
+    Mandragora has to access the media store, and it does it through the DAO, that is the lowest layer in Mandragora. The Application Service and and Service Facade classes use an interface of DAO
+    whose implementation is chosen in the {{{referenceguide/mandragora-properties.html}Mandragora.properties}}, and communicate with it in the same way the client external class communicate with
+    the BD. So the classes accessing the DAO don't need to worry  if DAO is implemented with {{{http://db.apache.org/ojb/}OJB}} or Hibernate, simple JDBC  or other, and if you want, it doesn't worry if my media store is an an RDBMS or other,
+    even if it is very hard to think at a DAO implementation without an ORM such {{{http://db.apache.org/ojb/}OJB}}, Hibernate, ebatis and so on, because
+    DAO interface must represent a very generic dao so to be reused easily in all applications you want. The best way to maintain the DAO generic is to implement it with an ORM.
+    Up now just {{{http://db.apache.org/ojb/docu/tutorials/pb-tutorial.html}OJB PB (persistence broker)}} implementation of DAO interface exists inside Mandragora.
+
+[images/PatternImplementation.jpg]
+
+
+    Mandragora is strongly oriented to the Value Object pattern. The idea is that the class accessing the business layer deals just with value objects, (that should
+    be mapped to database tables trough the ORM configuration file, as the {{{http://db.apache.org/ojb/docu/guides/repository.html}repository.xml}} in the case of {{{http://db.apache.org/ojb/}OJB}}), having no idea how they are internally managed.
+    So the class that uses the business layer of Mandragora (for example this class could a controller as a Struts action class) calls the {{{referenceguide/bd-api-guide.html} methods of the BD}} passing value objects with the parameters, and could expect value objects to be returned.
+    The business delegate (BD) methods to do its job could need to call methods of the Service Facade, and these ones carry on calling methods down the bottom layers, and in such work value objects and other parameters will be pushed down in such calling, and every one can expect value objects to be returned.
+    The DAO will use the ORM to do its job, and finally the ORM, using the mapping between the value objects and table, will access the database
+
+[images/SequenceIntro.jpg]
+
+
+    It can be you have to perform some operation that is not provided by the BD interface of Mandragora. In this case you can easily {{{referenceguide/how-to-extend.html}extend Mandragora}}
+    putting new methods in a new interface that extends the BD interface, and of course implementing it in a new implementation that can extend, one of the existing BD implementations, or be
+    be completely new.
+
+    Analogously it could be that the new methods of business delegate requires some method not existing in the provided Service Facade interface, and so on down the chain until the DAO, Again you can easily {{{referenceguide/how-to-extend.html}extend Mandragora}}
+    putting new methods in a new interface that extends the Service Facade,  Application Service, or DAO interface, and of course implementing it in a new implementation that can extend, one  of the existing correspondent implementations, or be
+    be completely new.
+
+    It will be good idea to try to make these methods as generic as possible to use them again.
+
+[images/UserExtensions.jpg]
+
+    If you write your own Business Delegate implementation you can access to it through the Mandragora access service, that is the Service Locator, so that
+    your application will follow working with the BD interface, or its extension written by you, without worrying about which implementation is being used.
+    In other words, to use your BD implementation just register it in the {{{referenceguide/mandragora-properties.html}Mandragora.properties}} to have it available in Mandragora.
+
+[images/BDAccess_small.jpg]
+
+    Analogously the same pattern is applied for the Service Facade, Application Service and DAO.
+
+    
+
+
+=======================================================================

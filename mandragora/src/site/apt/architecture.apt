@@ -1,0 +1,19 @@
+ -----
+ Architecture
+ -----
+ Alessandro Colantoni
+ -----
+
+Architecture
+
+    * {{{#DAO}DAO Data Access Object}}
+    
+    * {{{#BD}BD Business Delegate}}
+
+* {DAO} Data Access Object
+
+[images/DAOFactory.gif]
+
+* {BD} Business Delegate
+
+[images/BDFactory.gif]

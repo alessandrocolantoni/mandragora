@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+           http://www.springframework.org/schema/beans/spring-beans-2.5.xsd 
+           http://www.springframework.org/schema/aop 
+           http://www.springframework.org/schema/aop/spring-aop-2.0.xsd
+           http://www.springframework.org/schema/context
+           http://www.springframework.org/schema/context/spring-context-2.5.xsd
+           http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-2.5.xsd">
+	
+	<context:annotation-config/>
+	
+	<bean id="entityManagerFactory"  class="org.springframework.orm.jpa.LocalEntityManagerFactoryBean">
+		<property name="persistenceUnitName" value="testdb" />
+	</bean>	  
+	<bean id="transactionManager" class="org.springframework.orm.jpa.JpaTransactionManager">  
+		<property name="entityManagerFactory" ref="entityManagerFactory" />  
+	</bean>  
+	<tx:annotation-driven /> 
+	
+	<aop:config>
+<!--		<aop:pointcut id="jpaTestMethods" expression="execution( it.aco.mandragora.bd.impl.pojo.JpaPCPojoManagerBDTest.*(..))"/>-->
+		<aop:pointcut id="jpaTestMethods" expression="execution(* it.aco.mandragora.dao.impl.jpa.JpaPersistenceContextDAO.*(..))"/>
+		<aop:advisor advice-ref="txAdvice" pointcut-ref="jpaTestMethods"/>
+	</aop:config>
+	<tx:advice id="txAdvice" transaction-manager="transactionManager">
+		<tx:attributes>
+			<tx:method name="*" propagation="REQUIRED" />
+		</tx:attributes>
+	</tx:advice>
+	
+<!--	<bean class="org.springframework.orm.jpa.support.PersistenceAnnotationBeanPostProcessor"/>-->
+<!--    <bean id="entityManagerFactory" class="org.springframework.orm.jpa.LocalEntityManagerFactoryBean">         -->
+<!--    	<property name="persistenceUnitName" value="testdb" /> -->
+<!--    </bean> -->
+    <bean id="simplePojoManagerBD" class="it.aco.mandragora.bd.impl.pojo.SimplePojoManagerBD">
+        <property name="serviceFacade">
+            <ref bean="simplePojoFacade"/>
+        </property>
+    </bean>
+    <bean id="simplePojoFacade" class="it.aco.mandragora.serviceFacade.pojoFacade.SimplePojoFacade">
+        <property name="dao">
+            <ref bean="jpaDAO"/>
+        </property>
+        <property name="applicationService">
+            <ref bean="simpleApplicationService"/>
+        </property>
+    </bean>
+    <bean id="simpleApplicationService" class="it.aco.mandragora.as.impl.SimpleApplicationService">
+        <property name="dao">
+            <ref bean="jpaDAO"/>
+        </property>
+    </bean>
+    
+    <bean id="jpaDAO" class="it.aco.mandragora.dao.impl.jpa.JpaPersistenceContextDAO"/>
+    
+</beans>

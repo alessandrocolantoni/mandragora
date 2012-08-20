@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ejb-jar xmlns="http://java.sun.com/xml/ns/j2ee" version="2.1"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee http://java.sun.com/xml/ns/j2ee/ejb-jar_2_1.xsd">
+    <display-name>MandragoraTESTEJBJAR</display-name>
+
+    <enterprise-beans>
+        <session>
+            <ejb-name>UserExampleSLSBFacadeBean</ejb-name>
+            <home>it.aco.mandragora.userExample.serviceFacade.sessionFacade.remoteFacade.SLSB.userExample.UserExampleSLSBFacadeHome</home>
+            <remote>it.aco.mandragora.userExample.serviceFacade.sessionFacade.remoteFacade.SLSB.userExample.UserExampleSLSBFacade</remote>
+            <ejb-class>it.aco.mandragora.userExample.serviceFacade.sessionFacade.remoteFacade.SLSB.userExample.UserExampleSLSBFacadeBean</ejb-class>
+            <session-type>Stateless</session-type>
+            <transaction-type>Container</transaction-type>
+        </session>
+
+        <session>
+            <ejb-name>UserExample2SLSBFacadeBean</ejb-name>
+            <home>it.aco.mandragora.userExample.serviceFacade.sessionFacade.remoteFacade.SLSB.userExample2.UserExample2SLSBFacadeHome</home>
+            <remote>it.aco.mandragora.userExample.serviceFacade.sessionFacade.remoteFacade.SLSB.userExample2.UserExample2SLSBFacade</remote>
+            <ejb-class>it.aco.mandragora.userExample.serviceFacade.sessionFacade.remoteFacade.SLSB.userExample2.UserExample2SLSBFacadeBean</ejb-class>
+            <session-type>Stateless</session-type>
+            <transaction-type>Container</transaction-type>
+        </session>
+
+
+    </enterprise-beans>
+    <assembly-descriptor>
+        <container-transaction>
+            <method>
+                <ejb-name>UserExampleSLSBFacadeBean</ejb-name>
+                <method-name>*</method-name>
+            </method>
+            <trans-attribute>Required</trans-attribute>
+        </container-transaction>
+        <container-transaction>
+            <method>
+                <ejb-name>UserExample2SLSBFacadeBean</ejb-name>
+                <method-name>*</method-name>
+            </method>
+            <trans-attribute>Required</trans-attribute>
+        </container-transaction>
+
+    </assembly-descriptor>
+</ejb-jar>

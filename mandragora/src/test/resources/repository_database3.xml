@@ -1,0 +1,113 @@
+<!-- @version $Id: repository_database3.xml,v 1.1 2009/05/12 11:19:09 alxcln Exp $ -->
+
+<!--
+/* Copyright 2002-2005 The Apache Software Foundation
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+-->
+<!--
+Define all database connections here.
+One defined connection should be defined as the default one,
+by setingt default-connection="true" - this could be done at runtime too.
+
+It is possible to set user/password at
+runtime or to let different users login at runtime
+using the same database.
+Use PBKey objects for the same jcdAlias name,
+but with different user/password.
+
+It is also possible to add jdbc-connection-descriptor elements
+at runtime,  using the MetadataManager.
+-->
+
+    <!-- This connection is used as the default one within OJB -->
+    <!--
+    <jdbc-connection-descriptor
+   		jcd-alias="@JCD_ALIAS@"
+   		default-connection="true"
+   		platform="@DBMS_NAME@"
+   		jdbc-level="@JDBC_LEVEL@"
+   		driver="@DRIVER_NAME@"
+   		protocol="@URL_PROTOCOL@"
+   		subprotocol="@URL_SUBPROTOCOL@"
+   		dbalias="@URL_DBALIAS@"
+   		username="@USER_NAME@"
+   		password="@USER_PASSWD@"
+   		batch-mode="false"
+        useAutoCommit="1"
+        ignoreAutoCommitExceptions="false"
+     >
+     -->
+        <!--
+     <jdbc-connection-descriptor
+   		jcd-alias="default"
+   		default-connection="true"
+   		platform="Hsqldb"
+   		jdbc-level="2.0"
+   		driver="org.hsqldb.jdbcDriver"
+   		protocol="jdbc"
+   		subprotocol="hsqldb"
+   		dbalias="testdb"
+   		username="sa"
+   		password=""
+   		batch-mode="false"
+        useAutoCommit="1"
+        ignoreAutoCommitExceptions="false"
+     >
+      -->
+
+
+
+    <jdbc-connection-descriptor jcd-alias="testdb3"
+                                    platform="Hsqldb"
+                                    jdbc-level="2.0"
+                                    driver="org.apache.derby.jdbc.ClientDriver"
+                                    protocol="jdbc"
+                                    subprotocol="derby"
+                                    dbalias="//localhost/testdb3"
+                                    eager-release="false"
+                                    batch-mode="false" useAutoCommit="2"
+                                    ignoreAutoCommitExceptions="false">
+
+        <object-cache class="org.apache.ojb.broker.cache.ObjectCacheEmptyImpl"/>
+        <connection-pool maxActive="5" maxIdle="2" maxWait="3" minEvictableIdleTimeMillis="4" numTestsPerEvictionRun="5" testOnBorrow="true" testOnReturn="true" testWhileIdle="true" timeBetweenEvictionRunsMillis="6" whenExhaustedAction="2"  logAbandoned="true" removeAbandoned="true" removeAbandonedTimeout="8"/>
+
+        <sequence-manager className="org.apache.ojb.broker.util.sequence.SequenceManagerNextValImpl">
+            <attribute attribute-name="autoNaming" attribute-value="false"/>
+        </sequence-manager>
+    </jdbc-connection-descriptor>
+
+
+
+
+
+
+
+   <!-- Datasource example -->
+    <!-- jdbc-connection-descriptor
+        jcd-alias="default"
+        default-connection="true"
+   		platform="Hsqldb"
+   		jdbc-level="2.0"
+   		jndi-datasource-name="java:DefaultDS"
+   		username="sa"
+   		password=""
+        batch-mode="false"
+        useAutoCommit="0"
+        ignoreAutoCommitExceptions="false"
+   >
+        Add the other elements like object-cache, connection-pool, sequence-manager here.
+
+   </jdbc-connection-descriptor -->
+
