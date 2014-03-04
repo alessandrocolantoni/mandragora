@@ -5,7 +5,7 @@
     <groupId>it.aco.mandragora</groupId>
     <artifactId>mandragora</artifactId>
     <packaging>jar</packaging>
-    <version>1.0.0</version>
+    <version>2.0.0-SNAPSHOT</version>
     
 <!--    <version>0.3.6-SNAPSHOT</version>-->
 <!--    <version>0.3.5-SNAPSHOT</version>-->
@@ -434,7 +434,7 @@
                 </excludes>
             </testResource>
         </testResources>
-
+		<pluginManagement><!-- introduced for avoi error in eclipse http://wiki.eclipse.org/M2E_plugin_execution_not_covered-->
         <plugins>
 
 
@@ -531,7 +531,7 @@
                             <goal>test-jar</goal>
                         </goals>
                         <configuration>
-                            <skip>false</skip>
+                            <skip>true</skip>
                             <includes>
                                 <include>it/aco/mandragora/vo/*.*</include>
                             </includes>
@@ -548,7 +548,7 @@
                             <goal>test-jar</goal>
                         </goals>
                         <configuration>
-                            <skip>false</skip>
+                            <skip>true</skip>
                             <includes>
                                 <include>it/aco/mandragora/userExample/**</include>
                                 <include>META-INF/ejb-jar.xml</include>
@@ -1016,8 +1016,8 @@
 						</goals>
 
                         <configuration>
-							<skip>false</skip>
-<!--							<skip>true</skip>-->
+<!-- 							<skip>false</skip> -->
+							<skip>true</skip>
 <!--excludes comentado para probar solo JpaPCPojoManagerBDTest-->
                             <excludes>
                                 
@@ -1051,7 +1051,7 @@
 							<goal>test</goal>
 						</goals>
 						<configuration>
-							<skip>false</skip>
+							<skip>true</skip>
                             <!--
                             <excludes>
                                 <exclude>**/*.*</exclude>
@@ -1187,6 +1187,7 @@
             <!-- end added by alessandro on 18-02-2008-->
 
         </plugins>
+        </pluginManagement>
         <!--
         <extensions>
                 <extension>
