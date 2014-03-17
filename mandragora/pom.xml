@@ -59,6 +59,10 @@
 <!--    		<url>http://mvnrepository.com/artifact/org.springframework</url>  -->
 <!--    	</repository> -->
 <!--    </repositories> -->
+
+
+	
+
     <distributionManagement>
         <repository>
             <!--<id>deploymentRepo</id>-->
@@ -71,6 +75,11 @@
 
             <layout>legacy</layout>
         </repository>
+        
+        <snapshotRepository>
+		    <id>blueItSnap-Nexus</id>
+		    <url>http://bltcmavenpro01:8081/nexus/content/repositories/snapshots</url>
+		  </snapshotRepository>
         <!--
         <snapshotRepository>
             <uniqueVersion>true</uniqueVersion>

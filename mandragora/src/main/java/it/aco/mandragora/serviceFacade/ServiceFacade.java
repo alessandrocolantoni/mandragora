@@ -344,6 +344,7 @@
 
 package it.aco.mandragora.serviceFacade;
 
+import it.aco.mandragora.exception.DataAccessException;
 import it.aco.mandragora.exception.ServiceFacadeException;
 import it.aco.mandragora.query.LogicCondition;
 
@@ -364,6 +365,20 @@ public interface ServiceFacade {
     public Collection findCollectionByTemplate(Object templateVO) throws ServiceFacadeException;
     public Collection findCollectionByTemplate(Object templateVO, String orderingField, Boolean asc) throws ServiceFacadeException;
     public Collection findCollectionByNullFields(Class realClass, String[] nullFields) throws ServiceFacadeException;
+    
+    /*inicio added por alessandro el 17-03-2013*/ 
+    public Object findObjectByLogicCondition(java.lang.Class realClass, LogicCondition logicCondition) throws ServiceFacadeException;
+	
+	public Object findObjectByLogicCondition(String[]selectFields, java.lang.Class realClass, LogicCondition logicCondition) throws ServiceFacadeException;
+	
+	public Object findObjectByLogicCondition(String[]selectFields, java.lang.Class realClass, LogicCondition logicCondition, String orderBy) throws ServiceFacadeException;
+	public Object findObjectByLogicCondition(java.lang.Class realClass, LogicCondition logicCondition, String orderBy) throws ServiceFacadeException;
+    
+    
+	/*fin added por alessandro el 17-03-2013*/ 
+    
+    
+    
     public Collection findCollectionByLogicCondition(Class realClass, LogicCondition logicCondition) throws ServiceFacadeException;
     public Collection findCollectionByLogicCondition(Class realClass, LogicCondition logicCondition,String orderingField, Boolean asc,Integer startAtIndex, Integer endAtIndex) throws ServiceFacadeException;
     public Collection findCollectionByOrValues(Class realClass,String pAttributeName,Collection valuesCollection) throws ServiceFacadeException;

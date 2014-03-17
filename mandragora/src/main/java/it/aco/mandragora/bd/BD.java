@@ -350,6 +350,7 @@
 package it.aco.mandragora.bd;
 
 import it.aco.mandragora.exception.ApplicationException;
+import it.aco.mandragora.exception.ServiceFacadeException;
 import it.aco.mandragora.query.LogicCondition;
 
 import java.util.Collection;
@@ -459,6 +460,22 @@ public interface BD{
      */
     public Collection findCollectionByNullFields(Class realClass, String[] nullFields) throws ApplicationException;
 
+    
+    
+    /*inicio added por alessandro el 17-03-2013*/ 
+    public Object findObjectByLogicCondition(java.lang.Class realClass, LogicCondition logicCondition) throws ApplicationException;
+	
+	public Object findObjectByLogicCondition(String[]selectFields, java.lang.Class realClass, LogicCondition logicCondition) throws ApplicationException;
+	
+	public Object findObjectByLogicCondition(String[]selectFields, java.lang.Class realClass, LogicCondition logicCondition, String orderBy) throws ApplicationException;
+	public Object findObjectByLogicCondition(java.lang.Class realClass, LogicCondition logicCondition, String orderBy) throws ApplicationException;
+    
+    
+	/*fin added por alessandro el 17-03-2013*/ 
+    
+    
+    
+    
     /**
      * Looks for all instances of <code>realClass</code> that satisfy the <code>logicCondition</code></br>
      * For example <code>findCollectionByLogicCondition(Employee.class,new LogicSqlCondition("age","<=",new Integer(35),"AND", new LogicSqlCondition("salary",">=", new Integer(40000))))</code></br>

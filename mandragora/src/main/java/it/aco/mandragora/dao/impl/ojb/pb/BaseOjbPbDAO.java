@@ -2596,4 +2596,26 @@ public abstract class BaseOjbPbDAO implements DAO{
         }
         log.info("************Done with the  BaseOjbPbDAO.setInverseForeignKeyFields(Object pInstance, String pAttributeName)**************");
     }
+    
+    
+    public Object findObjectByLogicCondition(Class realClass,
+			LogicCondition logicCondition) throws DataAccessException {
+		throw new UnsupportedOperationException("Method not implemented yet");
+		
+	}
+	public Object findObjectByLogicCondition(String[] selectFields,
+			Class realClass, LogicCondition logicCondition)
+			throws DataAccessException {
+		throw new UnsupportedOperationException("Method not implemented yet");
+	}
+	public Object findObjectByLogicCondition(String[] selectFields,
+			Class realClass, LogicCondition logicCondition, String orderBy)
+			throws DataAccessException {
+		throw new UnsupportedOperationException("Method not implemented yet");
+	}
+	public Object findObjectByLogicCondition(Class realClass,
+			LogicCondition logicCondition, String orderBy)
+			throws DataAccessException {
+		throw new UnsupportedOperationException("Method not implemented yet");
+	}
 }

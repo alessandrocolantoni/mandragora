@@ -351,7 +351,6 @@ package it.aco.mandragora.bd.impl.pojo;
 
 
 import it.aco.mandragora.common.ServiceLocator;
-import it.aco.mandragora.exception.ApplicationException;
 import it.aco.mandragora.exception.*;
 import it.aco.mandragora.bd.BD;
 import it.aco.mandragora.query.LogicCondition;
@@ -481,6 +480,65 @@ public abstract class BasePojoManagerBD implements BD{
         }
     }
 
+    
+    
+    /*inicio added por alessandro el 17-03-2013*/ 
+    public Object findObjectByLogicCondition(java.lang.Class realClass, LogicCondition logicCondition) throws ApplicationException{
+        try {
+            ServiceFacade serviceFacade = getServiceFacade();
+            return serviceFacade.findObjectByLogicCondition( realClass,  logicCondition);
+        } catch (ServiceFacadeException e) {
+            log.error("ServiceFacadeException caught in BasePojoManagerBD.findObjectByLogicCondition(java.lang.Class realClass, LogicCondition logicCondition): " + e.toString());
+            throw new ApplicationException("ApplicationException thrown in BasePojoManagerBD.findObjectByLogicCondition(java.lang.Class realClass, LogicCondition logicCondition) " + e.toString(),e);
+        } catch (Exception e) {
+            log.error("Exception caught in BasePojoManagerBD.findObjectByLogicCondition(java.lang.Class realClass, LogicCondition logicCondition): " + e.toString());
+            throw new ApplicationException("ApplicationException thrown in BasePojoManagerBD.findObjectByLogicCondition(java.lang.Class realClass, LogicCondition logicCondition)" + e.toString(),e);
+        }
+    }
+
+	
+	public Object findObjectByLogicCondition(String[]selectFields, java.lang.Class realClass, LogicCondition logicCondition) throws ApplicationException{
+        try {
+            ServiceFacade serviceFacade = getServiceFacade();
+            return serviceFacade. findObjectByLogicCondition(selectFields, realClass,  logicCondition);
+        } catch (ServiceFacadeException e) {
+            log.error("ServiceFacadeException caught in BasePojoManagerBD. findObjectByLogicCondition(String[]selectFields, java.lang.Class realClass, LogicCondition logicCondition): " + e.toString());
+            throw new ApplicationException("ApplicationException thrown in BasePojoManagerBD. findObjectByLogicCondition(String[]selectFields, java.lang.Class realClass, LogicCondition logicCondition) " + e.toString(),e);
+        } catch (Exception e) {
+            log.error("Exception caught in BasePojoManagerBD. findObjectByLogicCondition(String[]selectFields, java.lang.Class realClass, LogicCondition logicCondition): " + e.toString());
+            throw new ApplicationException("ApplicationException thrown in BasePojoManagerBD. findObjectByLogicCondition(String[]selectFields, java.lang.Class realClass, LogicCondition logicCondition)" + e.toString(),e);
+        }
+    }
+
+	
+	public Object findObjectByLogicCondition(String[]selectFields, java.lang.Class realClass, LogicCondition logicCondition, String orderBy) throws ApplicationException{
+        try {
+            ServiceFacade serviceFacade = getServiceFacade();
+            return serviceFacade.findObjectByLogicCondition(selectFields,  realClass,  logicCondition,  orderBy);
+        } catch (ServiceFacadeException e) {
+            log.error("ServiceFacadeException caught in BasePojoManagerBD.findObjectByLogicCondition(String[]selectFields, java.lang.Class realClass, LogicCondition logicCondition, String orderBy): " + e.toString());
+            throw new ApplicationException("ApplicationException thrown in BasePojoManagerBD.findObjectByLogicCondition(String[]selectFields, java.lang.Class realClass, LogicCondition logicCondition, String orderBy) " + e.toString(),e);
+        } catch (Exception e) {
+            log.error("Exception caught in BasePojoManagerBD.findObjectByLogicCondition(String[]selectFields, java.lang.Class realClass, LogicCondition logicCondition, String orderBy): " + e.toString());
+            throw new ApplicationException("ApplicationException thrown in BasePojoManagerBD.findObjectByLogicCondition(String[]selectFields, java.lang.Class realClass, LogicCondition logicCondition, String orderBy)" + e.toString(),e);
+        }
+    }
+	public Object findObjectByLogicCondition(java.lang.Class realClass, LogicCondition logicCondition, String orderBy) throws ApplicationException {
+        try {
+            ServiceFacade serviceFacade = getServiceFacade();
+            return serviceFacade.findObjectByLogicCondition(realClass,  logicCondition,  orderBy) ;
+        } catch (ServiceFacadeException e) {
+            log.error("ServiceFacadeException caught in BasePojoManagerBD.findObjectByLogicCondition(java.lang.Class realClass, LogicCondition logicCondition, String orderBy) : " + e.toString());
+            throw new ApplicationException("ApplicationException thrown in BasePojoManagerBD.findObjectByLogicCondition(java.lang.Class realClass, LogicCondition logicCondition, String orderBy)  " + e.toString(),e);
+        } catch (Exception e) {
+            log.error("Exception caught in BasePojoManagerBD.findObjectByLogicCondition(java.lang.Class realClass, LogicCondition logicCondition, String orderBy) : " + e.toString());
+            throw new ApplicationException("ApplicationException thrown in BasePojoManagerBD.findObjectByLogicCondition(java.lang.Class realClass, LogicCondition logicCondition, String orderBy) " + e.toString(),e);
+        }
+    }
+    
+    
+	/*fin added por alessandro el 17-03-2013*/ 
+    
 
 
     public Collection findCollectionByLogicCondition(Class realClass,LogicCondition logicCondition) throws ApplicationException{

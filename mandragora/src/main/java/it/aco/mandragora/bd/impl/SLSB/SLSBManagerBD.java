@@ -362,6 +362,7 @@ import it.aco.mandragora.bd.BD;
 
 import javax.ejb.CreateException;
 import javax.ejb.EJBException;
+
 import java.rmi.RemoteException;
 import java.util.Collection;
 import java.util.Iterator;
@@ -3923,6 +3924,25 @@ public class SLSBManagerBD implements BD {
         }
 
     }
+	public Object findObjectByLogicCondition(Class realClass,
+			LogicCondition logicCondition) throws ApplicationException {
+		throw new UnsupportedOperationException("not yet implemented");
+	}
+	public Object findObjectByLogicCondition(String[] selectFields,
+			Class realClass, LogicCondition logicCondition)
+			throws ApplicationException {
+		throw new UnsupportedOperationException("not yet implemented");
+	}
+	public Object findObjectByLogicCondition(String[] selectFields,
+			Class realClass, LogicCondition logicCondition, String orderBy)
+			throws ApplicationException {
+		throw new UnsupportedOperationException("not yet implemented");
+	}
+	public Object findObjectByLogicCondition(Class realClass,
+			LogicCondition logicCondition, String orderBy)
+			throws ApplicationException {
+		throw new UnsupportedOperationException("not yet implemented");
+	}
 
 
 
