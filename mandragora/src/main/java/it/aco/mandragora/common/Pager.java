@@ -5,6 +5,14 @@
 //
 // using Karapan Sapi Struts Generator
 //---------------------------------------------------------
+//
+//
+
+
+
+
+//TODO creo que esto ya se puede tirar!!!!!!!!!!!!!!
+
 
 package it.aco.mandragora.common;
 

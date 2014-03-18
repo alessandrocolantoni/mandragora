@@ -6647,7 +6647,7 @@ public abstract class BaseJpaDAO implements DAO{
 			
 				
 			getEntityManager().flush();
-		} catch (InvalidStateException e) {
+		} /*catch (InvalidStateException e) {   // quitado porqué con hibernate-validator-4.2.0 no funciona
 			log.error("BaseJpaDAO.flush()" + e.toString(), e);
 			InvalidValue[] invalid = e.getInvalidValues();
 			for (int i = 0; i < invalid.length; ++i) {
@@ -6655,7 +6655,7 @@ public abstract class BaseJpaDAO implements DAO{
 				log.error("BaseJpaDAO.flush(), " + bad.getPropertyPath() + ":"+ bad.getPropertyName() + ":" + bad.getMessage()	+ ": value is " + bad.getValue());
 			}
 			throw new DataAccessException("Error in  BaseJpaDAO.flush(): "+ e.getCause()!=null ? e.getCause().toString():"no cause ", e);
-		} catch (OptimisticLockException e) {
+		} */catch (OptimisticLockException e) {
 			log.error("OptimisticLockException caught: " + e.toString());
 			throw new OptimisticLockException("Error in  BaseJpaDAO.flush(): "+ e.toString(), e);
 		} catch (Exception e) {
