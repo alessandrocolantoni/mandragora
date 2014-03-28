@@ -418,7 +418,7 @@ public abstract class BaseJpaDAO implements DAO{
 	
 
 
-	protected boolean flush=true;
+	protected boolean flush=false;
 	
 	
 	static private org.apache.log4j.Category log = org.apache.log4j.Logger.getLogger(BaseJpaDAO.class.getName());
@@ -3376,7 +3376,7 @@ public abstract class BaseJpaDAO implements DAO{
 		log.debug("************Entering ***************");
 		try {
 			if (storeVO != null)
-				getEntityManager().persist(storeVO);
+				getEntityManager().persist(storeVO);//getEntityManager().getFlushMode()
 			if (flush) flush();
 		} catch (Exception e) {
 			log.error("Exception caught: " + e.toString());

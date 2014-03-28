@@ -361,8 +361,8 @@ import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.beanutils.NestedNullException;
 import org.apache.commons.beanutils.PropertyUtilsBean;
 import org.apache.commons.beanutils.BeanUtilsBean;
-import org.apache.ojb.broker.util.configuration.Configurator;
-import org.apache.ojb.broker.util.configuration.Configuration;
+//import org.apache.ojb.broker.util.configuration.Configurator;
+//import org.apache.ojb.broker.util.configuration.Configuration;
 import it.aco.mandragora.comparator.FieldComparator;
 import it.aco.mandragora.comparator.BeanFieldComparator;
 import it.aco.mandragora.exception.DataAccessException;
@@ -1508,32 +1508,42 @@ public class Utils{
         return addRemoveMenuItem(repository,path,title,false,true,null,null);
     }
 
+    
     public static Class getClassFromMandragoraProperties(String className) throws Exception{
         Class clazz = null;
         try{
+        	/*se quita porque depende de OJB TODO: reescribir sin usar Ojb 
             Configurator configurator = MandragoraConfigurator.getInstance();
             Configuration config = configurator.getConfigurationFor(null);
             clazz = config.getClass(className, null);
+            */
 //System.out.println("Utils.getClassFromMandragoraProperties(String className): despues config.getClass: clazz="+clazz.toString());
         }catch(Exception e){
             throw new Exception("Error in  Utils.getClassFromMandragoraProperties(String className): " + e.toString(),e);
         }
         return clazz;
     }
+    
 
+    
+    
     public static String getStringFromMandragoraProperties(String string) throws Exception {
         String result = null;
         try{
+        	/* se quita porque depende de OJB TODO: reescribir sin usar Ojb
             Configurator configurator = MandragoraConfigurator.getInstance();
             Configuration config = configurator.getConfigurationFor(null);
             result = config.getString(string, null);
+            */
 //System.out.println("Utils.getStringFromMandragoraProperties(String string): despues config.getString: result="+result);
         }catch(Exception e){
             throw new Exception("Error in  Utils.getStringFromMandragoraProperties(String string): " + e.toString(),e);
         }
         return result;
     }
-
+    
+    
+    
     /**
      * Suppose you have a tree oganization starting at valueObjectOrCollection.
      * valueObjectOrCollection (or each element of it if it is a collection) must have a property named as the first token
