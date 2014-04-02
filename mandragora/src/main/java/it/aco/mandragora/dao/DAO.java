@@ -350,6 +350,7 @@ import it.aco.mandragora.exception.DataOptimisticLockException;
 import it.aco.mandragora.query.LogicCondition;
 
 import java.util.Collection;
+import java.util.Map;
 import java.util.Vector;
 import java.util.Iterator;
 
@@ -426,6 +427,16 @@ public interface DAO{
      */
     public Object findObjectByTemplate(Object templateVO) throws DataAccessException;
 
+    
+    public Collection findCollectionByQueryString(String queryString) throws DataAccessException ;
+	
+	public Collection findCollectionByQueryString(String queryString, Map parameters, Integer firstResult, Integer maxResults) throws DataAccessException;
+	public Collection findCollectionByQueryString(String queryString, Map parameters) throws DataAccessException ;
+    
+    
+    
+    
+    
     /**
      * Returns a collection of objects of the same class of <code>templateVO</code>, whose not null fields in <code>templateVO</code>,
      * have the same value.<br/>
@@ -534,6 +545,8 @@ public interface DAO{
      */
     public Collection findCollectionByLogicCondition(Class realClass,LogicCondition logicCondition,String orderingField, Boolean asc, Integer startAtIndex, Integer endAtIndex) throws DataAccessException;
 
+    
+    public Collection findCollectionByLogicCondition(java.lang.Class realClass, LogicCondition logicCondition, String orderBy) throws DataAccessException;
 
     /**
      * @deprecated use {@link #findCollectionByLogicCondition(Class realClass,LogicCondition logicCondition,String orderingField, Boolean asc,Integer startAtIndex, Integer endAtIndex)}

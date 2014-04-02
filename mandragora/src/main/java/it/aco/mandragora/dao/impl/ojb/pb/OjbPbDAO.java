@@ -349,6 +349,9 @@
 
 package it.aco.mandragora.dao.impl.ojb.pb;
 
+import java.util.Collection;
+import java.util.Map;
+
 import it.aco.mandragora.common.ServiceLocator;
 import it.aco.mandragora.dao.DAO;
 import it.aco.mandragora.exception.DataAccessException;
@@ -391,6 +394,8 @@ public class OjbPbDAO extends BaseOjbPbDAO implements DAO{
     }
     // Create Log4j category instance for logging
     static private org.apache.log4j.Category log = org.apache.log4j.Logger.getLogger(OjbPbDAO.class.getName());
+	
+	
 	
     
 

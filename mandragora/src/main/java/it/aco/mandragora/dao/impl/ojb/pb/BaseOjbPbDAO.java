@@ -354,6 +354,7 @@ import it.aco.mandragora.query.LogicCondition;
 
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Vector;
 
 import org.apache.ojb.broker.OptimisticLockException;
@@ -2616,6 +2617,18 @@ public abstract class BaseOjbPbDAO implements DAO{
 	public Object findObjectByLogicCondition(Class realClass,
 			LogicCondition logicCondition, String orderBy)
 			throws DataAccessException {
+		throw new UnsupportedOperationException("Method not implemented yet");
+	}
+	public Collection findCollectionByLogicCondition(Class realClass, LogicCondition logicCondition, String orderBy) throws DataAccessException {
+		throw new UnsupportedOperationException("Method not implemented yet");
+	}
+	public Collection findCollectionByQueryString(String queryString) throws DataAccessException {
+		throw new UnsupportedOperationException("Method not implemented yet");
+	}
+	public Collection findCollectionByQueryString(String queryString, Map parameters, Integer firstResult, Integer maxResults) throws DataAccessException {
+		throw new UnsupportedOperationException("Method not implemented yet");
+	}
+	public Collection findCollectionByQueryString(String queryString, Map parameters) throws DataAccessException {
 		throw new UnsupportedOperationException("Method not implemented yet");
 	}
 }
