@@ -5633,10 +5633,12 @@ public abstract class BaseJpaDAO implements DAO{
 			if(orderByArray!=null){
 				String finalOrderBy="";
 				for (int k=0; k<orderByArray.length;k++){
-					//finalOrderBy=finalOrderBy+" a."+orderBySplit[k];
 					String[] splitOrderBy=orderByArray[k].split(" ");
-					//finalOrderBy=finalOrderBy+prefixNotJoinFieldName(orderByArray[k]);
-					finalOrderBy=finalOrderBy+prefixNotJoinFieldName(replanceFieldWithJoinMap(splitOrderBy[0],joinMap))+" "+splitOrderBy[1];
+					//finalOrderBy=finalOrderBy+prefixNotJoinFieldName(replanceFieldWithJoinMap(splitOrderBy[0],joinMap))+" "+splitOrderBy[1];
+					/**
+					 * TODO verificar bien este cambio
+					 */
+					finalOrderBy=finalOrderBy+prefixNotJoinFieldName(replanceFieldWithJoinMap(splitOrderBy[0],joinMap))+" "+(splitOrderBy.length>1 ? splitOrderBy[1] : "");
 					if(k<orderByArray.length-1)finalOrderBy=finalOrderBy+",";
 				}
 				orderByString = orderByString+" ORDER BY " +finalOrderBy;

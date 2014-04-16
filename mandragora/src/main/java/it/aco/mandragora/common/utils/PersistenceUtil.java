@@ -362,4 +362,22 @@ public class PersistenceUtil {
 		return entity.getClass();
 	}
 
+	/*
+	public static boolean isInizialized(Object reference) throws Exception {   
+		try {
+			if(reference==null)throw new Exception("Exception thrown in PersistenceUtil.isInizialized(Object entity) entity is null" );
+			return reference instanceof HibernateProxy;
+			// TODO here  put Or with mor implementatios
+			
+		} catch (Exception e) {
+            log.error("Exception caught in PersistenceUtil.isInizialized(Object entity): " + e.toString());
+            throw new Exception("Exception thrown in PersistenceUtil.isInizialized(Object entity)" + e.toString(),e);
+		}
+
+//		HibernateProxy a; a.getHibernateLazyInitializer().isUninitialized()
+	}
+	*/
+	
+	
+	
 }
