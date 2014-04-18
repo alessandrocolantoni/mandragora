@@ -1070,4 +1070,6 @@ public interface DAO{
      */
     public void setInverseForeignKeyFields(Object pInstance, String pAttributeName) throws DataAccessException;
 
+    public Collection findCollectionByQueryString(String queryString, String parameterName, Object parameterValue) throws DataAccessException;
+
 }

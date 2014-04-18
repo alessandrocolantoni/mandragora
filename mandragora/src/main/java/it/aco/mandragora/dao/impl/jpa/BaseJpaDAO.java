@@ -694,9 +694,24 @@ public abstract class BaseJpaDAO implements DAO{
 		
 		} catch (Exception e) {
 			log.error("Exception caught  : " + e.toString());
-			throw new DataAccessException(
-					"Error in  ImplIrisDAO.findCollectionByQueryString(String queryString) : "
-							+ e.toString(), e);
+			throw new DataAccessException( "Error in  BaseJpaDAO.findCollectionByQueryString(String queryString) : " + e.toString(), e);
+		}
+		log.debug("************Done **************");
+		return result;
+	}
+	
+	@Override
+	public Collection findCollectionByQueryString(String queryString, String parameterName, Object parameterValue) throws DataAccessException {
+		log.debug("************Entering ***************");
+		Collection result;
+		try {
+			
+			HashMap parameters = new HashMap();
+			parameters.put(parameterName, parameterValue);
+			result = findCollectionByQueryString(queryString, parameters);
+		} catch (Exception e) {
+			log.error("Exception caught  : " + e.toString());
+			throw new DataAccessException( "Error in  BaseJpaDAO.findCollectionByQueryString(String queryString, String parameterName, Object parameterValue) : " + e.toString(), e);
 		}
 		log.debug("************Done **************");
 		return result;
