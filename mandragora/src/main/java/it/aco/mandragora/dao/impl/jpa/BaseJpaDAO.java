@@ -700,7 +700,7 @@ public abstract class BaseJpaDAO implements DAO{
 		return result;
 	}
 	
-	@Override
+	
 	public Collection findCollectionByQueryString(String queryString, String parameterName, Object parameterValue) throws DataAccessException {
 		log.debug("************Entering ***************");
 		Collection result;
@@ -717,16 +717,20 @@ public abstract class BaseJpaDAO implements DAO{
 		return result;
 	}
 	
-	public Collection findCollectionByQueryString(String queryString,
-			Map parameters, Integer firstResult, Integer maxResults)
-			throws DataAccessException {
+	public Collection findCollectionByQueryString(String queryString,  Integer firstResult, Integer maxResults) throws DataAccessException {
+		return findCollectionByQueryString( queryString,  new HashMap(),  firstResult,  maxResults);
+	}
+	
+	public Collection findCollectionByQueryString(String queryString, Map parameters, Integer firstResult, Integer maxResults) throws DataAccessException {
 		log.debug("************Entering ***************");
 		Collection result;
 		try {
-
+			/*
 			queryString = translateInAll(queryString, parameters);// added
 																	// alessandro
 																	// 21-mar-2010
+			
+			*/
 			Query query = getEntityManager().createQuery(queryString);
 
 			setQueryParameters(query, parameters);

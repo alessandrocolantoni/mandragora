@@ -432,7 +432,7 @@ public interface DAO{
 	
 	public Collection findCollectionByQueryString(String queryString, Map parameters, Integer firstResult, Integer maxResults) throws DataAccessException;
 	public Collection findCollectionByQueryString(String queryString, Map parameters) throws DataAccessException ;
-    
+		
     
     
     
@@ -1071,5 +1071,5 @@ public interface DAO{
     public void setInverseForeignKeyFields(Object pInstance, String pAttributeName) throws DataAccessException;
 
     public Collection findCollectionByQueryString(String queryString, String parameterName, Object parameterValue) throws DataAccessException;
-
+    public Collection findCollectionByQueryString(String queryString,  Integer firstResult, Integer maxResults) throws DataAccessException;
 }
