@@ -1936,7 +1936,7 @@ public abstract class BaseContextApplicationService implements ContextApplicatio
                 }else { // there is the only one iteration
                     Object existingPInstanceChild = propertyUtilsBean.getProperty(pInstance,firstAttributeNameAndRemainingPath[0]);
                     //if (existingPInstanceChild==null){
-                    if (existingPInstanceChild==null || (new BeanFieldComparator(nextNodePkNames)).compare(existingPInstanceChild,distinctValueObjectsCollectionItemPkValues)!=0){
+                    if (existingPInstanceChild==null || (new BeanFieldComparator(nextNodePkNames,existingPInstanceChild.getClass())).compare(existingPInstanceChild,distinctValueObjectsCollectionItemPkValues)!=0){
                         isNewElement = true;   //    added by Alessandro on 04-dec-2008
                         pInstanceChild = ConstructorUtils.invokeConstructor(nextNodeClass,null,null);
                         BeanCollectionUtils.setAttributes(pInstanceChild,nextNodePkNames,distinctValueObjectsCollectionItemPkValues);

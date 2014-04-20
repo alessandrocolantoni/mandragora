@@ -1363,20 +1363,32 @@ public class Utils{
      * Return an element of collection whose property named field has value value. If more than such an element exists it's no determined which one is returned
      * if such an element doesn't exist return null;
      * If collection is null or empty return null.
+     * @param <E>
      * @param collection: collection where the element will be searched in
      * @param field: property of colelction's element that has to have value value
      * @param value: value of property field that must have the collection's element to be returned
      * @return an element of collection whose property named field has value value
      * @throws IllegalAccessException
      */
-    public static Object findInCollection(Collection collection, String field, Object value) throws IllegalAccessException{
-        Object result=null;
+    public static <T, E> T findInCollection(Collection<T> collection, Class<T> beanClass, String field, E value) throws IllegalAccessException{
+        T result=null;
         try{
             if (collection==null || collection.isEmpty()) return  null;
             ArrayList arrayList = Collections.list(Collections.enumeration(collection));
             sortCollection(arrayList,field);
-            int index = Collections.binarySearch(arrayList,value,new BeanFieldComparator(field));
-            if (index>=0) result=arrayList.get(index);
+            result = (T) findInOrderedCollection(arrayList, beanClass,  field,  value);
+        } catch(Exception e){
+            throw new IllegalAccessException("Exception in Utils.findInCollection(Collection collection, String field, Object value):"+e);
+        }
+        return result;
+    }
+    
+    public static <T, E> T findInOrderedCollection(List<T> collection, Class<T> beanClass, String field, E value) throws IllegalAccessException{
+        T result=null;
+        try{
+            if (collection==null || collection.isEmpty()) return  null;
+            int index = Collections.binarySearch(collection,value,new BeanFieldComparator(field,beanClass));
+            if (index>=0) result=collection.get(index);
         } catch(Exception e){
             throw new IllegalAccessException("Exception in Utils.findInCollection(Collection collection, String field, Object value):"+e);
         }
@@ -2101,5 +2113,10 @@ public class Utils{
 		}
 		return getter;
 	}
+    
+    public static <T> boolean isInstance(Class<T> tClass, T tArg){
+    	return tClass.isAssignableFrom(tArg.getClass());
+    }
+    
     
 }

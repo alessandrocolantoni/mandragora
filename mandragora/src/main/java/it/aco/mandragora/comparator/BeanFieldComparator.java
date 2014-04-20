@@ -342,12 +342,12 @@ package it.aco.mandragora.comparator;
 
 */
 
-import org.apache.commons.beanutils.PropertyUtilsBean;
-import org.apache.commons.beanutils.BeanUtilsBean;
-
-import java.util.Comparator;
-import java.util.Vector;
 import java.lang.reflect.InvocationTargetException;
+import java.util.Collection;
+import java.util.Comparator;
+
+import org.apache.commons.beanutils.BeanUtilsBean;
+import org.apache.commons.beanutils.PropertyUtilsBean;
 
 /**
  * Created by Alessandro Colantoni
@@ -387,7 +387,7 @@ public class BeanFieldComparator implements Comparator,java.io.Serializable{
 }
 */
 
-public class BeanFieldComparator implements Comparator,java.io.Serializable{
+public class  BeanFieldComparator<T> implements Comparator<T>,java.io.Serializable{
 
     /**
 	 * 
@@ -396,44 +396,95 @@ public class BeanFieldComparator implements Comparator,java.io.Serializable{
 
 	private static  org.apache.log4j.Category log = org.apache.log4j.Logger.getLogger(BeanFieldComparator.class.getName());
 
+	
+	private Class<T> beanClass;
     private String[] fieldArray;
-    public BeanFieldComparator (String[] fieldArray){
+    public BeanFieldComparator (String[] fieldArray, Class<T> beanClass){
         this.fieldArray=fieldArray;
+        this.beanClass = beanClass;
     }
-    public BeanFieldComparator (String field){
+    public BeanFieldComparator (String field, Class<T> beanClass){
         this.fieldArray =new String[1];
         this.fieldArray[0]=field;
+        this.beanClass = beanClass;
     }
-    public BeanFieldComparator (Vector fieldVector){
+    public BeanFieldComparator (Collection<String> fieldVector, Class<T> beanClass){
         fieldArray=new String[fieldVector.size()];
-        for(int i=0;i<fieldVector.size();i++){
-            fieldArray[i]=(String)fieldVector.get(i);
+        int i=0;
+        for(String field:fieldVector){
+        	fieldArray[i] = field;
+        	i++;
         }
+        this.beanClass = beanClass;
+//        for(int i=0;i<fieldVector.size();i++){
+//            fieldArray[i]=(String)fieldVector.get(i);
+//        }
     }
 
     public int compare(Object o1, Object o2) throws ClassCastException{
 
         try{
+        	
+        	if(o1 == null || o1==null){
+        		throw new ClassCastException("ClassCastException thrown in BeanFieldComparator.compare(Object o1, Object o2): o1 and o2 must be both not null");
+        	}
+        	
+        	
         	if(log.isDebugEnabled()){
 	            log.debug("BeanFieldComparator.compare:---------->o2="+o2.toString());
 	            log.debug("BeanFieldComparator.compare:---------->o1="+o1.toString());
         	}
-            Object[] o2Array = (Object[])o2;
-            PropertyUtilsBean propertyUtilsBean = BeanUtilsBean.getInstance().getPropertyUtils();
-            Comparable propertyValue;
-            int compare;
-            for (int i=0;i<fieldArray.length;i++){
-                propertyValue=(Comparable)propertyUtilsBean.getProperty(o1,fieldArray[i]);
-                if(propertyValue==null && o2Array[i]==null) {
+        	
+        	
+        	
+        	T bean;
+        	Object fieldValue;
+        	if(beanClass.isInstance(o1)){
+        		bean = (T) o1;
+        		fieldValue = o2;
+        	}else if (beanClass.isInstance(o2)){
+        		bean = (T) o2;
+        		fieldValue =o1;
+        	}else{
+        		throw new ClassCastException("ClassCastException thrown in BeanFieldComparator.compare(Object o1, Object o2): none of o1 and o2 implements the beanClass");
+        	}
+        	
+        	PropertyUtilsBean propertyUtilsBean = BeanUtilsBean.getInstance().getPropertyUtils();
+        	Comparable propertyValue;
+        	int compare;
+        	
+        	
+        	if(Object[].class.isInstance(fieldValue)){
+	            Object[] fieldValueArray = (Object[])fieldValue;
+	            
+	            
+	            
+	            for (int i=0;i<fieldArray.length;i++){
+	                propertyValue=(Comparable)propertyUtilsBean.getProperty(bean,fieldArray[i]);
+	                if(propertyValue==null && fieldValueArray[i]==null) {
+	                    compare=0;
+	                }else if(propertyValue==null){//null is the biggest value;
+	                    compare=1;
+	                }else if(fieldValueArray[i]==null){//null is the biggest value;
+	                    compare=-1;
+	                }else{
+	                    compare =  propertyValue.compareTo((Comparable)fieldValueArray[i]);
+	                }
+	                if (compare!=0) return compare ;
+	            }
+            }else{
+            	propertyValue=(Comparable)propertyUtilsBean.getProperty(bean,fieldArray[0]);
+                if(propertyValue==null && fieldValue==null) {
                     compare=0;
                 }else if(propertyValue==null){//null is the biggest value;
                     compare=1;
-                }else if(o2Array[i]==null){//null is the biggest value;
+                }else if(fieldValue==null){//null is the biggest value;
                     compare=-1;
                 }else{
-                    compare =  propertyValue.compareTo((Comparable)o2Array[i]);
+                    compare =  propertyValue.compareTo((Comparable)fieldValue);
                 }
-                if (compare!=0) return compare ;
+                return compare ;
+            	
             }
 
             //compare =   ((Comparable)propertyUtilsBean.getProperty(o1,field)).compareTo((Comparable)o2);
