@@ -2640,6 +2640,8 @@ public abstract class BaseOjbPbDAO implements DAO{
 	public Collection findCollectionByQueryString(String queryString,Integer firstResult, Integer maxResults) throws DataAccessException {
 		throw new UnsupportedOperationException("Method not implemented yet");
 	}
-	
+	public Collection findCollectionByLogicCondition(String[]selectFields, java.lang.Class realClass, LogicCondition logicCondition) throws DataAccessException{
+		throw new UnsupportedOperationException("Method not implemented yet");
+	}
 	
 }
