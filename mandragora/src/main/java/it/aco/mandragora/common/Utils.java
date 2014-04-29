@@ -2079,6 +2079,22 @@ public class Utils{
 		return result;
 	}
     
+    public static String buildInStringForVarchar(List in) throws Exception{
+		
+		String result;
+		try {
+			if(in == null  || in.isEmpty()) return "";
+			result = "('"+in.get(0).toString()+"'";
+			for(int i=1;i<in.size();i++){
+				result = result+",'"+ in.get(i).toString()+"'";
+			}
+			result = result+")";
+		} catch (Exception e) {
+			throw new Exception("Exception thrown in Utils.buildInString(List in): " + e.toString(),e);
+		}
+		return result;
+	}
+    
     public static Class getGenericClass(Type type) throws Exception{
     	Class genericClass = null;
     	try {
