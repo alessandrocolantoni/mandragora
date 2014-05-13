@@ -350,12 +350,9 @@ import it.aco.mandragora.exception.DataOptimisticLockException;
 import it.aco.mandragora.query.LogicCondition;
 
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Vector;
-import java.util.Iterator;
-
-import javax.persistence.NoResultException;
-import javax.persistence.Query;
 
 
 /**
@@ -842,7 +839,7 @@ public interface DAO{
     public Object insert(Object storeVO) throws DataAccessException,DataOptimisticLockException;
 
 
-
+    public Object refresh(Object refreshVO) throws DataAccessException;
 
     /**
      * This method updates the object <code>storeVO</code> in the  underlying datastore.</br>

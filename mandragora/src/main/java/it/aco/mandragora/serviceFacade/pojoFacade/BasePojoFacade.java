@@ -533,6 +533,51 @@ public abstract class BasePojoFacade implements ServiceFacade {
     
     
 	/*fin added por alessandro el 17-03-2013*/ 
+	public Collection findCollectionByQueryString(String queryString) throws ServiceFacadeException {
+        try {
+            DAO dao = getDAO();
+            return dao.findCollectionByQueryString(queryString) ;
+        } catch (Exception e) {
+            log.error("Exception caught in BasePojoFacade.findCollectionByQueryString(String queryString): " + e.toString());
+            throw new ServiceFacadeException("ServiceFacadeException thrown in BasePojoFacade.findCollectionByQueryString(String queryString)" + e.toString(),e);
+        }
+    }
+	public Collection findCollectionByQueryString(String queryString, Map parameters, Integer firstResult, Integer maxResults) throws ServiceFacadeException{
+        try {
+            DAO dao = getDAO();
+            return dao.findCollectionByQueryString( queryString,  parameters,  firstResult,  maxResults) ;
+        } catch (Exception e) {
+            log.error("Exception caught in BasePojoFacade.findCollectionByQueryString(String queryString): " + e.toString());
+            throw new ServiceFacadeException("ServiceFacadeException thrown in BasePojoFacade.findCollectionByQueryString(String queryString, Map parameters, Integer firstResult, Integer maxResults)" + e.toString(),e);
+        }
+    }
+	public Collection findCollectionByQueryString(String queryString, Map parameters) throws ServiceFacadeException{
+        try {
+            DAO dao = getDAO();
+            return dao.findCollectionByQueryString( queryString,  parameters) ;
+        } catch (Exception e) {
+            log.error("Exception caught in BasePojoFacade.findCollectionByQueryString(String queryString): " + e.toString());
+            throw new ServiceFacadeException("ServiceFacadeException thrown in BasePojoFacade.findCollectionByQueryString(String queryString, Map parameters) " + e.toString(),e);
+        }
+    }
+    public Collection findCollectionByQueryString(String queryString, String parameterName, Object parameterValue) throws ServiceFacadeException{
+        try {
+            DAO dao = getDAO();
+            return dao.findCollectionByQueryString( queryString,  parameterName,  parameterValue);
+        } catch (Exception e) {
+            log.error("Exception caught in BasePojoFacade.findCollectionByQueryString(String queryString): " + e.toString());
+            throw new ServiceFacadeException("ServiceFacadeException thrown in BasePojoFacade.findCollectionByQueryString(String queryString, String parameterName, Object parameterValue)" + e.toString(),e);
+        }
+    }
+    public Collection findCollectionByQueryString(String queryString,  Integer firstResult, Integer maxResults) throws ServiceFacadeException{
+        try {
+            DAO dao = getDAO();
+            return dao.findCollectionByQueryString( queryString,   firstResult,  maxResults) ;
+        } catch (Exception e) {
+            log.error("Exception caught in BasePojoFacade.findCollectionByQueryString(String queryString): " + e.toString());
+            throw new ServiceFacadeException("ServiceFacadeException thrown in BasePojoFacade.findCollectionByQueryString(String queryString,  Integer firstResult, Integer maxResults)" + e.toString(),e);
+        }
+    }
 
 
     public Collection findCollectionByLogicCondition(Class realClass,LogicCondition logicCondition,String orderingField, Boolean asc,Integer startAtIndex, Integer endAtIndex) throws ServiceFacadeException{
@@ -548,6 +593,27 @@ public abstract class BasePojoFacade implements ServiceFacade {
         }
     }
 
+    public Collection findCollectionByLogicCondition(java.lang.Class realClass, LogicCondition logicCondition, String orderBy) throws ServiceFacadeException{
+        try {
+            DAO dao = getDAO();
+            return dao.findCollectionByLogicCondition( realClass,  logicCondition,  orderBy);
+        }  catch (Exception e) {
+            log.error("Exception caught in BasePojoFacade.findCollectionByLogicCondition(java.lang.Class realClass, LogicCondition logicCondition, String orderBy): " + e.toString());
+            throw new ServiceFacadeException("ServiceFacadeException thrown in BasePojoFacade.findCollectionByLogicCondition(java.lang.Class realClass, LogicCondition logicCondition, String orderBy)" + e.toString(),e);
+        }
+    }
+
+    
+    public Collection findCollectionByLogicCondition(String[]selectFields, java.lang.Class realClass, LogicCondition logicCondition) throws ServiceFacadeException{
+        try {
+            DAO dao = getDAO();
+            return dao.findCollectionByLogicCondition(selectFields, realClass, logicCondition);
+        } catch (Exception e) {
+            log.error("Exception caught in BasePojoFacade.findCollectionByLogicCondition(String[]selectFields, java.lang.Class realClass, LogicCondition logicCondition): " + e.toString());
+            throw new ServiceFacadeException("ServiceFacadeException thrown in BasePojoFacade.findCollectionByLogicCondition(String[]selectFields, java.lang.Class realClass, LogicCondition logicCondition)" + e.toString(),e);
+        }
+    }
+    
 
 
     public Collection findCollectionByOrValues(Class realClass,String pAttributeName,Collection valuesCollection) throws ServiceFacadeException{

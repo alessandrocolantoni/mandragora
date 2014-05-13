@@ -344,7 +344,6 @@
 
 package it.aco.mandragora.serviceFacade;
 
-import it.aco.mandragora.exception.DataAccessException;
 import it.aco.mandragora.exception.ServiceFacadeException;
 import it.aco.mandragora.query.LogicCondition;
 
@@ -377,10 +376,24 @@ public interface ServiceFacade {
     
 	/*fin added por alessandro el 17-03-2013*/ 
     
-    
+	public Collection findCollectionByQueryString(String queryString) throws ServiceFacadeException ;
+	public Collection findCollectionByQueryString(String queryString, Map parameters, Integer firstResult, Integer maxResults) throws ServiceFacadeException;
+	public Collection findCollectionByQueryString(String queryString, Map parameters) throws ServiceFacadeException ;
+    public Collection findCollectionByQueryString(String queryString, String parameterName, Object parameterValue) throws ServiceFacadeException;
+    public Collection findCollectionByQueryString(String queryString,  Integer firstResult, Integer maxResults) throws ServiceFacadeException;
+
     
     public Collection findCollectionByLogicCondition(Class realClass, LogicCondition logicCondition) throws ServiceFacadeException;
     public Collection findCollectionByLogicCondition(Class realClass, LogicCondition logicCondition,String orderingField, Boolean asc,Integer startAtIndex, Integer endAtIndex) throws ServiceFacadeException;
+    
+    public Collection findCollectionByLogicCondition(java.lang.Class realClass, LogicCondition logicCondition, String orderBy) throws ServiceFacadeException;
+
+    
+    public Collection findCollectionByLogicCondition(String[]selectFields, java.lang.Class realClass, LogicCondition logicCondition) throws ServiceFacadeException;
+    
+    
+    
+    
     public Collection findCollectionByOrValues(Class realClass,String pAttributeName,Collection valuesCollection) throws ServiceFacadeException;
     public Collection findCollectionByAndFieldsOperatorValues(Class realClass,String[] pAttributeNames, String[] operators,Object[] valuesArray) throws ServiceFacadeException;
     public Collection findCollectionByArrayOfFieldsOperatorsMatrixAndOrValues(Class realClass,String[] pAttributeNames, String[] operators,Object[][] valuesMatrix)  throws ServiceFacadeException;

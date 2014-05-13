@@ -2644,4 +2644,7 @@ public abstract class BaseOjbPbDAO implements DAO{
 		throw new UnsupportedOperationException("Method not implemented yet");
 	}
 	
+	 public Object refresh(Object refreshVO) throws DataAccessException{
+		 throw new UnsupportedOperationException("Method not implemented yet");
+	 }
 }
