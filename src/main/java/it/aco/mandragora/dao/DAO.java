@@ -548,6 +548,11 @@ public interface DAO{
     
     public Collection findCollectionByLogicCondition(String[]selectFields, java.lang.Class realClass, LogicCondition logicCondition) throws DataAccessException;
     
+    
+    public Collection findCollectionByLogicCondition(Boolean distinct, String[]selectFields, java.lang.Class realClass, LogicCondition logicCondition, String orderBy) throws DataAccessException;
+    
+    public Collection findCollectionByLogicCondition(String[]selectFields, java.lang.Class realClass, LogicCondition logicCondition, String orderBy) throws DataAccessException;
+    
     /**
      * @deprecated use {@link #findCollectionByLogicCondition(Class realClass,LogicCondition logicCondition,String orderingField, Boolean asc,Integer startAtIndex, Integer endAtIndex)}
      */

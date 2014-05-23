@@ -36,6 +36,13 @@
 <!--			<url>http://bcnmavenpro01.blueit.local:8080/artifactory/libs-snapshots</url>-->
 <!--		</repository>-->
 <!--    </repositories>-->
+	<repositories>
+		<repository>
+			<id>blueIt-Nexus</id>
+			<name>All Releases</name>
+			<url>http://bltcmavenpro01:8081/nexus/content/groups/all-releases/</url>
+		</repository>
+	</repositories>
   <pluginRepositories>
 	        
 	      
@@ -171,17 +178,29 @@
             <version>4.4</version>
             <scope>compile</scope>
         </dependency>
+        
+        <!--<version>1.0.4</version>-->
+            <!--<version>1.0.5rc1_ALE</version>-->
+           	<!--<version>1.0.5-SNAPSHOT</version>version changed by alessandro 9-dec-2009-->
+           	
         <dependency>
             <groupId>ojb</groupId>
             <artifactId>db-ojb</artifactId>
-            <!--<version>1.0.4</version>-->
-            <!--<version>1.0.5rc1_ALE</version>-->
-            <version>1.0.5-SNAPSHOT</version><!-- version changed by alessandro 9-dec-2009-->
+            
+            <version>1.0.5-blueit</version>
             <scope>compile</scope>
             <exclusions>
                 <exclusion>
                     <groupId>xalan</groupId>
                     <artifactId>xalan</artifactId>
+                </exclusion>
+                <exclusion>
+                	<groupId>jdo</groupId>
+                	<artifactId>jdori</artifactId>
+                </exclusion>
+                <exclusion>
+                	<groupId>jdo</groupId>
+                	<artifactId>jdo</artifactId>
                 </exclusion>
             </exclusions>
 

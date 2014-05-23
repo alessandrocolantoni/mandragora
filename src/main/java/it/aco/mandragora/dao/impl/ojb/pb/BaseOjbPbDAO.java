@@ -2647,4 +2647,11 @@ public abstract class BaseOjbPbDAO implements DAO{
 	 public Object refresh(Object refreshVO) throws DataAccessException{
 		 throw new UnsupportedOperationException("Method not implemented yet");
 	 }
+	 
+	 public Collection findCollectionByLogicCondition(Boolean distinct, String[]selectFields, java.lang.Class realClass, LogicCondition logicCondition, String orderBy) throws DataAccessException{
+		 throw new UnsupportedOperationException("Method not implemented yet");
+	 }
+	 public Collection findCollectionByLogicCondition(String[]selectFields, java.lang.Class realClass, LogicCondition logicCondition, String orderBy) throws DataAccessException{
+		 throw new UnsupportedOperationException("Method not implemented yet");
+	 }
 }
