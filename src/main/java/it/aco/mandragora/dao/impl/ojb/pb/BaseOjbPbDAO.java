@@ -353,9 +353,12 @@ import it.aco.mandragora.exception.PersistenceBrokerSupportException;
 import it.aco.mandragora.query.LogicCondition;
 
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Vector;
+
+import javax.persistence.Query;
 
 import org.apache.ojb.broker.OptimisticLockException;
 import org.apache.ojb.broker.PersistenceBroker;
@@ -2636,7 +2639,7 @@ public abstract class BaseOjbPbDAO implements DAO{
 	}
 	
 	
-	
+    	
 	public Collection findCollectionByQueryString(String queryString,Integer firstResult, Integer maxResults) throws DataAccessException {
 		throw new UnsupportedOperationException("Method not implemented yet");
 	}
@@ -2644,14 +2647,27 @@ public abstract class BaseOjbPbDAO implements DAO{
 		throw new UnsupportedOperationException("Method not implemented yet");
 	}
 	
-	 public Object refresh(Object refreshVO) throws DataAccessException{
-		 throw new UnsupportedOperationException("Method not implemented yet");
-	 }
+	public Object refresh(Object refreshVO) throws DataAccessException {
+		throw new UnsupportedOperationException("Method not implemented yet");
+	}
 	 
-	 public Collection findCollectionByLogicCondition(Boolean distinct, String[]selectFields, java.lang.Class realClass, LogicCondition logicCondition, String orderBy) throws DataAccessException{
-		 throw new UnsupportedOperationException("Method not implemented yet");
-	 }
+	public Collection findCollectionByLogicCondition(Boolean distinct, String[]selectFields, java.lang.Class realClass, LogicCondition logicCondition, String orderBy) throws DataAccessException{
+		throw new UnsupportedOperationException("Method not implemented yet");
+	}
+	
 	 public Collection findCollectionByLogicCondition(String[]selectFields, java.lang.Class realClass, LogicCondition logicCondition, String orderBy) throws DataAccessException{
 		 throw new UnsupportedOperationException("Method not implemented yet");
 	 }
+	 
+	 public Collection findCollectionByNativeQueryString(String queryString) throws DataAccessException {
+		 throw new UnsupportedOperationException("Method not implemented yet");
+		}
+		
+	public Collection findCollectionByNativeQueryString(String queryString, String parameterName, Object parameterValue) throws DataAccessException {
+		throw new UnsupportedOperationException("Method not implemented yet");
+	}
+    		
+	public Collection findCollectionByNativeQueryString(String queryString, Map parameters) throws DataAccessException {
+		throw new UnsupportedOperationException("Method not implemented yet");
+	}
 }

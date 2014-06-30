@@ -701,6 +701,8 @@ public abstract class BaseJpaDAO implements DAO{
 	}
 	
 	
+	
+	
 	public Collection findCollectionByQueryString(String queryString, String parameterName, Object parameterValue) throws DataAccessException {
 		log.debug("************Entering ***************");
 		Collection result;
@@ -769,6 +771,53 @@ public abstract class BaseJpaDAO implements DAO{
 		return result;
 	}
 
+	public Collection findCollectionByNativeQueryString(String queryString) throws DataAccessException {
+		log.debug("************Entering ***************");
+		Collection result;
+		try {
+			Query query = getEntityManager().createNativeQuery(queryString);
+			result = query.getResultList();
+		
+		} catch (Exception e) {
+			log.error("Exception caught  : " + e.toString());
+			throw new DataAccessException( "Error in  BaseJpaDAO.findCollectionByNativeQueryString(String queryString) : " + e.toString(), e);
+		}
+		log.debug("************Done **************");
+		return result;
+	}
+	
+	public Collection findCollectionByNativeQueryString(String queryString, String parameterName, Object parameterValue) throws DataAccessException {
+		log.debug("************Entering ***************");
+		Collection result;
+		try {
+			
+			HashMap parameters = new HashMap();
+			parameters.put(parameterName, parameterValue);
+			result = findCollectionByNativeQueryString(queryString, parameters);
+		} catch (Exception e) {
+			log.error("Exception caught  : " + e.toString());
+			throw new DataAccessException( "Error in  BaseJpaDAO.findCollectionByNativeQueryString(String queryString, String parameterName, Object parameterValue) : " + e.toString(), e);
+		}
+		log.debug("************Done **************");
+		return result;
+	}
+	
+	public Collection findCollectionByNativeQueryString(String queryString, Map parameters) throws DataAccessException {
+		log.debug("************Entering ***************");
+		Collection result;
+		try {
+			Query query = getEntityManager().createNativeQuery(queryString);
+
+			setQueryParameters(query, parameters);
+			result = query.getResultList();
+
+		} catch (Exception e) {
+			log.error("Exception caught  : " + e.toString());
+			throw new DataAccessException( "Error in  ImplIrisDAO.findCollectionByNativeQueryString(String queryString, Map parameters) : " + e.toString(), e);
+		}
+		log.debug("************Done **************");
+		return result;
+	}
 	
 	public Collection findCollectionByTemplate(Object templateVO, Integer firstResult, Integer maxResults, String orderingField) throws DataAccessException{
         log.info("************Entering ***************");

@@ -350,9 +350,12 @@ import it.aco.mandragora.exception.DataOptimisticLockException;
 import it.aco.mandragora.query.LogicCondition;
 
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Vector;
+
+import javax.persistence.Query;
 
 
 /**
@@ -431,7 +434,11 @@ public interface DAO{
 	public Collection findCollectionByQueryString(String queryString, Map parameters) throws DataAccessException ;
 		
     
-    
+	public Collection findCollectionByNativeQueryString(String queryString) throws DataAccessException ;
+	
+	public Collection findCollectionByNativeQueryString(String queryString, String parameterName, Object parameterValue) throws DataAccessException ;
+	
+	public Collection findCollectionByNativeQueryString(String queryString, Map parameters) throws DataAccessException ;
     
     
     /**
