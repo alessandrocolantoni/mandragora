@@ -5124,7 +5124,7 @@ public abstract class BaseJpaDAO implements DAO{
 	
 	
 	/**
-	 * Este metodo quita del parameters el elemento con key parameter, y añade uno para cada lista en splitIn.
+	 * Este metodo quita del parameters el elemento con key parameter, y aï¿½ade uno para cada lista en splitIn.
 	 * Devuelve la string IN (:split_0_paramemeter) OR IN (:split_1_paramemeter)...OR IN (:split_N_paramemeter)
 	 * @param parameter
 	 * @param splitIn
@@ -6717,7 +6717,7 @@ public abstract class BaseJpaDAO implements DAO{
 			
 				
 			getEntityManager().flush();
-		} /*catch (InvalidStateException e) {   // quitado porqué con hibernate-validator-4.2.0 no funciona
+		} /*catch (InvalidStateException e) {   // quitado porquï¿½ con hibernate-validator-4.2.0 no funciona
 			log.error("BaseJpaDAO.flush()" + e.toString(), e);
 			InvalidValue[] invalid = e.getInvalidValues();
 			for (int i = 0; i < invalid.length; ++i) {
@@ -6759,6 +6759,20 @@ public abstract class BaseJpaDAO implements DAO{
         } catch (Exception e) {
             log.error("Exception caught  : " + e.toString());
             throw new DataAccessException("Error in  BaseJpaDAO.updateByNativeQueryString(String queryString) : " + e.toString(),e);
+        }
+        log.debug("************Done **************");
+    }
+	
+	public void updateByNativeQueryString(String queryString, Map parameters) throws DataAccessException{
+        log.debug("************Entering ***************");
+        try{
+        	Query query = getEntityManager().createNativeQuery(queryString);
+        	setQueryParameters(query, parameters);
+        	query.executeUpdate();
+
+        } catch (Exception e) {
+            log.error("Exception caught  : " + e.toString());
+            throw new DataAccessException("Error in  BaseJpaDAO.updateByNativeQueryString(String queryString, , Map parameters) : " + e.toString(),e);
         }
         log.debug("************Done **************");
     }

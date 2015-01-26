@@ -353,12 +353,9 @@ import it.aco.mandragora.exception.PersistenceBrokerSupportException;
 import it.aco.mandragora.query.LogicCondition;
 
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Vector;
-
-import javax.persistence.Query;
 
 import org.apache.ojb.broker.OptimisticLockException;
 import org.apache.ojb.broker.PersistenceBroker;
@@ -2674,4 +2671,7 @@ public abstract class BaseOjbPbDAO implements DAO{
 	public void updateByNativeQueryString(String queryString)  throws DataAccessException {
 		throw new UnsupportedOperationException("Method not implemented yet");
 	}
+	public void updateByNativeQueryString(String queryString, Map parameters) throws DataAccessException{
+		throw new UnsupportedOperationException("Method not implemented yet");
+    }
 }

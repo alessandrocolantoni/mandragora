@@ -1085,5 +1085,6 @@ public interface DAO{
     public Collection findCollectionByQueryString(String queryString, String parameterName, Object parameterValue) throws DataAccessException;
     public Collection findCollectionByQueryString(String queryString,  Integer firstResult, Integer maxResults) throws DataAccessException;
     public void updateByNativeQueryString(String queryString) throws DataAccessException;
+    public void updateByNativeQueryString(String queryString, Map parameters) throws DataAccessException;
     
 }
