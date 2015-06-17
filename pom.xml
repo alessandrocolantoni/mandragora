@@ -157,6 +157,13 @@
 
     <dependencies>
     
+<!--     	<dependency> -->
+<!--       		<groupId>org.jboss.spec.javax.ejb</groupId> -->
+<!--       		<artifactId>jboss-ejb-api_3.1_spec</artifactId> -->
+<!--       		<scope>provided</scope> -->
+<!--       		<version>1.0.2.Final</version> -->
+<!--     	</dependency>  -->
+    
 		<dependency>
 			<groupId>org.hibernate</groupId>
 			<artifactId>hibernate-entitymanager</artifactId>
@@ -182,7 +189,10 @@
         <!--<version>1.0.4</version>-->
             <!--<version>1.0.5rc1_ALE</version>-->
            	<!--<version>1.0.5-SNAPSHOT</version>version changed by alessandro 9-dec-2009-->
-           	
+         
+    	
+    	
+    	 	
         <dependency>
             <groupId>ojb</groupId>
             <artifactId>db-ojb</artifactId>
@@ -715,6 +725,8 @@
                 <configuration>
                     <source>1.5</source>
                     <target>1.5</target>
+<!-- 					<source>1.7</source> -->
+<!--                     <target>1.7</target> -->
                 </configuration>
             </plugin>
             <!-- end added by alessandro on 16-02-2008-->
