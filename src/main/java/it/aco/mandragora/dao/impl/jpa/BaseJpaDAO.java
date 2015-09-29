@@ -687,6 +687,7 @@ public abstract class BaseJpaDAO implements DAO{
 		log.debug("************Entering ***************");
 		Collection result;
 		try {
+			queryString = queryString.replaceAll("'", "''");
 			queryString = translateIn(queryString);// added alessandro
 													// 21-mar-2010
 			Query query = getEntityManager().createQuery(queryString);
@@ -733,6 +734,7 @@ public abstract class BaseJpaDAO implements DAO{
 																	// 21-mar-2010
 			
 			*/
+			queryString = queryString.replaceAll("'", "''");
 			Query query = getEntityManager().createQuery(queryString);
 
 			setQueryParameters(query, parameters);
@@ -755,6 +757,7 @@ public abstract class BaseJpaDAO implements DAO{
 		log.debug("************Entering ***************");
 		Collection result;
 		try {
+			queryString = queryString.replaceAll("'", "''");
 			queryString = translateInAll(queryString, parameters);// added
 																	// alessandro
 																	// 21-mar-2010
