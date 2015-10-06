@@ -7,7 +7,7 @@ package it.aco.mandragora.exception;
  * @author  John Carnell
  * @todo     Need to Javadoc this
  */
-@ApplicationException(rollback=true)
+
 public class DataAccessException extends Exception {
     Throwable exceptionCause = null;
     
