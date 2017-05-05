@@ -56,7 +56,7 @@
  *
  *     The precise terms and conditions for copying, distribution and
  *  modification follow.
- *  
+ *
  *	                	    GNU GENERAL PUBLIC LICENSE
  *       TERMS AND CONDITIONS FOR COPYING, DISTRIBUTION AND MODIFICATION
  *
@@ -111,7 +111,7 @@
  *     License.  (Exception: if the Program itself is interactive but
  *     does not normally print such an announcement, your work based on
  *     the Program is not required to print an announcement.)
- *     
+ *
  *     These requirements apply to the modified work as a whole.  If
  *  identifiable sections of that work are not derived from the Program,
  *  and can be reasonably considered independent and separate works in
@@ -169,7 +169,7 @@
  *  access to copy the source code from the same place counts as
  *  distribution of the source code, even though third parties are not
  *  compelled to copy the source along with the object code.
- *  
+ *
  *     4. You may not copy, modify, sublicense, or distribute the Program
  *  except as expressly provided under this License.  Any attempt
  *  otherwise to copy, modify, sublicense or distribute the Program is
@@ -226,7 +226,7 @@
 
  *  This section is intended to make thoroughly clear what is believed to
  *  be a consequence of the rest of this License.
- *  
+ *
  *    8. If the distribution and/or use of the Program is restricted in
  *  certain countries either by patents or by copyrighted interfaces, the
  *  original copyright holder who places the Program under this License
@@ -279,7 +279,7 @@
  *  POSSIBILITY OF SUCH DAMAGES.
  *
  *  		     END OF TERMS AND CONDITIONS
- *  
+ *
  *  	    How to Apply These Terms to Your New Programs
  *    If you develop a new program, and you want it to be of the greatest
  *  possible use to the public, the best way to achieve this is to make it
@@ -341,24 +341,7 @@
 
 */
 
-
-
 package it.aco.mandragora.dao.impl.jpa;
-
-import it.aco.mandragora.bo.Graph;
-import it.aco.mandragora.common.Cursor;
-import it.aco.mandragora.common.Node;
-import it.aco.mandragora.common.Utils;
-import it.aco.mandragora.common.utils.BeanCollectionUtils;
-import it.aco.mandragora.common.utils.PersistenceUtil;
-import it.aco.mandragora.comparator.FieldComparator;
-import it.aco.mandragora.dao.DAO;
-import it.aco.mandragora.exception.DataAccessException;
-import it.aco.mandragora.exception.DataOptimisticLockException;
-import it.aco.mandragora.query.LogicCondition;
-import it.aco.mandragora.query.LogicSqlCondition;
-import it.aco.mandragora.query.Operator;
-import it.aco.mandragora.query.SimpleCondition;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AccessibleObject;
@@ -404,6378 +387,6953 @@ import org.apache.commons.beanutils.BeanUtilsBean;
 import org.apache.commons.beanutils.NestedNullException;
 import org.apache.commons.beanutils.PropertyUtilsBean;
 import org.apache.commons.lang.StringUtils;
-import org.hibernate.validator.InvalidStateException;
-import org.hibernate.validator.InvalidValue;
 
+import it.aco.mandragora.bo.Graph;
+import it.aco.mandragora.common.Cursor;
+import it.aco.mandragora.common.Node;
+import it.aco.mandragora.common.Utils;
+import it.aco.mandragora.common.utils.BeanCollectionUtils;
+import it.aco.mandragora.common.utils.PersistenceUtil;
+import it.aco.mandragora.comparator.FieldComparator;
+import it.aco.mandragora.dao.DAO;
+import it.aco.mandragora.exception.DataAccessException;
+import it.aco.mandragora.exception.DataOptimisticLockException;
+import it.aco.mandragora.query.LogicCondition;
+import it.aco.mandragora.query.LogicSqlCondition;
+import it.aco.mandragora.query.Operator;
+import it.aco.mandragora.query.SimpleCondition;
 
+public abstract class BaseJpaDAO implements DAO {
 
-public abstract class BaseJpaDAO implements DAO{
-	
-	//protected EntityManager entityManager;
-	
-	
-	protected Integer inLimit=1000;
-	
+    // protected EntityManager entityManager;
 
+    protected Integer inLimit = 1000;
 
-	protected boolean flush=false;
-	
-	
-	static private org.apache.log4j.Category log = org.apache.log4j.Logger.getLogger(BaseJpaDAO.class.getName());
-	
+    protected boolean flush = false;
 
-	
-	protected abstract EntityManager getEntityManager() ;
+    static private org.apache.log4j.Category log = org.apache.log4j.Logger.getLogger(BaseJpaDAO.class.getName());
 
-	protected abstract void setEntityManager(EntityManager entityManager);
- 
-	
-	
-	
-	
-	protected final static int ONE_TO_ONE = 0;
-	protected final static int ONE_TO_N = 1;
+    protected abstract EntityManager getEntityManager();
+
+    protected abstract void setEntityManager(EntityManager entityManager);
+
+    protected final static int ONE_TO_ONE = 0;
+    protected final static int ONE_TO_N = 1;
     protected final static int M_TO_N = 2;
     protected final static int M_TO_ONE = 3; // added alessandro 19-03-2011
-    protected final static int M_TO_N_INVERSE = 4; // added alessandro 09-08-2012
+    protected final static int M_TO_N_INVERSE = 4; // added alessandro
+						   // 09-08-2012
     protected final static int EMBEDDED_ID = 5; // added alessandro 10-08-2012
-    
-    
-    protected final String  joinPrefix ="bbb";
 
-	public Object findByPrimaryKey(Class realClass,Object[] pkValues)throws DataAccessException{
-        log.info("************Entering ***************");
-        Object result = null;
-        try {
-			result = findByPrimaryKey( realClass,null,  pkValues);
-		} catch (Exception e) {
-            log.error("Exception caught in   BaseJpaDAO.findByPrimaryKey(Class realClass, Object[] pkValues): " + e.toString());
-            throw new DataAccessException("Error in   BaseJpaDAO.findByPrimaryKey(Class realClass, Object[] pkValues): " + e.toString(),e);
-		}
-        log.info("************Done***************");
-        return result;
-    }
-	
-	
-	private boolean isEntityClass(Object object) throws DataAccessException{
-		try {
-			return PersistenceUtil.getEntityClass(object).isAnnotationPresent(Entity.class);
-		} catch (Exception e) {
-            log.error("Exception caught in   BaseJpaDAO.isEntityClass(Object object): " + e.toString());
-            throw new DataAccessException("Error in   BaseJpaDAO.isEntityClass(Object object): " + e.toString(),e);
-		}
+    protected final String joinPrefix = "bbb";
+
+    public Object findByPrimaryKey(Class realClass, Object[] pkValues) throws DataAccessException {
+	log.info("************Entering ***************");
+	Object result = null;
+	try {
+	    result = findByPrimaryKey(realClass, null, pkValues);
+	} catch (final Exception e) {
+	    log.error("Exception caught in   BaseJpaDAO.findByPrimaryKey(Class realClass, Object[] pkValues): " + e.toString());
+	    throw new DataAccessException("Error in   BaseJpaDAO.findByPrimaryKey(Class realClass, Object[] pkValues): " + e.toString(), e);
 	}
-	
-	//private Object buildPKValue(Class realClass,Object[] pkValues, int pkIndex) throws DataAccessException{
-	private Object buildPKValue(Class realClass,Object[] pkValues, Cursor pkIndex) throws DataAccessException{
-		Object pkValue=null;
-		
-		
-		try {
-			if (pkValues==null || pkValues.length==0){
-				throw new DataAccessException("Error in  BaseJpaDAO.buildPKValue(Class realClass,Object[] pkValues, Cursor pkIndex): pkValues can't be null or empty " );
-			}
-			
-			
-			
-			AccessibleObject accessibleObject = getEmbeddedIdOrIdAnnotatedAccessibleObject( realClass);
-			
-			if(accessibleObject==null){
-				throw new DataAccessException("Error in  BaseJpaDAO.buildPKValue(Class realClass,Object[] pkValues, Cursor pkIndex): No EmbeddedId and No Id annotation found " );
-			}
-			
-			if(accessibleObject.isAnnotationPresent(EmbeddedId.class)){
-				
-				PropertyUtilsBean propertyUtilsBean = BeanUtilsBean.getInstance().getPropertyUtils();
-				
-				AttributeOverrides attributeOverrides = null;
-				AssociationOverrides associationOverrides =null;
-				
-				
-				Class idClass = null;
-				//String embeddedIdFieldName=null;
-				
-				if(Field.class.isInstance(accessibleObject)){
-					//idClass= ((Field)accessibleObject).getClass();
-					idClass= ((Field)accessibleObject).getType();
-					//embeddedIdFieldName=((Field)accessibleObject).getName();
-				}else if( Method.class.isInstance(accessibleObject)){					
-					idClass = ((Method)accessibleObject).getReturnType();
-					//String idGetterName=((Method)accessibleObject).getName();
-					//embeddedIdFieldName  = idGetterName.substring(3,3).toLowerCase()+idGetterName.substring(4);
-				}else{
-					throw new DataAccessException("Error in  BaseJpaDAO.buildPKValue(Class realClass,Object[] pkValues, Cursor pkIndex):accessibleObject is not Field and not Method instance" );
-				}
-				//Object id = idClass.getConstructor((Class)null).newInstance((Object)null);
-				//Object id = idClass.getConstructor().newInstance();
-				pkValue= idClass.getConstructor().newInstance();
-				
-				Annotation[] accessibleObjectAnnotations = accessibleObject.getAnnotations();
-				for (int i=0; i<accessibleObjectAnnotations.length && pkValue!=null;i++){
-					if(accessibleObjectAnnotations[i].annotationType().equals(AttributeOverrides.class)){
-						attributeOverrides = accessibleObject.getAnnotation(AttributeOverrides.class);
-						AttributeOverride[] attributeOverrideArray = attributeOverrides.value();
-						for(AttributeOverride attributeOverride: attributeOverrideArray){
-							propertyUtilsBean.setProperty(pkValue, attributeOverride.name(), pkValues[pkIndex.getValue()]);
-							pkIndex.increment();
-						}
-						
-					}else if(accessibleObjectAnnotations[i].annotationType().equals(AssociationOverrides.class)){
-						associationOverrides = accessibleObject.getAnnotation(AssociationOverrides.class);
-						AssociationOverride[] associationOverrideArray= associationOverrides.value();
-						for(AssociationOverride associationOverride: associationOverrideArray){
-							if(isEntityClass(pkValues[pkIndex.getValue()])){
-								if(isPersisted(pkValues[pkIndex.getValue()])){// condition and else added alessandro on 12/8/2012
-									propertyUtilsBean.setProperty(pkValue, associationOverride.name(), pkValues[pkIndex.getValue()]);
-									pkIndex.increment();
-								}else{
-									pkValue=null;
-								}
-							}else{
-								Object associationPKValue =buildPKValue(idClass.getDeclaredField(associationOverride.name()).getType(),pkValues,  pkIndex);
-								if(associationPKValue!=null){// condition and else added alessandro on 12/8/2012
-									Class accociationClass=idClass.getDeclaredField(associationOverride.name()).getType();
-									/* deleted alessandro on 5/8/2012
-									Object accociationValue = accociationClass.getConstructor().newInstance();
-									String accociationIdName= (new EntityInfo(accociationClass)).getIdField().getName();
-									propertyUtilsBean.setProperty(accociationValue,accociationIdName,associationPKValue);
-									*/
-									Object accociationValue =findByPrimaryKey(accociationClass,associationPKValue);// added alessandro on 5/8/2012
-									if(accociationValue!=null){// condition and else added alessandro on 12/8/2012
-										propertyUtilsBean.setProperty(pkValue, associationOverride.name(), accociationValue); 
-									}else{
-										pkValue=null;
-									}
-								}else{
-									pkValue=null;
-								}
-							}
-							
-						}
-					}
-				}
-				
-				
-				
-			}else if(accessibleObject.isAnnotationPresent(Id.class)){
-				pkValue=pkValues[pkIndex.getValue()];
-				pkIndex.increment();
-			}else {
-				throw new DataAccessException("Error in buildPKValue(Class realClass,Object[] pkValues, Cursor pkIndex): accessibleObject has no EmbeddedId and No Id annotation " );
-			}
-		} catch (IllegalArgumentException e) {
-            log.error("IllegalArgumentException caught in   BaseJpaDAO.buildPKValue(Class realClass,Object[] pkValues, Cursor pkIndex): " + e.toString());
-            throw new DataAccessException("Error in   BaseJpaDAO.buildPKValue(Class realClass,Object[] pkValues, Cursor pkIndex): " + e.toString(),e);
-		} catch (SecurityException e) {
-            log.error("SecurityException caught in   BaseJpaDAO.buildPKValue(Class realClass,Object[] pkValues, Cursor pkIndex): " + e.toString());
-            throw new DataAccessException("Error in   BaseJpaDAO.buildPKValue(Class realClass,Object[] pkValues, Cursor pkIndex): " + e.toString(),e);
-		} catch (InstantiationException e) {
-            log.error("InstantiationException caught in   BaseJpaDAO.buildPKValue(Class realClass,Object[] pkValues, Cursor pkIndex): " + e.toString());
-            throw new DataAccessException("Error in   BaseJpaDAO.buildPKValue(Class realClass,Object[] pkValues, Cursor pkIndex): " + e.toString(),e);
-		} catch (IllegalAccessException e) {
-            log.error("IllegalAccessException caught in   BaseJpaDAO.buildPKValue(Class realClass,Object[] pkValues, Cursor pkIndex): " + e.toString());
-            throw new DataAccessException("Error in   BaseJpaDAO.buildPKValue(Class realClass,Object[] pkValues, Cursor pkIndex): " + e.toString(),e);
-		} catch (InvocationTargetException e) {
-            log.error("InvocationTargetException caught in   BaseJpaDAO.buildPKValue(Class realClass,Object[] pkValues, Cursor pkIndex): " + e.toString());
-            throw new DataAccessException("Error in   BaseJpaDAO.buildPKValue(Class realClass,Object[] pkValues, Cursor pkIndex): " + e.toString(),e);
-		} catch (NoSuchMethodException e) {
-            log.error("NoSuchMethodException caught in   BaseJpaDAO.buildPKValue(Class realClass,Object[] pkValues, Cursor pkIndex): " + e.toString());
-            throw new DataAccessException("Error in   BaseJpaDAO.buildPKValue(Class realClass,Object[] pkValues, Cursor pkIndex): " + e.toString(),e);
-		} catch (NoSuchFieldException e) {
-            log.error("NoSuchFieldException caught in   BaseJpaDAO.buildPKValue(Class realClass,Object[] pkValues, Cursor pkIndex): " + e.toString());
-            throw new DataAccessException("Error in   BaseJpaDAO.buildPKValue(Class realClass,Object[] pkValues, Cursor pkIndex): " + e.toString(),e);
-		} catch (Exception e) {
-            log.error("Exception caught in   BaseJpaDAO.buildPKValue(Class realClass,Object[] pkValues, Cursor pkIndex): " + e.toString());
-            throw new DataAccessException("Error in   BaseJpaDAO.buildPKValue(Class realClass,Object[] pkValues, Cursor pkIndex): " + e.toString(),e);
-		}
-		
-		
-		
-		return pkValue;
-		
+	log.info("************Done***************");
+	return result;
+    }
+
+    private boolean isEntityClass(Object object) throws DataAccessException {
+	try {
+	    return PersistenceUtil.getEntityClass(object).isAnnotationPresent(Entity.class);
+	} catch (final Exception e) {
+	    log.error("Exception caught in   BaseJpaDAO.isEntityClass(Object object): " + e.toString());
+	    throw new DataAccessException("Error in   BaseJpaDAO.isEntityClass(Object object): " + e.toString(), e);
 	}
+    }
 
-	
-	
-    public Object findByPrimaryKey(Class realClass,String[] pkFieldNames, Object[] pkValues)throws DataAccessException{
-        log.info("************Entering the BaseOjbPbDAO.findByPrimaryKey(Class realClass,String[] pkFieldNames, Object[] pkValues) ***************");
-        Object result = null;
-        try {
-			if (pkValues==null || pkValues.length==0){
-				throw new DataAccessException("Error in  BaseJpaDAO.findByPrimaryKey(Class realClass,String[] pkFieldNames, Object[] pkValues): pkValues can't be null or empty " );
-			}
-			if (pkFieldNames!=null && pkFieldNames.length!=pkValues.length){
-				throw new DataAccessException("Error in  BaseJpaDAO.findByPrimaryKey(Class realClass,String[] pkFieldNames, Object[] pkValues): pkFieldNames.length!=pkValues.length " );
-			}
-			
-			if(pkValues.length==1){
-				//result =  getEntityManager().find(realClass, pkValues[0]);
-				result =  findByPrimaryKey(realClass, pkValues[0]);
-			}else if(pkFieldNames!=null && pkFieldNames.length>0){
-				
-				//PropertyUtilsBean propertyUtilsBean = BeanUtilsBean.getInstance().getPropertyUtils();
-				Node pkFieldNameNode = new Node(pkFieldNames);
-				
-				if(pkFieldNameNode.getChildren().entrySet().size()!=1){
-					throw new DataAccessException("Error in  BaseJpaDAO.findByPrimaryKey(Class realClass,String[] pkFieldNames, Object[] pkValues): pkFieldNameNode entry size is not 1 " );
-				}
-				String firstPkFieldName = pkFieldNameNode.getChildren().keySet().iterator().next();
-				Object pkValue= realClass.getDeclaredField(firstPkFieldName).getType().getConstructor().newInstance();
-				
-				//BeanCollectionUtils.setAttribute(pkValue, pkFieldNameNode.getChildren().get(firstPkFieldName), pkValues);
-				for(int i = 0; i<pkFieldNames.length;i++){
-					BeanCollectionUtils.setAttribute(pkValue,pkFieldNames[i].substring(pkFieldNames[i].indexOf(".")+1),pkValues[i]);
-					
-				}
-				
-				//result =  getEntityManager().find(realClass, pkValue);
-				result =  findByPrimaryKey(realClass, pkValue);
-				
-			}else{
-				//result =  getEntityManager().find(realClass, buildPKValue(realClass, pkValues, new Cursor()));
-				Object pKValue = buildPKValue(realClass, pkValues, new Cursor());
-				if(pKValue!=null){// condition added by alessandro on 12/08/2012
-					result =   findByPrimaryKey(realClass, buildPKValue(realClass, pkValues, new Cursor()));
-				}
-			}
-		} catch (Exception e) {
-            log.error("Exception caught in   BaseJpaDAO.findByPrimaryKey(Class realClass,String[] pkFieldNames, Object[] pkValues): " + e.toString());
-            throw new DataAccessException("Error in   BaseJpaDAO.findByPrimaryKey(Class realClass,String[] pkFieldNames, Object[] pkValues): " + e.toString(),e);
+    // private Object buildPKValue(Class realClass,Object[] pkValues, int
+    // pkIndex) throws DataAccessException{
+    private Object buildPKValue(Class realClass, Object[] pkValues, Cursor pkIndex) throws DataAccessException {
+	Object pkValue = null;
+
+	try {
+	    if (pkValues == null || pkValues.length == 0) {
+		throw new DataAccessException("Error in  BaseJpaDAO.buildPKValue(Class realClass,Object[] pkValues, Cursor pkIndex): pkValues can't be null or empty ");
+	    }
+
+	    final AccessibleObject accessibleObject = getEmbeddedIdOrIdAnnotatedAccessibleObject(realClass);
+
+	    if (accessibleObject == null) {
+		throw new DataAccessException("Error in  BaseJpaDAO.buildPKValue(Class realClass,Object[] pkValues, Cursor pkIndex): No EmbeddedId and No Id annotation found ");
+	    }
+
+	    if (accessibleObject.isAnnotationPresent(EmbeddedId.class)) {
+
+		final PropertyUtilsBean propertyUtilsBean = BeanUtilsBean.getInstance().getPropertyUtils();
+
+		AttributeOverrides attributeOverrides = null;
+		AssociationOverrides associationOverrides = null;
+
+		Class idClass = null;
+		// String embeddedIdFieldName=null;
+
+		if (Field.class.isInstance(accessibleObject)) {
+		    // idClass= ((Field)accessibleObject).getClass();
+		    idClass = ((Field) accessibleObject).getType();
+		    // embeddedIdFieldName=((Field)accessibleObject).getName();
+		} else if (Method.class.isInstance(accessibleObject)) {
+		    idClass = ((Method) accessibleObject).getReturnType();
+		    // String idGetterName=((Method)accessibleObject).getName();
+		    // embeddedIdFieldName =
+		    // idGetterName.substring(3,3).toLowerCase()+idGetterName.substring(4);
+		} else {
+		    throw new DataAccessException("Error in  BaseJpaDAO.buildPKValue(Class realClass,Object[] pkValues, Cursor pkIndex):accessibleObject is not Field and not Method instance");
 		}
-        log.info("************Done with the  BaseOjbPbDAO.findByPrimaryKey(Class realClass,String[] pkFieldNames, Object[] pkValues)***************");
-        return result;
-    }
-	
-	public Object findByPrimaryKey(Class realClass, Object pkValue)throws DataAccessException{
-        log.info("************Entering  ***************");
-        Object result = null;
-        try{
-            
-            try {
-				result =  getEntityManager().find(realClass, pkValue);
-			} catch (EntityNotFoundException e) {
-				result=null;
-			}
-            
-            
-        }catch (Exception e) {
-            log.error("Exception caught : " + e.toString());
-            throw new DataAccessException("Error in  BaseJpaDAO.findByPrimaryKey(Class realClass, Object pkValue): " + e.toString(),e);
-        } 
-        log.info("************ Done ***************");
-        return result;
-    }
-	
-	
-	public Object findObjectByTemplate(Object templateVO) throws DataAccessException{
-		log.info("************Entering***************");
-		Object result= null;
-		
-		try {
-			Collection temp  = findCollectionByTemplate(templateVO, 0, 1, null);
-			if (temp!=null && temp.size()>0) result = temp.iterator().next();
-		} catch (Exception e) {
-            log.error("Exception caught : " + e.toString());
-            throw new DataAccessException("Error in  BaseJpaDAO.findObjectByTemplate(Object templateVO): " + e.toString(),e);
-		}
-		
-        log.info("************Done ***************");
-        return result;
-	}
-	
-	public Collection findCollectionByQueryString(String queryString) throws DataAccessException {
-		log.debug("************Entering ***************");
-		Collection result;
-		try {
-			queryString = translateIn(queryString);// added alessandro
-													// 21-mar-2010
-			Query query = getEntityManager().createQuery(queryString);
-			result = query.getResultList();
-		
-		} catch (Exception e) {
-			log.error("Exception caught  : " + e.toString());
-			throw new DataAccessException( "Error in  BaseJpaDAO.findCollectionByQueryString(String queryString) : " + e.toString(), e);
-		}
-		log.debug("************Done **************");
-		return result;
-	}
-	
-	
-	
-	
-	public Collection findCollectionByQueryString(String queryString, String parameterName, Object parameterValue) throws DataAccessException {
-		log.debug("************Entering ***************");
-		Collection result;
-		try {
-			
-			HashMap parameters = new HashMap();
-			parameters.put(parameterName, parameterValue);
-			result = findCollectionByQueryString(queryString, parameters);
-		} catch (Exception e) {
-			log.error("Exception caught  : " + e.toString());
-			throw new DataAccessException( "Error in  BaseJpaDAO.findCollectionByQueryString(String queryString, String parameterName, Object parameterValue) : " + e.toString(), e);
-		}
-		log.debug("************Done **************");
-		return result;
-	}
-	
-	public Collection findCollectionByQueryString(String queryString,  Integer firstResult, Integer maxResults) throws DataAccessException {
-		return findCollectionByQueryString( queryString,  new HashMap(),  firstResult,  maxResults);
-	}
-	
-	public Collection findCollectionByQueryString(String queryString, Map parameters, Integer firstResult, Integer maxResults) throws DataAccessException {
-		log.debug("************Entering ***************");
-		Collection result;
-		try {
-			/*
-			queryString = translateInAll(queryString, parameters);// added
-																	// alessandro
-																	// 21-mar-2010
-			
-			*/
-			Query query = getEntityManager().createQuery(queryString);
+		// Object id =
+		// idClass.getConstructor((Class)null).newInstance((Object)null);
+		// Object id = idClass.getConstructor().newInstance();
+		pkValue = idClass.getConstructor().newInstance();
 
-			setQueryParameters(query, parameters);
-			if (firstResult != null)
-				query.setFirstResult(firstResult.intValue());
-			if (maxResults != null)
-				query.setMaxResults(maxResults.intValue());
-			result = query.getResultList();
-
-		} catch (Exception e) {
-			log.error("Exception caught  : " + e.toString());
-			throw new DataAccessException(
-					"Error in  ImplIrisDAO.findCollectionByQueryString(String queryString, Map parameters,Integer firstResult, Integer maxResults) : "
-							+ e.toString(), e);
-		}
-		log.debug("************Done **************");
-		return result;
-	}
-	public Collection findCollectionByQueryString(String queryString, Map parameters) throws DataAccessException {
-		log.debug("************Entering ***************");
-		Collection result;
-		try {
-			queryString = translateInAll(queryString, parameters);// added
-																	// alessandro
-																	// 21-mar-2010
-			Query query = getEntityManager().createQuery(queryString);
-
-			setQueryParameters(query, parameters);
-			result = query.getResultList();
-
-		} catch (Exception e) {
-			log.error("Exception caught  : " + e.toString());
-			throw new DataAccessException( "Error in  ImplIrisDAO.findCollectionByQueryString(String queryString, Map parameters) : " + e.toString(), e);
-		}
-		log.debug("************Done **************");
-		return result;
-	}
-
-	public Collection findCollectionByNativeQueryString(String queryString) throws DataAccessException {
-		log.debug("************Entering ***************");
-		Collection result;
-		try {
-			Query query = getEntityManager().createNativeQuery(queryString);
-			result = query.getResultList();
-		
-		} catch (Exception e) {
-			log.error("Exception caught  : " + e.toString());
-			throw new DataAccessException( "Error in  BaseJpaDAO.findCollectionByNativeQueryString(String queryString) : " + e.toString(), e);
-		}
-		log.debug("************Done **************");
-		return result;
-	}
-	
-	public Collection findCollectionByNativeQueryString(String queryString, String parameterName, Object parameterValue) throws DataAccessException {
-		log.debug("************Entering ***************");
-		Collection result;
-		try {
-			
-			HashMap parameters = new HashMap();
-			parameters.put(parameterName, parameterValue);
-			result = findCollectionByNativeQueryString(queryString, parameters);
-		} catch (Exception e) {
-			log.error("Exception caught  : " + e.toString());
-			throw new DataAccessException( "Error in  BaseJpaDAO.findCollectionByNativeQueryString(String queryString, String parameterName, Object parameterValue) : " + e.toString(), e);
-		}
-		log.debug("************Done **************");
-		return result;
-	}
-	
-	public Collection findCollectionByNativeQueryString(String queryString, Map parameters) throws DataAccessException {
-		log.debug("************Entering ***************");
-		Collection result;
-		try {
-			Query query = getEntityManager().createNativeQuery(queryString);
-
-			setQueryParameters(query, parameters);
-			result = query.getResultList();
-
-		} catch (Exception e) {
-			log.error("Exception caught  : " + e.toString());
-			throw new DataAccessException( "Error in  ImplIrisDAO.findCollectionByNativeQueryString(String queryString, Map parameters) : " + e.toString(), e);
-		}
-		log.debug("************Done **************");
-		return result;
-	}
-	
-	public Collection findCollectionByTemplate(Object templateVO, Integer firstResult, Integer maxResults, String orderingField) throws DataAccessException{
-        log.info("************Entering ***************");
-        Collection result= null;
-        
-        PropertyUtilsBean propertyUtilsBean = BeanUtilsBean.getInstance().getPropertyUtils();
-        
-        try {
-			Map m = propertyUtilsBean.describe(templateVO);
-			Map parameters = new HashMap();
-			//String queryString = "SELECT c FROM " + templateVO.getClass().getSimpleName() + " c "; 
-			String queryString = "SELECT c FROM " + getEntityClass(templateVO).getSimpleName() + " c ";
-			String whereCondition ="";
-			if(m!=null){
-				int i=0;
-			    for (Object key : m.keySet()) { 
-			        //if (!key.equals("class") && getAnnotation(templateVO.getClass(), key.toString(), Transient.class)==null) { 
-			    	if (!key.equals("class") && getAnnotation(getEntityClass(templateVO), key.toString(), Transient.class)==null) {
-			            Object value = m.get(key); 
- 
-			            if (value != null) { 
-			                String lastToken = Utils.getExceptLastTokenAndLastToken((String)key)[1];
-			                    //ConvertUtils.convert(m.get(key), propertyUtilsBean.getPropertyType(templateVO, key.toString())); 
-			                whereCondition += " c." + key + " = :" + lastToken+i + " AND"; 
-			            	parameters.put(lastToken+i,value);
-			            	i++;
-			            } 
-			        } 
-			    } 
-			    if(!whereCondition.trim().equals("")){
-			    	whereCondition = whereCondition.substring(0, whereCondition.lastIndexOf("AND")); 
-			    	queryString +=" WHERE "+whereCondition;
-			    }
-			    if(orderingField!=null && !orderingField.trim().equals("")){
-			    	queryString += " ORDER BY "+ orderingField;
-			    }
-			    
-			    Query query = getEntityManager().createQuery(queryString);
-				
-				setQueryParameters(query, parameters);
-				if(firstResult!=null)query.setFirstResult(firstResult.intValue());
-				if(maxResults!=null)query.setMaxResults(maxResults.intValue());
-				result = query.getResultList();
-			    
-			}
-		} catch (IllegalAccessException e) {
-            log.error("IllegalAccessException caught : " + e.toString());
-            throw new DataAccessException("Error in  BaseJpaDAO.findCollectionByTemplate(Object templateVO, Integer firstResult, Integer maxResults, String orderingField): " + e.toString(),e);
-		} catch (InvocationTargetException e) {
-            log.error("InvocationTargetException caught : " + e.toString());
-            throw new DataAccessException("Error in  BaseJpaDAO.findCollectionByTemplate(Object templateVO, Integer firstResult, Integer maxResults, String orderingField): " + e.toString(),e);
-		} catch (NoSuchMethodException e) {
-            log.error("NoSuchMethodException caught : " + e.toString());
-            throw new DataAccessException("Error in  BaseJpaDAO.findCollectionByTemplate(Object templateVO, Integer firstResult, Integer maxResults, String orderingField): " + e.toString(),e);
-		} catch (Exception e) {
-            log.error("Exception caught : " + e.toString());
-            throw new DataAccessException("Error in  BaseJpaDAO.findCollectionByTemplate(Object templateVO, Integer firstResult, Integer maxResults, String orderingField): " + e.toString(),e);
-		}
-        
-        log.info("************Done   ***************");
-        return result;
-    }
-	
-	public Collection findCollectionByTemplate(Object templateVO) throws DataAccessException{
-        log.info("************Entering ***************");
-        Collection result = null;
-        
-        try {
-			result =  findCollectionByTemplate(templateVO, null, null, null);
-		} catch (Exception e) {
-            log.error("Exception caught : " + e.toString());
-            throw new DataAccessException("Error in  BaseJpaDAO.findCollectionByTemplate(Object templateVO): " + e.toString(),e);
-		}
-        
-        log.info("************Done ***************");
-        return result;
-    }
-
-    public Collection findCollectionByTemplate(Object templateVO, String orderingField, Boolean asc) throws DataAccessException{
-        log.info("************Entering ***************");
-        Collection result = null;
-        
-        try {
-			String order = null;
-			if(orderingField!=null && !orderingField.trim().equals("")){
-				if(asc!=null){
-					if(asc){
-						order=orderingField+" ASC";
-					}else{
-						order=orderingField+" DESC";
-					}
-				}
-			}
-			
-			result =  findCollectionByTemplate(templateVO, null, null, order);
-		} catch (Exception e) {
-            log.error("Exception caught : " + e.toString());
-            throw new DataAccessException("Error in  BaseJpaDAO.findCollectionByTemplate(Object templateVO, String orderingField, Boolean asc): " + e.toString(),e);
-		}
-        
-        log.info("************Done ***************");
-        return result;
-    }
-    
-    public Collection findCollectionByNullFields(Class realClass, String[] nullFields) throws DataAccessException{
-        log.info("************Entering ***************");
-        Collection result = null;
-        
-        try {
-			String queryString = "SELECT c FROM " + realClass.getSimpleName() + " c "; 
-			String whereCondition="";
-			if(nullFields!=null){
-				for (int i = 0; i< nullFields.length; i++){
-					whereCondition += " c." + nullFields[i] + " IS  NULL AND"; 
-				}
-			}
-			if(!whereCondition.equals("")){
-				whereCondition = whereCondition.substring(0, whereCondition.lastIndexOf("AND"));
-				queryString += " WHERE "+whereCondition;
-			}	
-			log.debug("queryString is "+queryString);
-			Query query = getEntityManager().createQuery(queryString);
-			result = query.getResultList();
-		} catch (Exception e) {
-            log.error("Exception caught : " + e.toString());
-            throw new DataAccessException("Error in  BaseJpaDAO.findCollectionByNullFields(Class realClass, String[] nullFields) : " + e.toString(),e);
-		}
-        log.info("************Done **************");
-        return result;
-    }
-	
-    
-    public Object findObjectByLogicCondition(java.lang.Class realClass, LogicCondition logicCondition) throws DataAccessException{
-        log.debug("************Entering ***************");
-        Object result;
-        try{
-            
-//        	Query query = createQuery(realClass, logicCondition);
-//        	result = query.getSingleResult();
-        	result = findObjectByLogicCondition(null, realClass,  logicCondition, null);
-
-        } catch (Exception e) {
-            log.error("Exception caught  : " + e.toString());
-            throw new DataAccessException("Error in  BaseJpaDAO.findObjectByLogicCondition(java.lang.Class realClass, LogicCondition logicCondition) : " + e.toString(),e);
-        }
-        log.info("************Done **************");
-        return result;
-    }
-	
-	public Object findObjectByLogicCondition(String[]selectFields, java.lang.Class realClass, LogicCondition logicCondition) throws DataAccessException{
-        log.debug("************Entering ***************");
-        Object result;
-        try{
-            
-//        	Query query = createQuery(selectFields, realClass, logicCondition);
-//        	result = query.getSingleResult();
-        	result = findObjectByLogicCondition(selectFields,  realClass,  logicCondition,null);
-
-        } catch (Exception e) {
-            log.error("Exception caught: " + e.toString());
-            throw new DataAccessException("Error in  BaseJpaDAO.findObjectByLogicCondition(String[]selectFields, java.lang.Class realClass, LogicCondition logicCondition) : " + e.toString(),e);
-        }
-        log.info("************Done **************");
-        return result;
-    }
-	
-	public Object findObjectByLogicCondition(String[]selectFields, java.lang.Class realClass, LogicCondition logicCondition, String orderBy) throws DataAccessException{
-        log.debug("************Entering ***************");
-        Object result=null;
-        try{
-            
-        	Query query = createQuery(null,selectFields, realClass, logicCondition, orderBy);
-        	result = query.getSingleResult();
-//        	Collection collectionResult = query.getResultList();
-//        	if(collectionResult!=null && !collectionResult.isEmpty()){
-//        		result=collectionResult.iterator().next();
-//        	}
-
-        } catch (NoResultException e) {
-			return null;
-		} catch (Exception e) {
-            log.error("Exception caught: " + e.toString());
-            throw new DataAccessException("Error in  BaseJpaDAO.findObjectByLogicCondition(String[]selectFields, java.lang.Class realClass, LogicCondition logicCondition, String orderBy) : " + e.toString(),e);
-        }
-        log.info("************Done **************");
-        return result;
-    }
-	
-	public Object findObjectByLogicCondition(java.lang.Class realClass, LogicCondition logicCondition, String orderBy) throws DataAccessException{
-        log.debug("************Entering ***************");
-        Object result;
-        try{
-            
-//        	Query query = createQuery(null, null, realClass, logicCondition, orderBy);
-//        	result = query.getSingleResult();
-        	result = findObjectByLogicCondition(null, realClass,  logicCondition,  orderBy);
-
-        } catch (Exception e) {
-            log.error("Exception caught: " + e.toString());
-            throw new DataAccessException("Error in  BaseJpaDAO.findObjectByLogicCondition(java.lang.Class realClass, LogicCondition logicCondition, String orderBy) : " + e.toString(),e);
-        }
-        log.info("************Done **************");
-        return result;
-    }
-	
-	public Collection findCollectionByLogicCondition(java.lang.Class realClass, LogicCondition logicCondition) throws DataAccessException{
-        log.debug("************Entering ***************");
-        Collection result;
-        try{
-            
-        	Query query = createQuery(realClass, logicCondition);
-        	result = query.getResultList();
-
-        }catch (NoResultException e) {
-        	result = null;
-		}catch (Exception e) {
-            log.error("Exception caught  : " + e.toString());
-            throw new DataAccessException("Error in  BaseJpaDAO.findCollectionByLogicCondition(java.lang.Class realClass, LogicCondition logicCondition) : " + e.toString(),e);
-        }
-        log.info("************Done **************");
-        return result;
-    }
-	
-	 
-	public Collection findCollectionByLogicCondition(Class realClass,LogicCondition logicCondition,String orderingField, Boolean asc,Integer startAtIndex, Integer maxResults) throws DataAccessException{
-        log.info("************Entering ***************");
-        Collection result = null;
-        
-        try {
-			String orderBy = null;
-			if(orderingField!=null && !orderingField.trim().equals("")){
-				if(asc!=null){
-					if(asc){
-						orderBy=orderingField+" ASC";
-					}else{
-						orderBy=orderingField+" DESC";
-					}
-				}
-			}
-//			Integer maxResults = null;
-//			if(startAtIndex!=null && endAtIndex!=null) maxResults=endAtIndex-startAtIndex;
-				
-			//result = findCollectionByLogicCondition(realClass, logicCondition, orderBy, startAtIndex, endAtIndex-startAtIndex);
-			result = findCollectionByLogicCondition(realClass, logicCondition, orderBy, startAtIndex, maxResults);
-		} catch (Exception e) {
-            log.error("Exception caught  : " + e.toString());
-            throw new DataAccessException("Error in  BaseJpaDAO.findCollectionByLogicCondition(Class realClass,LogicCondition logicCondition,String orderingField, Boolean asc,Integer startAtIndex, Integer endAtIndex) : " + e.toString(),e);
-		}
-        
-        log.info("************Done ***************");
-        return result;
-    }
-	
-	public Collection findCollectionByLogicCondition(String[]selectFields, java.lang.Class realClass, LogicCondition logicCondition) throws DataAccessException{
-        log.debug("************Entering ***************");
-        Collection result;
-        try{
-            
-        	Query query = createQuery(selectFields, realClass, logicCondition);
-        	result = query.getResultList();
-
-        } catch (Exception e) {
-            log.error("Exception caught: " + e.toString());
-            throw new DataAccessException("Error in  BaseJpaDAO.findCollectionByLogicCondition(String[]selectFields, java.lang.Class realClass, LogicCondition logicCondition) : " + e.toString(),e);
-        }
-        log.info("************Done **************");
-        return result;
-    }
-	
-	public Collection findCollectionByLogicCondition(String[]selectFields, java.lang.Class realClass, LogicCondition logicCondition, String orderBy) throws DataAccessException{
-        log.debug("************Entering ***************");
-        Collection result;
-        try{
-            
-        	//Query query = createQuery(selectFields, realClass, logicCondition, orderBy);
-        	Query query = createQuery(null,selectFields, realClass, logicCondition, orderBy);
-        	result = query.getResultList();
-
-        } catch (Exception e) {
-            log.error("Exception caught: " + e.toString());
-            throw new DataAccessException("Error in  BaseJpaDAO.findCollectionByLogicCondition(String[]selectFields, java.lang.Class realClass, LogicCondition logicCondition, String orderBy) : " + e.toString(),e);
-        }
-        log.info("************Done **************");
-        return result;
-    }
-	
-	public Collection findCollectionByLogicCondition(java.lang.Class realClass, LogicCondition logicCondition, String orderBy) throws DataAccessException{
-        log.debug("************Entering ***************");
-        Collection result;
-        try{
-            
-        	//Query query = createQuery(null, realClass, logicCondition, orderBy);
-        	Query query = createQuery(null, null, realClass, logicCondition, orderBy);
-        	result = query.getResultList();
-
-        } catch (Exception e) {
-            log.error("Exception caught: " + e.toString());
-            throw new DataAccessException("Error in  BaseJpaDAO.findCollectionByLogicCondition(java.lang.Class realClass, LogicCondition logicCondition, String orderBy) : " + e.toString(),e);
-        }
-        log.info("************Done **************");
-        return result;
-    }
-	
-	public Collection findCollectionByLogicCondition(Boolean distinct, String[]selectFields, java.lang.Class realClass, LogicCondition logicCondition, String orderBy) throws DataAccessException{
-        log.debug("************Entering ***************");
-        Collection result;
-        try{
-            
-        	//Query query = createQuery(selectFields, realClass, logicCondition, orderBy);
-        	Query query = createQuery(distinct,selectFields, realClass, logicCondition, orderBy);
-        	result = query.getResultList();
-
-        } catch (Exception e) {
-            log.error("Exception caught: " + e.toString());
-            throw new DataAccessException("Error in  BaseJpaDAO.findCollectionByLogicCondition(Boolean distinct,String[]selectFields, java.lang.Class realClass, LogicCondition logicCondition, String orderBy) : " + e.toString(),e);
-        }
-        log.info("************Done **************");
-        return result;
-    }
-
-	public Collection findCollectionByLogicCondition(Boolean distinct,String[] selectFields, java.lang.Class realClass, LogicCondition logicCondition, String orderBy,String[] groupBy, Integer firstResult, Integer maxResults) throws DataAccessException{
-        log.debug("************Entering ***************");
-        Collection result;
-        try{
-        	Query query = createQuery(distinct,selectFields, realClass, logicCondition, orderBy, groupBy);
-            
-        	if(firstResult!=null)
-        		query.setFirstResult(firstResult.intValue());
-        	if(maxResults!=null)
-        		query.setMaxResults(maxResults.intValue());
-
-        	result = query.getResultList();
-
-        } catch (Exception e) {
-            log.error("Exception caught: " + e.toString());
-            throw new DataAccessException("Error in  BaseJpaDAO.findCollectionByLogicCondition(Boolean distinct,String[] selectFields, java.lang.Class realClass, LogicCondition logicCondition, String orderBy,String[] groupBy,Integer firstResult, Integer maxResults) : " + e.toString(),e);
-        }
-        log.info("************Done **************");
-        return result;
-    }
-	
-	public Collection findCollectionByLogicCondition(Boolean distinct,String[] selectFields, java.lang.Class realClass, LogicCondition logicCondition, String orderBy,Integer firstResult, Integer maxResults) throws DataAccessException{
-        log.debug("************Entering ***************");
-        Collection result;
-        try{
-        	Query query = createQuery(distinct,selectFields, realClass, logicCondition, orderBy);
-            
-        	if(firstResult!=null)
-        		query.setFirstResult(firstResult.intValue());
-        	if(maxResults!=null)
-        		query.setMaxResults(maxResults.intValue());
-
-        	result = query.getResultList();
-
-        } catch (Exception e) {
-            log.error("Exception caught: " + e.toString());
-            throw new DataAccessException("Error in  BaseJpaDAO.findCollectionByLogicCondition(Boolean distinct,String[] selectFields, java.lang.Class realClass, LogicCondition logicCondition, String orderBy,Integer firstResult, Integer maxResults) : " + e.toString(),e);
-        }
-        log.info("************Done **************");
-        return result;
-    }
-	
-	public Collection findCollectionByLogicCondition(String[] selectFields, java.lang.Class realClass, LogicCondition logicCondition, String orderBy,Integer firstResult, Integer maxResults) throws DataAccessException{
-        log.debug("************Entering ***************");
-        Collection result;
-        try{
-        	Query query = createQuery(null,selectFields, realClass, logicCondition, orderBy);
-            
-        	if(firstResult!=null)
-        		query.setFirstResult(firstResult.intValue());
-        	if(maxResults!=null)
-        		query.setMaxResults(maxResults.intValue());
-
-        	result = query.getResultList();
-
-        } catch (Exception e) {
-            log.error("Exception caught: " + e.toString());
-            throw new DataAccessException("Error in  BaseJpaDAO.findCollectionByLogicCondition(String[] selectFields, java.lang.Class realClass, LogicCondition logicCondition, String orderBy,Integer firstResult, Integer maxResults) : " + e.toString(),e);
-        }
-        log.info("************Done **************");
-        return result;
-    }
-
-	
-	public Collection findCollectionByLogicCondition(java.lang.Class realClass, LogicCondition logicCondition, String orderBy,Integer firstResult, Integer maxResults) throws DataAccessException{
-        log.debug("************Entering ***************");
-        Collection result;
-        try{
-        	Query query = createQuery(null, null, realClass, logicCondition, orderBy);
-            
-        	if(firstResult!=null){
-        		query.setFirstResult(firstResult.intValue());
-        	}
-        	if(maxResults!=null){
-        		query.setMaxResults(maxResults.intValue());
-        	}
-        	
-        	result = query.getResultList();
-
-        } catch (Exception e) {
-            log.error("Exception caught: " + e.toString());
-            throw new DataAccessException("Error in  BaseJpaDAO.findCollectionByLogicCondition(java.lang.Class realClass, LogicCondition logicCondition, String orderBy) : " + e.toString(),e);
-        }
-        log.info("************Done **************");
-        return result;
-    }
-
-	public Collection findCollectionByLogicCondition(Boolean distinct,java.lang.Class realClass, LogicCondition logicCondition, String orderBy) throws DataAccessException{
-        log.debug("************Entering ***************");
-        Collection result;
-        try{
-            
-        	//Query query = createQuery(selectFields, realClass, logicCondition, orderBy);
-        	Query query = createQuery(distinct,null, realClass, logicCondition, orderBy);
-        	result = query.getResultList();
-
-        } catch (Exception e) {
-            log.error("Exception caught: " + e.toString());
-            throw new DataAccessException("Error in  BaseJpaDAO.findCollectionByLogicCondition(Boolean distinct, java.lang.Class realClass, LogicCondition logicCondition, String orderBy) : " + e.toString(),e);
-        }
-        log.info("************Done **************");
-        return result;
-    }
-	
-	public Collection findCollectionByLogicCondition(Boolean distinct, java.lang.Class realClass, LogicCondition logicCondition) throws DataAccessException{
-        log.debug("************Entering ***************");
-        Collection result;
-        try{
-            
-        	//Query query = createQuery(selectFields, realClass, logicCondition, orderBy);
-        	Query query = createQuery(distinct,null, realClass, logicCondition, null);
-        	result = query.getResultList();
-
-        } catch (Exception e) {
-            log.error("Exception caught: " + e.toString());
-            throw new DataAccessException("Error in  BaseJpaDAO.findCollectionByLogicCondition(Boolean distinct, java.lang.Class realClass, LogicCondition logicCondition) : " + e.toString(),e);
-        }
-        log.info("************Done **************");
-        return result;
-    }
-	
-	public Collection findCollectionByLogicCondition(Boolean distinct, String[]selectFields, java.lang.Class realClass, LogicCondition logicCondition) throws DataAccessException{
-        log.debug("************Entering ***************");
-        Collection result;
-        try{
-            
-        	//Query query = createQuery(selectFields, realClass, logicCondition, orderBy);
-        	Query query = createQuery(distinct,selectFields, realClass, logicCondition,null);
-        	result = query.getResultList();
-
-        } catch (Exception e) {
-            log.error("Exception caught: " + e.toString());
-            throw new DataAccessException("Error in  BaseJpaDAO.findCollectionByLogicCondition(Boolean distinct,String[]selectFields, java.lang.Class realClass, LogicCondition logicCondition) : " + e.toString(),e);
-        }
-        log.info("************Done **************");
-        return result;
-    }
-
-	
-	/**
-     * @deprecated use {@link #findCollectionByLogicCondition(Class realClass, it.aco.mandragora.query.LogicCondition logicCondition,String orderingField, Boolean asc, Integer startAtIndex, Integer endAtIndex)}
-     */
-    public Collection findLimitedOrderedCollectionByLogicCondition(Class realClass,LogicCondition logicCondition,String orderingField, boolean asc,int startAtIndex, int endAtIndex) throws DataAccessException{
-        return findCollectionByLogicCondition(realClass, logicCondition, orderingField,  new Boolean(asc), new Integer(startAtIndex), new Integer(endAtIndex));
-    }
-	
-	public Collection findCollectionByOrValues(Class realClass,String pAttributeName,Collection valuesCollection) throws DataAccessException{
-        log.info("************Entering  ***************");
-        Collection result = null;
-        
-    	try {
-			if(valuesCollection != null && !valuesCollection.isEmpty()){
-				Map parameters = new HashMap();
-				String queryString = "SELECT c FROM " + realClass.getSimpleName() + " c  WHERE "; 
-				
-				int i=0;
-				Iterator iterator = valuesCollection.iterator();
-			    while (iterator.hasNext()){
-			        
-			        Object value = new Object();
-			        value = iterator.next();
-			        if (value!=null){
-			        	String parameter ="parameter"+i; 
-			            queryString += " c." + pAttributeName + " = :" + parameter + " OR"; 
-			        	parameters.put(parameter,value);
-			        	i++;
-			        }else{
-			        	 queryString += " c." + pAttributeName + "IS NULL OR";
-			        }
-			    }
-			    queryString = queryString.substring(0, queryString.lastIndexOf("OR")); 
-			    
-			    Query query = getEntityManager().createQuery(queryString);
-				
-				setQueryParameters(query, parameters);
-				result = query.getResultList();
-			}
-		} catch (Exception e) {
-            log.error("Exception caught: " + e.toString());
-            throw new DataAccessException("Error in  BaseJpaDAO.findCollectionByOrValues(Class realClass,String pAttributeName,Collection valuesCollection) : " + e.toString(),e);
-		}
-        log.info("************Done ***************");
-        return result;
-    }
-	
-	
-	public Collection findCollectionByFieldsNotEqualsToValues(Class realClass,String[] pAttributeNames,Object[] valuesArray) throws DataAccessException{
-        log.info("************Entering ***************");
-        
-        Collection result;
-		try {
-			result = null;
-			if(valuesArray == null || pAttributeNames == null || valuesArray.length!=pAttributeNames.length){
-			    throw new DataAccessException("DataAccessException in BaseJpaDAO.findCollectionByFieldsNotEqualsToValues(Class realClass,String[] pAttributeNames,Object[] valuesArray): pAttributeNames and values must not be null and must have the same length ");
-			}
-			
-			Map parameters = new HashMap();
-			String queryString = "SELECT c FROM " + realClass.getSimpleName() + " c   ";
-			
-			
-
-			if(pAttributeNames.length>0){
-				String whereCondition="";
-				for (int i=0;i<pAttributeNames.length;i++){
-					String parameter ="parameter"+i; 
-					whereCondition += " c." + pAttributeNames[i] + " <> :" + parameter + " AND"; 
-					parameters.put(parameter,valuesArray[i]);
-				}
-				
-				whereCondition = whereCondition.substring(0, whereCondition.lastIndexOf("AND")); 
-				queryString+=" WHERE "+whereCondition;
-			}
-			Query query = getEntityManager().createQuery(queryString);
-			
-			setQueryParameters(query, parameters);
-			result = query.getResultList();
-		} catch (Exception e) {
-            log.error("Exception caught: " + e.toString());
-            throw new DataAccessException("Error in  BaseJpaDAO.findCollectionByFieldsNotEqualsToValues(Class realClass,String[] pAttributeNames,Object[] valuesArray) : " + e.toString(),e);
-		}
-        log.info("************Done *************");
-        return result;
-    }
-	
-	
-	public Collection findCollectionByAndFieldsOperatorValues(Class realClass,String[] pAttributeNames, String[] operators,Object[] valuesArray) throws DataAccessException{
-        log.info("************Entering ***************");
-        Collection result = null;
-        
-        try {
-			if(valuesArray == null || pAttributeNames == null || operators==null || valuesArray.length!=pAttributeNames.length || operators.length!=pAttributeNames.length){
-			    throw new DataAccessException("DataAccessException in BaseJpaDAO.findCollectionByAndFieldsOperatorValues(Class realClass,String[] pAttributeNames, String[] operators,Object[] valuesArray):properties,operators and values must not be null and must have the same length ");
+		final Annotation[] accessibleObjectAnnotations = accessibleObject.getAnnotations();
+		for (int i = 0; i < accessibleObjectAnnotations.length && pkValue != null; i++) {
+		    if (accessibleObjectAnnotations[i].annotationType().equals(AttributeOverrides.class)) {
+			attributeOverrides = accessibleObject.getAnnotation(AttributeOverrides.class);
+			final AttributeOverride[] attributeOverrideArray = attributeOverrides.value();
+			for (final AttributeOverride attributeOverride : attributeOverrideArray) {
+			    propertyUtilsBean.setProperty(pkValue, attributeOverride.name(), pkValues[pkIndex.getValue()]);
+			    pkIndex.increment();
 			}
 
-			
-			
-			Map parameters = new HashMap();
-			String queryString = "SELECT c FROM " + realClass.getSimpleName() + " c "; 
-			
-			if(pAttributeNames.length>0){
-				String whereCondition="";
-				for (int i=0;i<pAttributeNames.length;i++){
-					
-					String parameter ="parameter"+i; 
-					String operator = operators[i].equals("!=")?"<>":(operators[i].equals("==")?"=":operators[i]);
-					whereCondition += " c." + pAttributeNames[i] + " "+operator+ " :" + parameter + " AND"; 
-					parameters.put(parameter,valuesArray[i]);
-				}
-				whereCondition = whereCondition.substring(0, whereCondition.lastIndexOf("AND")); 
-				queryString+=" WHERE "+whereCondition;
-			}
-			Query query = getEntityManager().createQuery(queryString);
-			
-			setQueryParameters(query, parameters);
-			result = query.getResultList();
-		} catch (Exception e) {
-            log.error("Exception caught: " + e.toString());
-            throw new DataAccessException("Error in  BaseJpaDAO.findCollectionByAndFieldsOperatorValues(Class realClass,String[] pAttributeNames, String[] operators,Object[] valuesArray): " + e.toString(),e);
-		}
-        
-        log.info("************Done *************");
-        return result;
-    }
-	
-	public Collection findCollectionByArrayOfFieldsOperatorsMatrixAndOrValues(Class realClass,String[] pAttributeNames, String[] operators, Object[][] valuesMatrix) throws DataAccessException{
-        log.info("************Entering **************");
-        Collection result = null;
-        try {
-			if(valuesMatrix  == null || pAttributeNames == null || operators==null || operators.length!=pAttributeNames.length || operators.length==0){
-			    throw new DataAccessException("DataAccessException in BaseJpaDAO.findCollectionByArrayOfFieldsOperatorsMatrixAndOrValues(Class realClass,String[] pAttributeNames, String[] operators,Object[][] valuesMatrix, PersistenceBroker broker ):pAttributeNames and operators  must not be null,  must have the same length and can't be empty ");
-			}
-			if (valuesMatrix.length==0) throw new DataAccessException("DataAccessException in BaseJpaDAO.findCollectionByArrayOfFieldsOperatorsMatrixAndOrValues(Class realClass,String[] pAttributeNames, String[] operators,Object[][] valuesMatrix):valuesMatrix must not be empty");
-			
-			Map parameters = new HashMap();
-			String queryString = "SELECT c FROM " + realClass.getSimpleName() + " c  WHERE "; 
-			
-			for (int i=0; i<valuesMatrix .length; i++){
-			    if (valuesMatrix[i].length!=pAttributeNames.length) throw new DataAccessException("OjbPbCoreException in DataAccessException.findCollectionByArrayOfFieldsOperatorsMatrixAndOrValues(Class realClass,String[] pAttributeNames, String[] operators,Object[][] valuesMatrix):valuesMatrix["+i+"] have the same length of pAttributeNames");
-			    queryString += " ( ";
-			    for (int j=0; j<valuesMatrix[i].length;j++){
-			    	
-			    	String parameter ="parameter"+i+"_"+j; 
-					String operator = operators[i].equals("!=")?"<>":(operators[i].equals("==")?"=":operators[i]);
-				    
-					queryString += " c." + pAttributeNames[j] + " "+operator+ " :" + parameter + " AND"; 
-					parameters.put(parameter,valuesMatrix[i][j]);
-			    }
-			    queryString = queryString.substring(0, queryString.lastIndexOf("AND"));
-			    queryString += " ) OR ";
-			}
-			queryString = queryString.substring(0, queryString.lastIndexOf("OR"));
-			Query query = getEntityManager().createQuery(queryString);
-			setQueryParameters(query, parameters);
-			result = query.getResultList();
-		} catch (Exception e) {
-            log.error("Exception caught: " + e.toString());
-            throw new DataAccessException("Error in  BaseJpaDAO.findCollectionByArrayOfFieldsOperatorsMatrixAndOrValues(Class realClass,String[] pAttributeNames, String[] operators, Object[][] valuesMatrix): " + e.toString(),e);
-		}
-		log.info("************Done ************");
-        return result;
-    }
-	
-	public Collection findCollectionByFieldInCollection(Class realClass,String pAttributeName,Collection valuesCollection) throws DataAccessException{
-		
-        log.info("************Entering ***************");
-        Collection result = null;
-		try {
-			if(valuesCollection!=null && !valuesCollection.isEmpty()){
-				Map parameters = new HashMap();
-				String queryString = "SELECT c FROM " + realClass.getSimpleName() + " c "; 
-				if(valuesCollection.size()>this.inLimit){
-					ArrayList<List> splitIn = splitIn(valuesCollection);
-					queryString+= " WHERE ("+orOfInsCollection("c."+pAttributeName,"parameter", splitIn, parameters)+ " )";
-				}else{
-					queryString += " WHERE c." +pAttributeName+" IN (:parameter)";
-					parameters.put("parameter",valuesCollection);
-				}
-				Query query = getEntityManager().createQuery(queryString);
-				setQueryParameters(query, parameters);
-				result = query.getResultList();
-			}
-		} catch (Exception e) {
-            log.error("Exception caught: " + e.toString());
-            throw new DataAccessException("Error in  BaseJpaDAO.findCollectionByFieldInCollection(Class realClass,String pAttributeName,Collection valuesCollection): " + e.toString(),e);
-		}
-        
-        
-        log.info("************Done *************");
-        return result;
-    }
-	
-	 public Collection searchValueInFields(Class realClass, String[] pAttributeNames, Object value) throws DataAccessException{
-        log.info("************Entering ***************");
-        Collection result = null;
-        
-        try {
-			if (pAttributeNames!=null && pAttributeNames.length>0  && value!=null) {
-				
-				Map parameters = new HashMap();
-				parameters.put("parameter", value);
-				
-				String queryString = "SELECT c FROM " + realClass.getSimpleName() + " c  WHERE "; 
-
-				
-			    for (int i=0; i<pAttributeNames.length;i++ ){
-			    	//queryString += " c." + pAttributeNames[i] + " LIKE %:parameter% OR "; 
-			    	queryString += " c." + pAttributeNames[i] + " LIKE concat('%',:parameter,'%') OR ";
-			    	//LIKE lower(concat('%',:" + fieldLastToken + ",'%'))";
-			    }
-			    
-			    queryString = queryString.substring(0, queryString.lastIndexOf("OR"));
-				Query query = getEntityManager().createQuery(queryString);
-				setQueryParameters(query, parameters);
-				result = query.getResultList();
-			}
-		} catch (Exception e) {
-            log.error("Exception caught: " + e.toString());
-            throw new DataAccessException("Error in  BaseJpaDAO.searchValueInFields(Class realClass, String[] pAttributeNames, Object value): " + e.toString(),e);
-		}
-        
-        log.info("************Done ************");
-        return result;
-    }
-	 
-	 /*
-	  * TODO make it work with dot separated pAttributeName
-	  * (non-Javadoc)
-	  * @see it.aco.mandragora.dao.DAO#getCollectionOfStoredItemsNotInBean(java.lang.Object, java.lang.String)
-	  */
-	public Collection getCollectionOfStoredItemsNotInBean(Object pInstance, String pAttributeName) throws DataAccessException{
-        log.info("************Entering **************");
-        Collection result=null;
-        try {
-        	
-        	result=getCollectionOfStoredItemsInOrNotInBean( pInstance,  pAttributeName, true);
-//			if(pAttributeName==null || pAttributeName.trim().equals("")){
-//			   log.error("Error  in  BaseJpaDAO.getCollectionOfStoredItemsNotInBean(Object pInstance, String pAttributeName) : pAttributeName can't be null or empty or blank chacarcters string" );
-//			   throw new DataAccessException("Exception thrown in BaseJpaDAO.getCollectionOfStoredItemsNotInBean(Object pInstance, String pAttributeName) : pAttributeName can't be null or empty or blank chacarcters string");
-//			}
-//			
-//			
-//			PropertyUtilsBean propertyUtilsBean = BeanUtilsBean.getInstance().getPropertyUtils();
-//			Class pInstanceClass = getEntityClass(pInstance);
-//			Class pAttributeClass = getClassFromPath(pInstanceClass, pAttributeName);
-//			EntityInfo pAttributeEntityInfo =  new EntityInfo(pAttributeClass);
-//			
-//			Field pAttributeIdField = pAttributeEntityInfo.getIdField();
-//			Collection pAttributeCollection = (Collection)propertyUtilsBean.getProperty(pInstance, pAttributeName);
-//			Collection pAttributeIds = null;
-//			if(pAttributeCollection!=null && !pAttributeCollection.isEmpty()){
-//				pAttributeIds = Utils.selectFieldFromCollection(pAttributeCollection, pAttributeIdField.getName());
-//			}
-//			
-//			
-//			String pAttributeIdFieldName=pAttributeIdField.getName(); // added alessandro on 05/08/2012
-//			
-//			
-//			
-//			Map parameters = new HashMap();
-//			parameters.put("param0", pInstance);
-//			
-//			String queryString ="SELECT bbb FROM "+pInstanceClass.getSimpleName()+" a join a."+pAttributeName+" bbb  WHERE a= :param0 " ;
-//			
-//			
-//			
-//			if(pAttributeIds!=null){
-//				queryString += "AND NOT EXISTS (SELECT 1 FROM "+pAttributeClass.getSimpleName()+" c WHERE ";
-//				queryString+=" bbb."+pAttributeIdFieldName+" = c."+pAttributeIdFieldName+ " AND ";
-//				queryString +="(";
-//				Iterator iterator = pAttributeIds.iterator();
-//				int paramIndex=1;
-//				while(iterator.hasNext()){
-//					String param = "param"+paramIndex;
-//					Object pAttributeId = iterator.next();
-//					queryString+=" (c."+pAttributeIdFieldName+" = :"+param;
-//					//queryString+=" AND bbb."+pAttributeIdFieldName+" = c."+pAttributeIdFieldName;
-//					queryString +=")";
-//					parameters.put(param, pAttributeId);
-//					if(iterator.hasNext()){
-//						queryString+=" OR ";
-//					}
-//					paramIndex++;
-//				}
-//				queryString +=") )";
-//			}
-//			
-//			result = findCollectionByQueryString(queryString, parameters);
-			
-
-		} catch (Exception e) {
-            log.error("Exception caught: " + e.toString());
-            throw new DataAccessException("Error in  BaseJpaDAO.getCollectionOfStoredItemsNotInBean(Object pInstance, String pAttributeName): " + e.toString(),e);
-		}
-        log.info("************Done **********");
-        return result;
-	 }
-	 
-	 
-	 /**
-	  *TODO put in interface and bubble up; 
-	  *TODO make it work with dot separated pAttributeName
-	  * @param pInstance
-	  * @param pAttributeName
-	  * @return
-	  * @throws DataAccessException
-	  */
-	 public Collection getCollectionOfStoredItemsInBean(Object pInstance, String pAttributeName) throws DataAccessException{
-        log.info("************Entering **************");
-        Collection result=null;
-        try {
-			
-        	result=getCollectionOfStoredItemsInOrNotInBean( pInstance,  pAttributeName, false);
-
-		} catch (Exception e) {
-            log.error("Exception caught: " + e.toString());
-            throw new DataAccessException("Error in  BaseJpaDAO.getCollectionOfStoredItemsInBean(Object pInstance, String pAttributeName): " + e.toString(),e);
-		}
-        log.info("************Done **********");
-        return result;
-	 }
-	 
-	 
-	 private Collection getCollectionOfStoredItemsInOrNotInBean(Object pInstance, String pAttributeName, boolean notInBean) throws DataAccessException{
-	        log.info("************Entering **************");
-	        Collection result=null;
-	        try {
-				if(pAttributeName==null || pAttributeName.trim().equals("")){
-				   log.error("Error  in  BaseJpaDAO.getCollectionOfStoredItemsInOrNotInBean(Object pInstance, String pAttributeName, boolean notInBean) : pAttributeName can't be null or empty or blank chacarcters string" );
-				   throw new DataAccessException("Exception thrown in BaseJpaDAO.getCollectionOfStoredItemsInOrNotInBean(Object pInstance, String pAttributeName, boolean notInBean) : pAttributeName can't be null or empty or blank chacarcters string");
-				}
-				
-				
-				PropertyUtilsBean propertyUtilsBean = BeanUtilsBean.getInstance().getPropertyUtils();
-				Class pInstanceClass = getEntityClass(pInstance);
-				Class pAttributeClass = getClassFromPath(pInstanceClass, pAttributeName);
-				EntityInfo pAttributeEntityInfo =  new EntityInfo(pAttributeClass);
-				
-				Field pAttributeIdField = pAttributeEntityInfo.getIdField();
-				Collection pAttributeCollection = (Collection)propertyUtilsBean.getProperty(pInstance, pAttributeName);
-				Collection pAttributeIds = null;
-				if(pAttributeCollection!=null && !pAttributeCollection.isEmpty()){
-					pAttributeIds = Utils.selectFieldFromCollection(pAttributeCollection, pAttributeIdField.getName());
-				}
-				
-				
-				String pAttributeIdFieldName=pAttributeIdField.getName(); // added alessandro on 05/08/2012
-		
-				
-				
-				Map parameters = new HashMap();
-				parameters.put("param0", pInstance);
-				
-				String queryString ="SELECT bbb FROM "+pInstanceClass.getSimpleName()+" a join a."+pAttributeName+" bbb  WHERE a= :param0 " ;
-				
-				
-				
-				
-
-				if(pAttributeIds!=null){
-					if(notInBean){
-						queryString += "AND NOT EXISTS ";
-					}else{
-						queryString += "AND EXISTS ";
-					}
-						
-//					queryString += "AND EXISTS (SELECT 1 FROM "+pAttributeClass.getSimpleName()+" c WHERE ";
-					queryString += "(SELECT 1 FROM "+pAttributeClass.getSimpleName()+" c WHERE ";
-					queryString+=" bbb."+pAttributeIdFieldName+" = c."+pAttributeIdFieldName+ " AND ";
-					queryString +="(";
-					Iterator iterator = pAttributeIds.iterator();
-					int paramIndex=1;
-					while(iterator.hasNext()){
-						String param = "param"+paramIndex;
-						Object pAttributeId = iterator.next();
-						queryString+=" (c."+pAttributeIdFieldName+" = :"+param;
-						//queryString+=" AND bbb."+pAttributeIdFieldName+" = c."+pAttributeIdFieldName;
-						queryString +=")";
-						parameters.put(param, pAttributeId);
-						if(iterator.hasNext()){
-							queryString+=" OR ";
-						}
-						paramIndex++;
-					}
-					queryString +=") )";
-				}
-				
-				result = findCollectionByQueryString(queryString, parameters);
-				
-
-			} catch (IllegalAccessException e) {
-	            log.error("IllegalAccessException caught: " + e.toString());
-	            throw new DataAccessException("Error in  BaseJpaDAO.getCollectionOfStoredItemsInOrNotInBean(Object pInstance, String pAttributeName, boolean notInBean): " + e.toString(),e);
-			} catch (InvocationTargetException e) {
-	            log.error("InvocationTargetException caught: " + e.toString());
-	            throw new DataAccessException("Error in  BaseJpaDAO.getCollectionOfStoredItemsInOrNotInBean(Object pInstance, String pAttributeName, boolean notInBean): " + e.toString(),e);
-			} catch (NoSuchMethodException e) {
-	            log.error("NoSuchMethodException caught: " + e.toString());
-	            throw new DataAccessException("Error in  BaseJpaDAO.getCollectionOfStoredItemsInOrNotInBean(Object pInstance, String pAttributeName, boolean notInBean): " + e.toString(),e);
-			} catch (Exception e) {
-	            log.error("Exception caught: " + e.toString());
-	            throw new DataAccessException("Error in  BaseJpaDAO.getCollectionOfStoredItemsInOrNotInBean(Object pInstance, String pAttributeName, boolean notInBean): " + e.toString(),e);
-			}
-	        log.info("************Done **********");
-	        return result;
-		 }
-	
-	 
-	 
-	
-	 
-	 
-	 /*
-	  * TODO make it works with path of dot 
-	  * (non-Javadoc)
-	  * @see it.aco.mandragora.dao.DAO#getStoredCollection(java.lang.Object, java.lang.String)
-	  */
-	 public Collection getStoredCollection(Object pInstance, String pAttributeName) throws DataAccessException{
-        log.info("************Entering **************");
-        Collection result=null;
-        
-        try {
-			if(pAttributeName==null || pAttributeName.trim().equals("")){
-			    log.error("Error  in  BaseOjbPbCore.getStoredCollection(Object pInstance, String pAttributeName, PersistenceBroker broker) : pAttributeName can't be null or empty or blank chacarcters string" );
-			    throw new DataAccessException("Exception thrown in BaseJpaDAO.getStoredCollection(Object pInstance, String pAttributeName) : pAttributeName can't be null or empty or blank chacarcters string");
-			}
-			
-			Class pInstanceClass = getEntityClass(pInstance);
-			log.debug("pInstanceClass is "+pInstanceClass.toString());
-			Class pAttributeClass = getClassFromPath(pInstanceClass, pAttributeName);
-			log.debug("pAttributeClass is "+pAttributeClass.toString());
-			
-			
-			String mappedBy = null;
-			OneToMany oneToMany= (OneToMany) getAnnotation(pInstanceClass, pAttributeName, OneToMany.class);
-			if(oneToMany!=null){
-				mappedBy=oneToMany.mappedBy();
-			}
-			
-			if(mappedBy==null ||mappedBy.trim().equals("")){// is manytomany or onetomany with no mappedby
-				String queryString ="SELECT bbb FROM "+pInstanceClass.getSimpleName()+" a join a."+pAttributeName+" bbb  WHERE a= :param " ;
-				Query query = getEntityManager().createQuery(queryString);
-				query.setParameter("param", pInstance);
-				result = query.getResultList();
-//				JoinTable joinTable = (JoinTable) getAnnotation(pInstanceClass, pAttributeName, JoinTable.class);
-//				String joinTableName = joinTable.name();
-//				String queryString ="SELECT a FROM "+pAttributeClass.getSimpleName()+" a, "+joinTableName+" j WHERE " ;
-//				
-//				String[] pkColumnNames = getPkColumnNames(pAttributeClass);
-//				String[] inverseJoinColumnNames = getJoinTableInverseColumnName(joinTable);
-//				if(pkColumnNames!=null && inverseJoinColumnNames!=null && pkColumnNames.length==inverseJoinColumnNames.length && pkColumnNames.length>0){
-//					for (int i=0; i<pkColumnNames.length;i++){
-//						queryString+=" a."+pkColumnNames[i]+"="+"j."+inverseJoinColumnNames[i]+" AND ";
-//					}
-//					queryString = queryString.substring(0, queryString.lastIndexOf("AND"));
-//					Query query = getEntityManager().createQuery(queryString);
-//				    result = query.getResultList();
-//				}else{
-//					throw new DataAccessException("Exception thrown in BaseJpaDAO.getStoredCollection(Object pInstance, String pAttributeName)  : pkColumnNames and  inverseJoinColumnNames can't be null or empty or have different length");
-//				}
-				
-			}else{ // is onetomany with mappedBy
-				LogicCondition logicCondition = new LogicSqlCondition(mappedBy,"==",pInstance);
-				
-				
-				
-				result = findCollectionByLogicCondition(pAttributeClass, logicCondition);
-			}
-			
-			
-//			String mappedBy = getMappedBy(pInstance, pAttributeName);
-//			if (mappedBy==null) throw new DataAccessException("DataAccessException thrown in BaseJpaDAO.getStoredCollection(Object pInstance, String pAttributeName) : OneToMany or ManyToMany annotation must have a mappedBy attribute");
-			
-			
-			
-//			LogicCondition logicCondition = new LogicSqlCondition(mappedBy,"==",pInstance);
-//			result = findCollectionByLogicCondition(pAttributeClass, logicCondition);
-		} catch (Exception e) {
-            log.error("Exception caught: " + e.toString());
-            throw new DataAccessException("Error in  BaseJpaDAO.getStoredCollection(Object pInstance, String pAttributeName): " + e.toString(),e);
-		}
-        
-        log.info("************Done **********");
-        return result;
-    }
-	
-	public Iterator getReportQueryIterator(Class realClass, LogicCondition logicCondition, String[] pAttributeNames, String[] groupBy) throws DataAccessException{
-        log.info("************Entering ***************");
-        Iterator iterator = null;
-        
-        try {
-			if (pAttributeNames == null || pAttributeNames.length==0){
-			    log.error("DataAccessException thrown in  BaseJpaDAO.getReportQueryIterator(Class realClass,LogicCondition logicCondition, String[] pAttributeNames, String[] groupBy): attributes can't be null nor empty");
-			    throw new DataAccessException("Error in  BaseJpaDAO.getReportQueryIterator(Class realClass,LogicCondition logicCondition, String[] pAttributeNames, String[] groupBy): attributes can't be null nor empty");
-			}
-			if (logicCondition == null){
-			    log.error("DataAccessException thrown in  BaseJpaDAO.getReportQueryIterator(Class realClass,LogicCondition logicCondition, String[] pAttributeNames, String[] groupBy): logicCondition can't be null ");
-			    throw new DataAccessException("Error in  BaseJpaDAO.getReportQueryIterator(Class realClass,LogicCondition logicCondition, String[] pAttributeNames, String[] groupBy): logicCondition can't be null");
-			}
-			
-			Collection result = findCollectionByLogicCondition(null, pAttributeNames, realClass, logicCondition, null, groupBy, null, null);
-			if(result!=null){
-				iterator= result.iterator();
-			}
-		} catch (Exception e) {
-            log.error("Exception caught: " + e.toString());
-            throw new DataAccessException("Error in  BaseJpaDAO.getReportQueryIterator(Class realClass, LogicCondition logicCondition, String[] pAttributeNames, String[] groupBy): " + e.toString(),e);
-		}
-        log.info("************Done *************");
-        return iterator;
-    }
-	
-	public void retrieveReference(Object pInstance, String pAttributeName) throws DataAccessException{
-        log.info("************Entering ***************");
-        
-        
-        try {
-        	
-			//Class pInstanceClass=pInstance.getClass();
-        	Class pInstanceClass=getEntityClass(pInstance);
-			log.info("pInstanceClass is "+pInstanceClass.toString());
-			log.info("pAttributeName is "+pAttributeName);
-			EntityInfo entityInfo = new EntityInfo(pInstanceClass);
-			
-			PropertyUtilsBean propertyUtilsBean = BeanUtilsBean.getInstance().getPropertyUtils();
-			
-			
-			
-//			if(getAnnotation(pInstanceClass,pAttributeName, OneToOne.class)!=null || getAnnotation(pInstanceClass,pAttributeName, ManyToOne.class)!=null){
-			if(getAnnotation(pInstanceClass,pAttributeName, OneToOne.class)!=null || getAnnotation(pInstanceClass,pAttributeName, ManyToOne.class)!=null ||getAnnotation(pInstanceClass,pAttributeName, EmbeddedId.class)!=null){
-				//The reference is an object and not a collection
-				
-				
-				String pInstancePrimaryKey = entityInfo.getIdField().getName();
-				Object pInstancePrimaryKeyValue = propertyUtilsBean.getProperty(pInstance,pInstancePrimaryKey);
-				
-				
-				Object retrievedReference = findObjectByLogicCondition(new String[]{pAttributeName}, pInstanceClass, new LogicSqlCondition(pInstancePrimaryKey,"==", pInstancePrimaryKeyValue));
-				propertyUtilsBean.setProperty(pInstance, pAttributeName,retrievedReference);
-				if(getAnnotation(pInstanceClass,pAttributeName, EmbeddedId.class)==null)refresh(retrievedReference);
-				
-				
-				
-				
-			}else  if(getAnnotation(pInstanceClass,pAttributeName, OneToMany.class)!=null || getAnnotation(pInstanceClass,pAttributeName, ManyToMany.class)!=null){
-				//The reference is  a collection
-				//Collection retrievedReference = getStoredCollection(pInstanceClass, pAttributeName);
-				Collection retrievedReference = getStoredCollection(pInstance, pAttributeName);
-				propertyUtilsBean.setProperty(pInstance, pAttributeName,retrievedReference);
-				
-			}else{
-				throw new DataAccessException("Error in  BaseJpaDAO.retrieveReference(Object pInstance, String pAttributeName): no annotation found" );
-			}
-		} catch (IllegalAccessException e) {
-            log.error("IllegalAccessException caught: " + e.toString());
-            throw new DataAccessException("Error in  BaseJpaDAO.retrieveReference(Object pInstance, String pAttributeName): " + e.toString(),e);
-		} catch (InvocationTargetException e) {
-            log.error("InvocationTargetException caught: " + e.toString());
-            throw new DataAccessException("Error in  BaseJpaDAO.retrieveReference(Object pInstance, String pAttributeName): " + e.toString(),e);
-		} catch (NoSuchMethodException e) {
-            log.error("NoSuchMethodException caught: " + e.toString());
-            throw new DataAccessException("Error in  BaseJpaDAO.retrieveReference(Object pInstance, String pAttributeName): " + e.toString(),e);
-		} catch (Exception e) {
-            log.error("Exception caught: " + e.toString());
-            throw new DataAccessException("Error in  BaseJpaDAO.retrieveReference(Object pInstance, String pAttributeName): " + e.toString(),e);
-		}
-        
-        log.info("************Done***************");
-    }
-	
-	
-	
-	
-	public void retrieveAllReferences(Object pInstance) throws DataAccessException{
-        log.info("************Entering***************");
-        
-        
-        try {
-			PropertyUtilsBean propertyUtilsBean = BeanUtilsBean.getInstance().getPropertyUtils();
-			
-			//Class pInstanceClass=pInstance.getClass();
-			Class pInstanceClass=getEntityClass(pInstance);
-			
-			
-			Map describe = propertyUtilsBean.describe(pInstance);
-			Iterator iterator = describe.keySet().iterator();
-			while (iterator.hasNext()){
-				String pAttributeName = (String) iterator.next();
-				log.debug("pAttributeName is "+pAttributeName);
-				
-				if(		getAnnotation(pInstanceClass,pAttributeName, OneToMany.class)!=null ||
-						getAnnotation(pInstanceClass,pAttributeName, ManyToMany.class)!=null ||
-						getAnnotation(pInstanceClass,pAttributeName, OneToOne.class)!=null || 
-						getAnnotation(pInstanceClass,pAttributeName, ManyToOne.class)!=null){
-					
-					retrieveReference(pInstance, pAttributeName);
-				}
-				
-			}
-		} catch (IllegalAccessException e) {
-            log.error("IllegalAccessException caught: " + e.toString());
-            throw new DataAccessException("Error in  BaseJpaDAO.retrieveAllReferences(Object pInstance): " + e.toString(),e);
-		} catch (InvocationTargetException e) {
-            log.error("InvocationTargetException caught: " + e.toString());
-            throw new DataAccessException("Error in  BaseJpaDAO.retrieveAllReferences(Object pInstance): " + e.toString(),e);
-		} catch (NoSuchMethodException e) {
-            log.error("NoSuchMethodException caught: " + e.toString());
-            throw new DataAccessException("Error in  BaseJpaDAO.retrieveAllReferences(Object pInstance): " + e.toString(),e);
-		}
-        
-        log.info("************Done**********");
-    }
-	
-	public void retrieveAllReferencesInCollection(Collection valueObjectsCollection) throws DataAccessException{
-        log.info("************Entering ***************");
-        try {
-			if(valueObjectsCollection!=null){
-				Iterator iterator = valueObjectsCollection.iterator();
-				while(iterator.hasNext()) {
-					retrieveAllReferences(iterator.next());
-				}
-			}
-		} catch (Exception e) {
-            log.error("Exception caught: " + e.toString());
-            throw new DataAccessException("Error in  BaseJpaDAO.retrieveAllReferencesInCollection(Collection valueObjectsCollection): " + e.toString(),e);
-		}
-        log.info("************Done ***************");
-    }
-	
-	public void retrieveReferenceInCollection(Collection valueObjectsCollection, String pAttributeName) throws DataAccessException{
-        log.info("************Entering***************");
-        try {
-			if(valueObjectsCollection!=null){
-				Iterator iterator = valueObjectsCollection.iterator();
-				while(iterator.hasNext()) {
-					retrieveReference(iterator.next(),pAttributeName);
-				}
-			}
-		} catch (Exception e) {
-            log.error("Exception caught: " + e.toString());
-            throw new DataAccessException("Error in  BaseJpaDAO.retrieveReferenceInCollection(Collection valueObjectsCollection, String pAttributeName): " + e.toString(),e);
-		}
-        log.info("************Done ***************");
-    }
-
-	
-	public void retrieveNullReference(Object pInstance, String pAttributeName) throws DataAccessException{
-        log.info("************Entering***************");
-        try {
-			PropertyUtilsBean propertyUtilsBean = BeanUtilsBean.getInstance().getPropertyUtils();
-			if (propertyUtilsBean.getProperty(pInstance,pAttributeName)==null){
-			    retrieveReference(pInstance,pAttributeName);
-			}
-		} catch (IllegalAccessException e) {
-            log.error("IllegalAccessException caught: " + e.toString());
-            throw new DataAccessException("Error in  BaseJpaDAO.retrieveNullReference(Object pInstance, String pAttributeName): " + e.toString(),e);
-		} catch (InvocationTargetException e) {
-            log.error("InvocationTargetException caught: " + e.toString());
-            throw new DataAccessException("Error in  BaseJpaDAO.retrieveNullReference(Object pInstance, String pAttributeName): " + e.toString(),e);
-		} catch (NoSuchMethodException e) {
-            log.error("NoSuchMethodException caught: " + e.toString());
-            throw new DataAccessException("Error in  BaseJpaDAO.retrieveNullReference(Object pInstance, String pAttributeName): " + e.toString(),e);
-		}
-        log.info("************Done **************");
-    }
-	
-	public void retrieveAllNullReferences(Object pInstance) throws DataAccessException{
-        log.info("************Entering ***************");
-        
-        try {
-			PropertyUtilsBean propertyUtilsBean = BeanUtilsBean.getInstance().getPropertyUtils();
-			
-			//Class pInstanceClass=pInstance.getClass();
-			Class pInstanceClass=getEntityClass(pInstance);
-			
-			
-			Map describe = propertyUtilsBean.describe(pInstance);
-			Iterator iterator = describe.keySet().iterator();
-			while (iterator.hasNext()){
-				String pAttributeName = (String) iterator.next();
-				if(		getAnnotation(pInstanceClass,pAttributeName, OneToMany.class)!=null ||
-						getAnnotation(pInstanceClass,pAttributeName, ManyToMany.class)!=null ||
-						getAnnotation(pInstanceClass,pAttributeName, OneToOne.class)!=null || 
-						getAnnotation(pInstanceClass,pAttributeName, ManyToOne.class)!=null){
-					
-					retrieveNullReference(pInstance, pAttributeName);
-				}
-				
-			}
-		} catch (IllegalAccessException e) {
-	           log.error("IllegalAccessException caught: " + e.toString());
-	           throw new DataAccessException("Error in  BaseJpaDAO.retrieveAllNullReferences(Object pInstance): " + e.toString(),e);
-		} catch (InvocationTargetException e) {
-	           log.error("InvocationTargetException caught: " + e.toString());
-	           throw new DataAccessException("Error in  BaseJpaDAO.retrieveAllNullReferences(Object pInstance): " + e.toString(),e);
-		} catch (NoSuchMethodException e) {
-	           log.error("NoSuchMethodException caught: " + e.toString());
-	           throw new DataAccessException("Error in  BaseJpaDAO.retrieveAllNullReferences(Object pInstance): " + e.toString(),e);
-		}
-        log.info("************Done ***************");
-    }
-	
-	
-	/**
-	 * convenience method to use when the first attribute is an embeddedId
-	 * @param valueobjectOrCollection
-	 * @param path
-	 * @throws DataAccessException
-	 */
-	private void retrievePKPathReference(Object valueobject, String firstAttributeName, String remainingPath) throws DataAccessException{
-		log.info("************Entering **************");
-		try {
-			PropertyUtilsBean propertyUtilsBean = BeanUtilsBean.getInstance().getPropertyUtils();
-//			Object valueobjectPrimaryKeyValue = propertyUtilsBean.getProperty(valueobject,firstAttributeName);
-			String[] firstAttributeNameAndRemainingPath2 = Utils.getFirstAttributeNameAndRemainingPath(remainingPath);
-			String secondAttributeName=firstAttributeNameAndRemainingPath2[0];
-			String remainingPath2=firstAttributeNameAndRemainingPath2[1];
-			
-//			Object retrievedReference = findObjectByLogicCondition(new String[]{firstAttributeName+"."+secondAttributeName}, valueobject.getClass(), new LogicSqlCondition(firstAttributeName,"==", valueobjectPrimaryKeyValue));
-//			propertyUtilsBean.setProperty(valueobjectPrimaryKeyValue, secondAttributeName,retrievedReference);
-//			if(remainingPath2!=null && !remainingPath2.trim().equals(""))retrievePathReference(retrievedReference,remainingPath2);
-//			
-			
-			
-		    Object pkAttribute=propertyUtilsBean.getProperty(valueobject,firstAttributeName);
-		    //retrieveReference(pkAttribute,secondAttributeName);
-		    Object secondAttribute = propertyUtilsBean.getProperty(pkAttribute,secondAttributeName);
-		    refresh(secondAttribute);
-		    if(remainingPath2!=null && !remainingPath2.trim().equals("")){
-		    	retrievePathReference(secondAttribute,remainingPath2);
-		    }
-		} catch (IllegalAccessException e) {
-			log.error("IllegalAccessException caught: " + e.toString());
-			throw new DataAccessException("Error in  BaseJpaDAO.retrievePKPathReference(Object valueobject, String firstAttributeName, String remainingPath): " + e.toString(),e);
-		} catch (InvocationTargetException e) {
-			log.error("InvocationTargetException caught: " + e.toString());
-			throw new DataAccessException("Error in  BaseJpaDAO.retrievePKPathReference(Object valueobject, String firstAttributeName, String remainingPath): " + e.toString(),e);
-		} catch (NoSuchMethodException e) {
-			log.error("NoSuchMethodException caught: " + e.toString());
-			throw new DataAccessException("Error in  BaseJpaDAO.retrievePKPathReference(Object valueobject, String firstAttributeName, String remainingPath): " + e.toString(),e);
-		} catch (Exception e) {
-			log.error("Exception caught: " + e.toString());
-			throw new DataAccessException("Error in  BaseJpaDAO.retrievePKPathReference(Object valueobject, String firstAttributeName, String remainingPath): " + e.toString(),e);
-		}
-		
-		log.info("************Done ************");
-	}
-	
-	public void retrievePathReference(Object valueobjectOrCollection, String path) throws DataAccessException{
-        log.info("************Entering **************");
-        String firstAttributeName="";
-        String remainingPath="";
-        
-        try {
-			if (path!=null && !path.trim().equals("") && valueobjectOrCollection!=null){
-				
-
-			    PropertyUtilsBean propertyUtilsBean = BeanUtilsBean.getInstance().getPropertyUtils();
-			    log.debug("retrievePathReference:path="+path);
-			    String[] firstAttributeNameAndRemainingPath = Utils.getFirstAttributeNameAndRemainingPath(path);
-			    
-			    firstAttributeName=firstAttributeNameAndRemainingPath[0];
-			    remainingPath=firstAttributeNameAndRemainingPath[1];
-			    
-			    log.debug("retrievePathReference:firstAttributeName="+firstAttributeName);
-
-			    
-			    if (Collection.class.isInstance(valueobjectOrCollection)){ //is a collection
-			        log.debug("retrievePathReference: valueobjectOrCollection is a collection");
-
-			     
-			        Iterator iterator = ((Collection) valueobjectOrCollection).iterator();
-			        while (iterator.hasNext()){
-			            Object valueobjectOrCollectionItem = iterator.next();
-			            retrieveReference(valueobjectOrCollectionItem,firstAttributeName);
-			            if(remainingPath!=null && !remainingPath.trim().equals("")){
-			            	//if(getAnnotation(valueobjectOrCollectionItem.getClass(), firstAttributeName, EmbeddedId.class)!=null){
-			            	if(getAnnotation(getEntityClass(valueobjectOrCollectionItem), firstAttributeName, EmbeddedId.class)!=null){
-//					    		String[] firstAttributeNameAndRemainingPath2 = Utils.getFirstAttributeNameAndRemainingPath(remainingPath);
-//			            		String secondAttributeName=firstAttributeNameAndRemainingPath2[0];
-//							    String remainingPath2=firstAttributeNameAndRemainingPath2[1];
-//							    Object pkAttribute=propertyUtilsBean.getProperty(valueobjectOrCollectionItem,firstAttributeName);
-//							    retrieveReference(pkAttribute,secondAttributeName);
-//							    if(remainingPath2!=null && !remainingPath2.trim().equals("")){
-//							    	retrievePathReference(propertyUtilsBean.getProperty(pkAttribute,secondAttributeName),remainingPath2);
-//							    }
-							    retrievePKPathReference(valueobjectOrCollectionItem,  firstAttributeName,  remainingPath);
-			            	}else{
-			            		retrievePathReference(propertyUtilsBean.getProperty(valueobjectOrCollectionItem,firstAttributeName),remainingPath);
-			            	}
-			            }
-			            
-//			            if(getAnnotation(valueobjectOrCollectionItem.getClass(), firstAttributeName, EmbeddedId.class)!=null){
-//			            	retrievePKPathReference(valueobjectOrCollectionItem,  firstAttributeName,  remainingPath);
-//			            }else{
-//				            retrieveReference(valueobjectOrCollectionItem,firstAttributeName);
-//				            if(remainingPath!=null && !remainingPath.trim().equals("")){
-//				            	retrievePathReference(propertyUtilsBean.getProperty(valueobjectOrCollectionItem,firstAttributeName),remainingPath);
-//				            }
-//			            }
-
-			        }
-			        
-
-			    } //else if(valueobjectOrCollection.getClass().isAnnotationPresent(Entity.class)){
-			    else {
-			    	retrieveReference(valueobjectOrCollection,firstAttributeName);
-			    	//if(getAnnotation(valueobjectOrCollection.getClass(), firstAttributeName, EmbeddedId.class)!=null){
-			    	if(getAnnotation(getEntityClass(valueobjectOrCollection), firstAttributeName, EmbeddedId.class)!=null){
-			    		
-			    		retrievePKPathReference(valueobjectOrCollection,  firstAttributeName,  remainingPath);
-//			    		Object valueobjectOrCollectionPrimaryKeyValue = propertyUtilsBean.getProperty(valueobjectOrCollection,firstAttributeName);
-//			    		String[] firstAttributeNameAndRemainingPath2 = Utils.getFirstAttributeNameAndRemainingPath(remainingPath);
-//			    		String secondAttributeName=firstAttributeNameAndRemainingPath2[0];
-//					    String remainingPath2=firstAttributeNameAndRemainingPath2[1];
-//					    Object retrievedReference = findObjectByLogicCondition(new String[]{firstAttributeName+"."+secondAttributeName}, valueobjectOrCollection.getClass(), new LogicSqlCondition(firstAttributeName,"==", valueobjectOrCollectionPrimaryKeyValue));
-//						propertyUtilsBean.setProperty(valueobjectOrCollectionPrimaryKeyValue, secondAttributeName,retrievedReference);
-//						if(remainingPath2!=null && !remainingPath2.trim().equals(""))retrievePathReference(retrievedReference,remainingPath2);
-//			    		
-				    }else {
-				        log.debug("retrievePathReference: valueobjectOrCollection is a valueobject");
-
-//				        retrieveReference(valueobjectOrCollection,firstAttributeName);
-				        if(remainingPath!=null && !remainingPath.trim().equals(""))retrievePathReference(propertyUtilsBean.getProperty(valueobjectOrCollection,firstAttributeName),remainingPath);
-				    }
-			    }
-//			    else {
-//			    	throw new DataAccessException("Error in  BaseJpaDAO.retrievePathReference(Object valueobjectOrCollection, String path): " +valueobjectOrCollection.getClass().toString()+" is not a collection and not an Entity");
-//			    }
-			}
-		} catch (IllegalAccessException e) {
-	           log.error("IllegalAccessException caught: " + e.toString());
-	           throw new DataAccessException("Error in  BaseJpaDAO.retrievePathReference(Object valueobjectOrCollection, String path): " + e.toString(),e);
-		} catch (InvocationTargetException e) {
-	           log.error("InvocationTargetException caught: " + e.toString());
-	           throw new DataAccessException("Error in  BaseJpaDAO.retrievePathReference(Object valueobjectOrCollection, String path): " + e.toString(),e);
-		} catch (NoSuchMethodException e) {
-	           log.error("NoSuchMethodException caught: " + e.toString());
-	           throw new DataAccessException("Error in  BaseJpaDAO.retrievePathReference(Object valueobjectOrCollection, String path): " + e.toString(),e);
-		} catch (Exception e) {
-	           log.error("Exception caught: " + e.toString());
-	           throw new DataAccessException("Error in  BaseJpaDAO.retrievePathReference(Object valueobjectOrCollection, String path): " + e.toString(),e);
-		}
-        log.info("************Done ************");
-
-    }
-	
-	
-	public void retrieveNullPathReference(Object valueobjectOrCollection, String path) throws DataAccessException{
-        log.info("************Entering **************");
-        
-        try {
-			if (path!=null && !path.trim().equals("") && valueobjectOrCollection!=null){
-
-
-			    PropertyUtilsBean propertyUtilsBean = BeanUtilsBean.getInstance().getPropertyUtils();
-			    log.debug("retrieveNullPathReference:path="+path);
-			    String[] firstAttributeNameAndRemainingPath = Utils.getFirstAttributeNameAndRemainingPath(path);
-			    String firstAttributeName =firstAttributeNameAndRemainingPath[0];
-			    String remainingPath = firstAttributeNameAndRemainingPath[1];
-			    
-			    log.debug("retrieveNullPathReference:firstAttributeName="+firstAttributeName);
-
-			    if (Collection.class.isInstance(valueobjectOrCollection)){ //is a collection
-			        log.debug("retrieveNullPathReference: valueobjectOrCollection is a collection");
-
-			        if (valueobjectOrCollection!=null){
-			            Iterator iterator = ((Collection) valueobjectOrCollection).iterator();
-			            while (iterator.hasNext()){
-			                Object valueobjectOrCollectionItem = iterator.next();
-			                if(propertyUtilsBean.getProperty(valueobjectOrCollectionItem,firstAttributeName)==null){
-			                    retrieveReference(valueobjectOrCollectionItem,firstAttributeName);
-			                }
-			                if(!remainingPath.equals("")){ 
-			                    retrieveNullPathReference(propertyUtilsBean.getProperty(valueobjectOrCollectionItem,firstAttributeName),remainingPath);
-			                }
-			            }
-			        }
-			    }else{//is a valueobject
-			        log.debug(".retrieveNullPathReference: valueobjectOrCollection is a valueobject");
-
-			        if(propertyUtilsBean.getProperty(valueobjectOrCollection,firstAttributeName)==null){
-			            log.debug("retrieveNullPathReference: propertyUtilsBean.getProperty(valueobjectOrCollection,firstAttributeName)==null");
-			            log.debug("retrieveNullPathReference: valueobjectOrCollection = "+valueobjectOrCollection.toString());
-			            log.debug("retrieveNullPathReference: firstAttributeName = "+firstAttributeName);
-			            retrieveReference(valueobjectOrCollection,firstAttributeName);
-			            log.debug("retrieveNullPathReference: retrieved null reference");
-			        }
-			        if(!remainingPath.equals("")){
-			            log.debug("retrieveNullPathReference: before recursion");
-			            retrieveNullPathReference(propertyUtilsBean.getProperty(valueobjectOrCollection,firstAttributeName),remainingPath);
-			            log.debug("retrieveNullPathReference: after recursion");
-			        }
-			    }
-			}
-		} catch (IllegalAccessException e) {
-	           log.error("IllegalAccessException caught: " + e.toString());
-	           throw new DataAccessException("Error in  BaseJpaDAO.retrieveNullPathReference(Object valueobjectOrCollection, String path): " + e.toString(),e);
-		} catch (InvocationTargetException e) {
-	           log.error("InvocationTargetException caught: " + e.toString());
-	           throw new DataAccessException("Error in  BaseJpaDAO.retrieveNullPathReference(Object valueobjectOrCollection, String path): " + e.toString(),e);
-		} catch (NoSuchMethodException e) {
-	           log.error("NoSuchMethodException caught: " + e.toString());
-	           throw new DataAccessException("Error in  BaseJpaDAO.retrieveNullPathReference(Object valueobjectOrCollection, String path): " + e.toString(),e);
-		} catch (Exception e) {
-	           log.error("Exception caught: " + e.toString());
-	           throw new DataAccessException("Error in  BaseJpaDAO.retrieveNullPathReference(Object valueobjectOrCollection, String path): " + e.toString(),e);
-		}
-        
-        
-        log.info("************Done ***********");
-
-    }
-	
-	private void deleteCore(Object deleteVO) throws DataAccessException, DataOptimisticLockException{
-		log.debug("************Entering ***************");
-		try {
-			if(getEntityManager().contains(deleteVO)){
-				getEntityManager().remove(deleteVO);
-			}else{
-				getEntityManager().remove(getEntityManager().merge(deleteVO));
-			}
-		} catch (OptimisticLockException e) {
-            log.error("OptimisticLockException  caught: " + e.toString());
-            throw new DataOptimisticLockException("Error in BaseJpaDAO.deleteCore(Object deleteVO): " + e.toString(),e);
-        }catch (Exception e) {
-            log.error("Exception caught: " + e.toString());
-            throw new DataAccessException("Error in  BaseJpaDAO.deleteCore(Object deleteVO) : " + e.toString(),e);
-        }
-        log.info("************Done **************");
-	}
-	
-	public void delete(Object deleteVO) throws DataAccessException, DataOptimisticLockException {
-		log.debug("************Entering ***************");
-        try{
-//        	if (deleteVO!=null){
-//        		getEntityManager().remove(getEntityManager().merge(deleteVO));
-//        	}
-        	deleteCore( deleteVO);
-        	if(flush) flush();
-        } catch (OptimisticLockException e) {
-            log.error("OptimisticLockException  caught: " + e.toString());
-            throw new DataOptimisticLockException("Error in BaseJpaDAO.delete(Object deleteVO): " + e.toString(),e);
-        }catch (Exception e) {
-            log.error("Exception caught: " + e.toString());
-            throw new DataAccessException("Error in  BaseJpaDAO.delete(Object deleteVO) : " + e.toString(),e);
-        }
-        log.info("************Done **************");
-	}
-	
-	
-	public void deleteCollection(Collection deleteVOs) throws DataAccessException, DataOptimisticLockException{
-        log.info("************Entering ***************");
-        try {
-			
-			deleteCollectionCore(deleteVOs);
-			if(flush)flush();
-		} catch (Exception e) {
-            log.error("Exception caught: " + e.toString());
-            throw new DataAccessException("Error in  BaseJpaDAO.deleteCollectionCore(Collection deleteVOs) : " + e.toString(),e);
-		}
-        log.info("************Done **************");
-
-    }
-	
-	private void deleteCollectionCore(Collection deleteVOs) throws DataAccessException{
-        log.info("************Entering ***************");
-        try {
-			if(deleteVOs==null) return;
-			Iterator iterator = deleteVOs.iterator();
-			while (iterator.hasNext()){
-				Object deleteVO = iterator.next();
-//				getEntityManager().remove(getEntityManager().merge(deleteVO));
-				deleteCore(deleteVO);
-			}
-			
-		} catch (Exception e) {
-            log.error("Exception caught: " + e.toString());
-            throw new DataAccessException("Error in  BaseJpaDAO.deleteCollectionCore(Collection deleteVOs) : " + e.toString(),e);
-		}
-        log.info("************Done **************");
-
-    }
-	
-	public void deleteMToNRelationshipCollection(Object left, String leftFieldName, Collection rightCollection) throws DataAccessException{
-        log.info("************Entering***************");
-        try {
-			//Object cloneLeft = BeanUtilsBean.getInstance().cloneBean(left);        
-			
-        	deleteMToNRelationshipCollectionCore(left, leftFieldName, rightCollection);
-			if(flush)flush();
-		} catch (Exception e) {
-            log.error("Exception caught: " + e.toString());
-            throw new DataAccessException("Error in  BaseJpaDAO.deleteMToNRelationshipCollection(Object left, String leftFieldName, Collection rightCollection) : " + e.toString(),e);
-		}
-        log.info("************Done  ***************");
-
-    }
-	
-	private void deleteMToNRelationshipCollectionCore(Object left, String leftFieldName, Collection rightCollection) throws DataAccessException{
-        log.info("************Entering***************");
-//        JoinTable joinTable = getAnnotation(getEntityClass(left),leftFieldName,JoinTable.class);
-//        String[] columnNames = getJoinTableColumnName(joinTable);
-//        String[] inverseColumnNames =getJoinTableInverseColumnName(joinTable);
-//        
-//        String queryString =" DELETE FROM "+joinTable.name();
-        
-        
-        
-        try {
-			Object managedLeft = getEntityManager().merge(left);
-			PropertyUtilsBean propertyUtilsBean = BeanUtilsBean.getInstance().getPropertyUtils();
-			//EntityInfo entityInfo = new EntityInfo(getClassFromPath(left.getClass(), leftFieldName));
-			EntityInfo entityInfo = new EntityInfo(getClassFromPath(getEntityClass(left), leftFieldName));
-			//retrieveReference(managedLeft, leftFieldName);
-			Collection leftFieldCollection = (Collection) propertyUtilsBean.getProperty(managedLeft, leftFieldName);
-			BeanCollectionUtils.removeAllFromCollection(leftFieldCollection, rightCollection, entityInfo.getPkNames());
-			//leftFieldCollection.retainAll(rightCollection);
-		} catch (IllegalAccessException e) {
-            log.error("IllegalAccessException caught: " + e.toString());
-            throw new DataAccessException("Error in  BaseJpaDAO.deleteMToNRelationshipCollectionCore(Object left, String leftFieldName, Collection rightCollection) : " + e.toString(),e);
-		} catch (InvocationTargetException e) {
-            log.error("InvocationTargetException caught: " + e.toString());
-            throw new DataAccessException("Error in  BaseJpaDAO.deleteMToNRelationshipCollectionCore(Object left, String leftFieldName, Collection rightCollection) : " + e.toString(),e);
-		} catch (NoSuchMethodException e) {
-            log.error("NoSuchMethodException caught: " + e.toString());
-            throw new DataAccessException("Error in  BaseJpaDAO.deleteMToNRelationshipCollectionCore(Object left, String leftFieldName, Collection rightCollection) : " + e.toString(),e);
-		} catch (Exception e) {
-            log.error("Exception caught: " + e.toString());
-            throw new DataAccessException("Error in  BaseJpaDAO.deleteMToNRelationshipCollectionCore(Object left, String leftFieldName, Collection rightCollection) : " + e.toString(),e);
-		}
-        log.info("************Done  ***************");
-
-    }
-	
-	
-	public void deleteItemsNotInCollectionsInPath(Object rootVO, String path, Boolean applyDeletePathCascade, Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) throws DataAccessException{
-		log.info("************Entering  ***************");
-		try {
-			deleteItemsNotInCollectionsInPathCore( rootVO,  path,  applyDeletePathCascade,  ifM2NDeleteOnlyRelationship,  deleteOneToOne);
-			if(flush)flush();
-		} catch (DataOptimisticLockException e) {
-            log.error("DataOptimisticLockException caught: " + e.toString());
-            throw new DataAccessException("Error in  BaseJpaDAO.deleteItemsNotInCollectionsInPath(Object rootVO, String path, Boolean applyDeletePathCascade, Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne): " + e.toString(),e);
-		}
-		log.info("************Done  ***************");
-	}
-	
-	public void deleteItemsNotInCollectionsInPath(Object rootVO, String path) throws DataAccessException{
-        log.info("************Entering ***************");
-        try {
-			deleteItemsNotInCollectionsInPathCore( rootVO,  path,  null,  null,  null);
-			if(flush)flush();
-		} catch (DataOptimisticLockException e) {
-            log.error("DataOptimisticLockException caught: " + e.toString());
-            throw new DataAccessException("Error in  BaseJpaDAO.deleteItemsNotInCollectionsInPath(Object rootVO, String path): " + e.toString(),e);
-		}
-        log.info("************Done  ***************");
-    }
-	
-	public void deleteItemsNotInCollectionsInPath(Object rootVO, String path,Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) throws DataAccessException{
-        log.info("************Entering the BaseOjbPbDAO.deleteItemsNotInCollectionsInPath(Object rootVO, String path,Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) ***************");
-        try {
-			deleteItemsNotInCollectionsInPathCore( rootVO,  path, null,  ifM2NDeleteOnlyRelationship,  deleteOneToOne);
-			if(flush)flush();
-		} catch (DataOptimisticLockException e) {
-            log.error("DataOptimisticLockException caught: " + e.toString());
-            throw new DataAccessException("Error in  BaseJpaDAO.deleteItemsNotInCollectionsInPath(Object rootVO, String path,Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne): " + e.toString(),e);
-		}
-        log.info("************Done with the BaseOjbPbDAO.deleteItemsNotInCollectionsInPath(Object rootVO, String path,Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) ***************");
-    }
-	
-	
-	/**
-	 * 
-	 * @param rootVO
-	 * @param path
-	 * @param applyDeletePathCascade
-	 * @param ifM2NDeleteOnlyRelationship
-	 * @param deleteOneToOne
-	 * @throws DataAccessException
-	 */
-	private void deleteItemsNotInCollectionsInPathCore_old(Object rootVO, String path, Boolean applyDeletePathCascade, Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) throws DataAccessException, DataOptimisticLockException{
-        log.info("************Entering  ***************");
-        try {
-			if(path!=null&&!path.trim().equals("")&&rootVO!=null){
-
-			    if(applyDeletePathCascade==null)applyDeletePathCascade=Boolean.TRUE;
-			    if(ifM2NDeleteOnlyRelationship==null)ifM2NDeleteOnlyRelationship=Boolean.TRUE;
-			    if(deleteOneToOne==null)deleteOneToOne=Boolean.FALSE;
-
-			    Class rootVOClass = getEntityClass(rootVO);
-			    
-			    String[] firstAttributeNameAndRemainingPath = Utils.getFirstAttributeNameAndRemainingPath(path);
-			    String firstAttributeName =   firstAttributeNameAndRemainingPath[0];
-			    String remainingPath =   firstAttributeNameAndRemainingPath[1];
-				
-			    PropertyUtilsBean propertyUtilsBean = BeanUtilsBean.getInstance().getPropertyUtils();
-
-			    Integer relationType = getRelationType(rootVOClass, firstAttributeName);
-			    if(M_TO_N == relationType || M_TO_N_INVERSE == relationType || ONE_TO_N == relationType){
-			    	Collection notInBeanReferencedEntities = getCollectionOfStoredItemsNotInBean(rootVO, firstAttributeName);
-			    	if(notInBeanReferencedEntities!=null){
-				    	if(M_TO_N == relationType || M_TO_N_INVERSE == relationType){
-				    		String inverseManyToManyField = getInverseManyToManyField(rootVO, firstAttributeName);
-	                    	for(Object notInBeanReferencedEntity:notInBeanReferencedEntities){
-					    		if(!StringUtils.isEmpty(inverseManyToManyField) ){ // m2n (direct or inverse)
-									Collection inverseCollection = (Collection) propertyUtilsBean.getProperty(notInBeanReferencedEntity, inverseManyToManyField);
-									inverseCollection.remove(rootVO);
-					    		}
-					    		if(applyDeletePathCascade.booleanValue() && !ifM2NDeleteOnlyRelationship){
-					    			deletePathCascadeCore(notInBeanReferencedEntity, remainingPath, ifM2NDeleteOnlyRelationship,deleteOneToOne);
-					    		}
-					    	}
-	                    	if(!applyDeletePathCascade || ifM2NDeleteOnlyRelationship){
-	                    		deleteCollectionCore(notInBeanReferencedEntities); 
-	                    	}
-	                    }else{//ONE_TO_N
-	                    	if(applyDeletePathCascade){
-		                    	for(Object notInBeanReferencedEntity:notInBeanReferencedEntities){
-		                    		deletePathCascadeCore(notInBeanReferencedEntity, remainingPath, ifM2NDeleteOnlyRelationship,deleteOneToOne);
-		                    	}
-	                    	}else{
-	                    		deleteCollectionCore(notInBeanReferencedEntities); 
-	                    	}
-	                    }
-				    	
-			    	}
-	        
-			    } else if(relationType!=null){//MANY_TO_ONE or ONE_TO_ONE
-			    	Object firstAttributeValue =  propertyUtilsBean.getProperty(rootVO,firstAttributeName) ;
-			    	if(firstAttributeValue!=null){
-			    		deleteItemsNotInCollectionsInPathCore(firstAttributeValue,remainingPath,applyDeletePathCascade, ifM2NDeleteOnlyRelationship,deleteOneToOne);
-			    		if(deleteOneToOne){
-			    			getEntityManager().remove(firstAttributeValue);
-			    			propertyUtilsBean.setProperty(rootVO,firstAttributeName,null) ;
-			    		}
-			        }
-			    }
-			}
-		} catch (IllegalAccessException e) {
-            log.error("IllegalAccessException caught: " + e.toString());
-            throw new DataAccessException("Error in  BaseJpaDAO.deleteItemsNotInCollectionsInPathCore(Object rootVO, String path, Boolean applyDeletePathCascade, Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne): " + e.toString(),e);
-		} catch (InvocationTargetException e) {
-            log.error("InvocationTargetException caught: " + e.toString());
-            throw new DataAccessException("Error in  BaseJpaDAO.deleteItemsNotInCollectionsInPathCore(Object rootVO, String path, Boolean applyDeletePathCascade, Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne): " + e.toString(),e);
-		} catch (NoSuchMethodException e) {
-            log.error("NoSuchMethodException caught: " + e.toString());
-            throw new DataAccessException("Error in  BaseJpaDAO.deleteItemsNotInCollectionsInPathCore(Object rootVO, String path, Boolean applyDeletePathCascade, Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne): " + e.toString(),e);
-		} catch (Exception e) {
-            log.error("Exception caught: " + e.toString());
-            throw new DataAccessException("Error in  BaseJpaDAO.deleteItemsNotInCollectionsInPathCore(Object rootVO, String path, Boolean applyDeletePathCascade, Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne): " + e.toString(),e);
-		}
-        log.info("************Done ***************");
-
-    }
-	
-	/**
-	 * 
-	 * @param rootVO
-	 * @param path
-	 * @param applyDeletePathCascade
-	 * @param ifM2NDeleteOnlyRelationship
-	 * @param deleteOneToOne
-	 * @throws DataAccessException
-	 */
-	private void deleteItemsNotInCollectionsInPathCore(Object rootVO, String path, Boolean applyDeletePathCascade, Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) throws DataAccessException, DataOptimisticLockException{
-        log.info("************Entering  ***************");
-        try {
-        	Collection paths = new ArrayList();
-        	paths.add(path);
-        	deleteItemsNotInCollectionsInPathsCore( rootVO,  paths, false,  applyDeletePathCascade,  ifM2NDeleteOnlyRelationship,  deleteOneToOne);
-        	
-        	
-		} catch (Exception e) {
-            log.error("Exception caught: " + e.toString());
-            throw new DataAccessException("Error in  BaseJpaDAO.deleteItemsNotInCollectionsInPathCore(Object rootVO, String path, Boolean applyDeletePathCascade, Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne): " + e.toString(),e);
-		}
-        log.info("************Done ***************");
-
-    }
-	
-	
-	public void deleteItemsNotInCollectionsInPaths(Object rootVO, Collection paths,  Boolean applyDeletePathCascade, Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) throws DataAccessException{
-		log.info("************Entering ***************");
-		try {
-			deleteItemsNotInCollectionsInPathsCore(rootVO, paths,  Boolean.TRUE, applyDeletePathCascade, ifM2NDeleteOnlyRelationship, deleteOneToOne);
-			if(flush)flush();
-		} catch (DataOptimisticLockException e) {
-            log.error("DataOptimisticLockException caught: " + e.toString());
-            throw new DataAccessException("Error in  BaseJpaDAO.deleteItemsNotInCollectionsInPaths(Object rootVO, Collection paths,  Boolean applyDeletePathCascade, Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne): " + e.toString(),e);
-		}
-		log.info("************Done ***************");
-	}
-
-	
-	private void deleteItemsNotInCollectionsInPathsCore(Object rootVO, Collection paths,  Boolean pathsHasToBeSorted, Boolean applyDeletePathCascade, Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) throws DataAccessException{
-        log.info("************Entering ***************");
-        
-        
-        try {
-			if(paths!=null&&!paths.isEmpty()&&rootVO!=null){
-
-			    if(pathsHasToBeSorted==null)pathsHasToBeSorted=Boolean.TRUE;
-			    if(applyDeletePathCascade==null)applyDeletePathCascade=Boolean.TRUE;
-			    if(ifM2NDeleteOnlyRelationship==null)ifM2NDeleteOnlyRelationship=Boolean.TRUE;
-			    if(deleteOneToOne==null)deleteOneToOne=Boolean.FALSE;
-
-
-			    PropertyUtilsBean propertyUtilsBean = BeanUtilsBean.getInstance().getPropertyUtils();
-
-			    //Class rootVOClass = rootVO.getClass();
-			    Class rootVOClass = getEntityClass(rootVO);
-
-			    String[] pathsArray = new String[paths.size()];
-			    if(pathsHasToBeSorted.booleanValue()){
-			        ArrayList<String> pathsList = Collections.list(Collections.enumeration(paths));
-			        Collections.sort(pathsList);
-			        pathsArray = (String[]) pathsList.toArray(pathsArray);
-			    }  else{
-			        pathsArray = (String[]) paths.toArray(pathsArray);
-			    }
-			    int  index = 0;
-			    while (index < pathsArray.length){
-			        String path = pathsArray[index];
-			        if(path!= null && !path.trim().equals("")){
-			            String[] firstAttributeNameAndRemainingPath = Utils.getFirstAttributeNameAndRemainingPath(path);
-			            String firstAttributeName = firstAttributeNameAndRemainingPath[0];
-			            String remainingPath =  firstAttributeNameAndRemainingPath[1];
-			            ArrayList<String> subPaths = new ArrayList<String>();
-			            if(!remainingPath.trim().equals("")){
-			                subPaths.add(remainingPath);
-			            }
-			            index++;
-			            boolean matchingFirstAttributeName = true;
-			            while (index < pathsArray.length  && matchingFirstAttributeName){
-			                String path2 = pathsArray[index];
-			                if(path2!=null && !path2.trim().equals("")) {
-			                    String[] firstAttributeNameAndRemainingPath2 = Utils.getFirstAttributeNameAndRemainingPath(path2);
-			                    String firstAttributeName2 = firstAttributeNameAndRemainingPath2[0];
-			                    String remainingPath2 =  firstAttributeNameAndRemainingPath2[1];
-			                    if(firstAttributeName.equals(firstAttributeName2)){
-			                        if(!remainingPath2.trim().equals("")){
-			                            subPaths.add(remainingPath2);
-			                        }
-			                        index++;
-			                    } else{
-			                        matchingFirstAttributeName=false;
-			                    }
-			                } else{
-			                    index++;
-			                }
-
-			            }
-			            
-			            /*********************************************************************************************/
-						Integer relationType = getRelationType(rootVOClass, firstAttributeName);
-					    if(M_TO_N == relationType || M_TO_N_INVERSE == relationType || ONE_TO_N == relationType){
-					    	Collection notInBeanReferencedEntities = getCollectionOfStoredItemsNotInBean(rootVO, firstAttributeName);
-					    	if(notInBeanReferencedEntities!=null){
-						    	if(M_TO_N == relationType || M_TO_N_INVERSE == relationType){
-						    		String inverseManyToManyField = getInverseManyToManyField(rootVO, firstAttributeName);
-			                    	for(Object notInBeanReferencedEntity:notInBeanReferencedEntities){
-							    		if(!StringUtils.isEmpty(inverseManyToManyField) ){ // m2n (direct or inverse)
-											Collection inverseCollection = (Collection) propertyUtilsBean.getProperty(notInBeanReferencedEntity, inverseManyToManyField);
-											inverseCollection.remove(rootVO);
-							    		}
-							    		if(applyDeletePathCascade.booleanValue() && !ifM2NDeleteOnlyRelationship.booleanValue()){
-							    			deletePathsCascadeCore(notInBeanReferencedEntity, subPaths,Boolean.FALSE, ifM2NDeleteOnlyRelationship,deleteOneToOne);
-							    		}else if(!ifM2NDeleteOnlyRelationship){//applyDeletePathCascade is false
-							    			deleteCore(notInBeanReferencedEntity);
-							    		}
-							    	}
-//			                    	if(!applyDeletePathCascade.booleanValue() || ifM2NDeleteOnlyRelationship.booleanValue()){
-//			                    		deleteCollectionCore(notInBeanReferencedEntities); 
-//			                    	}
-			                    }else{//ONE_TO_N
-			                    	if(applyDeletePathCascade){
-				                    	for(Object notInBeanReferencedEntity:notInBeanReferencedEntities){
-				                    		deletePathsCascadeCore(notInBeanReferencedEntity, subPaths,Boolean.FALSE, ifM2NDeleteOnlyRelationship,deleteOneToOne);
-				                    	}
-			                    	}else{
-			                    		deleteCollectionCore(notInBeanReferencedEntities); 
-			                    	}
-			                    }
-						    	
-					    	}
-			        
-					    } else if(relationType!=null){//MANY_TO_ONE or ONE_TO_ONE OR EMBEDDED_ID
-					    	Object firstAttributeValue =  propertyUtilsBean.getProperty(rootVO,firstAttributeName) ;
-					    	if(firstAttributeValue!=null){
-					    		deleteItemsNotInCollectionsInPathsCore(firstAttributeValue,subPaths, Boolean.FALSE, applyDeletePathCascade, ifM2NDeleteOnlyRelationship, deleteOneToOne);
-					    		if(deleteOneToOne.booleanValue()){
-					    			EntityInfo entityInfo = new EntityInfo(rootVOClass);
-					    			if(!entityInfo.isEmbeddable()){
-//						    			getEntityManager().remove(firstAttributeValue);
-					    				deleteCore(firstAttributeValue);
-						    			propertyUtilsBean.setProperty(rootVO,firstAttributeName,null) ;
-					    			}
-					    		}
-					        }
-					    }
-						
-						/*********************************************************************************************/
-//			            if(subPaths.size()>1){
-//			            	ManyToMany manyToMany = (ManyToMany) getAnnotation(rootVOClass, firstAttributeName, ManyToMany.class);
-//							OneToMany oneToMany = null;
-//							OneToOne oneToOne = null;
-//							ManyToOne manyToOne = null ;
-//							
-//			                
-//							if(manyToMany==null){
-//								oneToMany = (OneToMany) getAnnotation(rootVOClass, firstAttributeName, OneToMany.class);   
-//								if(oneToMany==null){
-//									manyToOne = (ManyToOne) getAnnotation(rootVOClass, firstAttributeName, ManyToOne.class);
-//									if(manyToOne == null){
-//										oneToOne = (OneToOne) getAnnotation(rootVOClass, firstAttributeName, OneToOne.class);
-//										if(oneToOne == null)throw new DataAccessException("Error in BaseJpaDAO.deleteItemsNotInCollectionsInPathsCore(Object rootVO, Collection paths,  Boolean pathsHasToBeSorted, Boolean applyDeletePathCascade, Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne): Error: firstAttributeName  is no ManyToOne, no OneToMnay, no OneToOne, no ManyToMany " );
-//									}
-//								}
-//							}
-//							
-//							
-//							
-//							
-//							
-//							
-//							
-//							Object firstAttributeValue = propertyUtilsBean.getProperty(rootVO,firstAttributeName);
-//			                if(oneToMany!=null || manyToMany!=null){
-//			                    Collection notInBeanReferencedEntities = getCollectionOfStoredItemsNotInBean(rootVO, firstAttributeName);
-//			                    if(oneToMany!=null || !ifM2NDeleteOnlyRelationship.booleanValue()){
-//			                        if(applyDeletePathCascade.booleanValue()){
-//			                            if(notInBeanReferencedEntities != null){
-//			                                Iterator iterator =  notInBeanReferencedEntities.iterator();
-//			                                while(iterator.hasNext()){
-//			                                    deletePathsCascadeCore(iterator.next(),subPaths,Boolean.FALSE,ifM2NDeleteOnlyRelationship,deleteOneToOne);
-//			                                }
-//			                            }
-//			                        } else{
-//			                            deleteCollectionCore(notInBeanReferencedEntities);
-//			                        }
-//			                    }// If it is manyToMnay and ifM2NDeleteOnlyRelationship the relationship will be removed on flush
-//			                    if(firstAttributeValue!=null){
-//			                        Iterator iterator = ((Collection)firstAttributeValue).iterator();
-//			                        while(iterator.hasNext()){
-//			                        	deleteItemsNotInCollectionsInPathsCore(iterator.next(),subPaths, Boolean.FALSE, applyDeletePathCascade, ifM2NDeleteOnlyRelationship, deleteOneToOne);
-//			                        }
-//			                    }
-//			                }else{ //   firstAttributeValue is not a collection
-//			                    deleteItemsNotInCollectionsInPathsCore(firstAttributeValue,subPaths, Boolean.FALSE, applyDeletePathCascade, ifM2NDeleteOnlyRelationship, deleteOneToOne);
-//			                }
-//			            }else { //subPaths.size()<=1
-//			                deleteItemsNotInCollectionsInPathCore(rootVO, path, applyDeletePathCascade, ifM2NDeleteOnlyRelationship, deleteOneToOne);
-//			            }
-
-			        }else{
-			            index++;
-			        }
-			    }
-			}
-		} catch (IllegalAccessException e) {
-            log.error("Exception caught in BaseJpaDAO.deleteItemsNotInCollectionsInPathsCore(Object rootVO, Collection paths,  Boolean pathsHasToBeSorted, Boolean applyDeletePathCascade, Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) : " + e.toString());
-            throw new DataAccessException("Error in BaseJpaDAO.deleteItemsNotInCollectionsInPathsCore(Object rootVO, Collection paths,  Boolean pathsHasToBeSorted, Boolean applyDeletePathCascade, Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) : " + e.toString(),e);
-		} catch (InvocationTargetException e) {
-            log.error("InvocationTargetException caught in BaseJpaDAO.deleteItemsNotInCollectionsInPathsCore(Object rootVO, Collection paths,  Boolean pathsHasToBeSorted, Boolean applyDeletePathCascade, Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) : " + e.toString());
-            throw new DataAccessException("Error in BaseJpaDAO.deleteItemsNotInCollectionsInPathsCore(Object rootVO, Collection paths,  Boolean pathsHasToBeSorted, Boolean applyDeletePathCascade, Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) : " + e.toString(),e);
-		} catch (NoSuchMethodException e) {
-            log.error("NoSuchMethodException caught in BaseJpaDAO.deleteItemsNotInCollectionsInPathsCore(Object rootVO, Collection paths,  Boolean pathsHasToBeSorted, Boolean applyDeletePathCascade, Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) : " + e.toString());
-            throw new DataAccessException("Error in BaseJpaDAO.deleteItemsNotInCollectionsInPathsCore(Object rootVO, Collection paths,  Boolean pathsHasToBeSorted, Boolean applyDeletePathCascade, Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) : " + e.toString(),e);
-		}catch (Exception e) {
-            log.error("Exception caught in BaseJpaDAO.deleteItemsNotInCollectionsInPathsCore(Object rootVO, Collection paths,  Boolean pathsHasToBeSorted, Boolean applyDeletePathCascade, Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) : " + e.toString());
-            throw new DataAccessException("Error in BaseJpaDAO.deleteItemsNotInCollectionsInPathsCore(Object rootVO, Collection paths,  Boolean pathsHasToBeSorted, Boolean applyDeletePathCascade, Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) : " + e.toString(),e);
-		}
-        
-        
-        log.info("************Done   ***************");
-
-    }
-	
-	
-	public void deletePathCascade(Object parentVO,String path,Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) throws DataAccessException{
-        log.info("************Entering  ***************");
-        try {
-			if( parentVO != null){
-				if(ifM2NDeleteOnlyRelationship==null)ifM2NDeleteOnlyRelationship=Boolean.TRUE;
-			    if(deleteOneToOne==null)deleteOneToOne=Boolean.FALSE;
-
-			    deletePathCascadeCore(parentVO, path, ifM2NDeleteOnlyRelationship, deleteOneToOne);
-			  
-			    if(flush)flush();
-			}
-		} catch (Exception e) {
-            log.error("Exception thrown in BaseJpaDAO.deletePathCascade(Object parentVO, String path, Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) : " + e.toString());
-            throw new DataAccessException("Error in BaseJpaDAO.deletePathCascade(Object parentVO, String path, Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) : " + e.toString(),e);
-		}    
-        log.info("************Done   ***************");
-
-    }
-	 
-	//private void deletePathsCascadeCore(Object parentVO,Collection paths,Boolean  pathsHasToBeSorted,Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) throws DataAccessException{ 
-	private void deletePathCascadeCore(Object parentVO, String path, Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) throws DataAccessException, DataOptimisticLockException{
-        log.info("************Entering ***************");
-        try {
-        	Collection paths = new ArrayList();
-        	paths.add(path);
-        	deletePathsCascadeCore(parentVO, paths,  false, ifM2NDeleteOnlyRelationship,  deleteOneToOne);
-			
-		} catch (Exception e) {
-            log.error("Exception thrown in BaseJpaDAO.deletePathCascadeCore(Object parentVO, String path, Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) : " + e.toString());
-            throw new DataAccessException("Error in BaseJpaDAO.deletePathCascadeCore(Object parentVO, String path, Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) : " + e.toString(),e);
-		}
-        log.info("************Done ***************");
-    }
-	
-	private void deletePathCascadeCore_old(Object parentVO, String path, Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) throws DataAccessException, DataOptimisticLockException{
-        log.info("************Entering ***************");
-        try {
-			if(parentVO!=null){
-//				Object mergedParentVO;
-//				if(getEntityManager().contains(parentVO)){
-//					mergedParentVO=parentVO;
-//				}else{
-//					mergedParentVO = getEntityManager().merge(parentVO);
-//				}
-				//Object mergedParentVO = getEntityManager().merge(parentVO);
-			    if (path == null || path.trim().equals("")){
-			    	//getEntityManager().remove(mergedParentVO);
-			    	deleteCore(parentVO);
-			    }else{
-			    	//Class parentVOClass = getEntityClass(parentVO);
-			        
-			        ArrayList lastLevelEntities = new ArrayList();
-			        ArrayList toBeDeletedEntities = new ArrayList();
-//			        lastLevelEntities.add(mergedParentVO);
-//			        toBeDeletedEntities.add(mergedParentVO);
-			        
-			        lastLevelEntities.add(parentVO);
-			        toBeDeletedEntities.add(parentVO);
-			        	
-			        String[] splitPath = path.split("\\.");
-			        
-			        int endIndex=0;
-			        int pathSize= splitPath.length;
-			        boolean follow = true;
-			        String pathToken=null; 
-			        while(endIndex<pathSize && !lastLevelEntities.isEmpty() && follow){
-			            
-			        	Class parentVOClass = getEntityClass(lastLevelEntities.iterator().next());
-			        	pathToken = splitPath[endIndex];
-			        	
-			        	ManyToMany manyToMany = (ManyToMany) getAnnotation(parentVOClass, pathToken, ManyToMany.class);
-			        	OneToMany oneToMany = null;
-			        	OneToOne oneToOne = null;
-			        	ManyToOne manyToOne = null ;
-			        	
-			        	if(manyToMany!=null){
-			        		if(ifM2NDeleteOnlyRelationship.booleanValue()){
-			                    follow=false;
-			                }else{
-			                    follow=true;
-			                }
-			        	}else {
-			        		oneToMany = (OneToMany) getAnnotation(parentVOClass, pathToken, OneToMany.class);                    	    
-			        		if(oneToMany!=null){
-			        			follow=true;
-			        		}else{ // not a collection
-			        			oneToOne = (OneToOne) getAnnotation(parentVOClass, pathToken, OneToOne.class);
-			        			if(oneToOne == null){
-			        				manyToOne = (ManyToOne) getAnnotation(parentVOClass, pathToken, ManyToOne.class);
-			        				if(manyToOne == null){
-			        					throw new DataAccessException("Error in BaseJpaDAO.deletePathCascadeCore(Object parentVO, String path, Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne): Error:splitPath("+endIndex+")  is no ManyToOne, no OneToMnay, no OneToOne, no ManyToMany and no CollectionDescriptor" );
-			        				}
-			        			}
-			        			if(deleteOneToOne.booleanValue()){
-			                        follow=true;
-			                    } else{
-			                        follow=false;
-			                    }
-			        		}
-			        	}
-
-			            if(manyToMany!=null){
-			            	ArrayList newLastLevelEntities =  new ArrayList();
-			            	if(!ifM2NDeleteOnlyRelationship.booleanValue()){
-			            		log.debug("lastLevelEntities.size() = "+lastLevelEntities.size());
-			                    Iterator iterator = lastLevelEntities.iterator();// lastLevelEntities is never null
-			                    while (iterator.hasNext()){
-			                    	Object left = iterator.next();
-			                    	Collection referencedEntities = getStoredCollection(left, pathToken);
-			                    	if(referencedEntities!=null){
-			                    		log.debug("referencedEntities.size() = "+referencedEntities.size());
-			                    		newLastLevelEntities.addAll(referencedEntities);
-			                    	}
-			                    }
-			            	}
-			            	Collections.reverse(toBeDeletedEntities);
-			            	deleteCollectionCore(toBeDeletedEntities);
-			                lastLevelEntities = newLastLevelEntities;
-			                toBeDeletedEntities.clear();
-			                toBeDeletedEntities.addAll(lastLevelEntities);
-			            }else if (oneToMany!=null){
-			            	ArrayList partialPathEntities =getPartialPathEntities(lastLevelEntities, splitPath, endIndex , endIndex);
-			                toBeDeletedEntities.addAll(partialPathEntities);  // getPartialPathEntities never returns null!!
-			                lastLevelEntities = partialPathEntities;
-			            } else if (oneToOne!=null || manyToOne!=null){ 
-			                ArrayList partialPathEntities = new ArrayList();
-			                if(deleteOneToOne.booleanValue()) partialPathEntities =getPartialPathEntities(lastLevelEntities, splitPath, endIndex , endIndex);
-			                Collections.reverse(toBeDeletedEntities);
-			                deleteCollectionCore(toBeDeletedEntities);
-			                lastLevelEntities = partialPathEntities; // in the case of Not deleteOneToOne partialPathEntities is empty
-			                toBeDeletedEntities.clear();
-			                toBeDeletedEntities.addAll(partialPathEntities);
-			            } else{
-			            	throw new DataAccessException("Error in BaseJpaDAO.deletePathCascadeCore(Object parentVO, String path, Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne): Error:splitPath("+endIndex+")  is no ManyToOne, no OneToMnay, no OneToOne, no ManyToMany and no CollectionDescriptor" );
-			            }
-			            endIndex++;
-			        }
-			        Collections.reverse(toBeDeletedEntities);
-			        deleteCollectionCore(toBeDeletedEntities);
-			    }
-			}
-		} catch (Exception e) {
-            log.error("Exception thrown in BaseJpaDAO.deletePathCascadeCore(Object parentVO, String path, Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) : " + e.toString());
-            throw new DataAccessException("Error in BaseJpaDAO.deletePathCascadeCore(Object parentVO, String path, Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) : " + e.toString(),e);
-		}
-        log.info("************Done ***************");
-    }
-	
-	
-	public void deletePathsCascade(Object parentVO,Collection paths,Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) throws DataAccessException{
-        log.info("************Entering ***************");
-        try {
-			if( parentVO != null){
-				if(ifM2NDeleteOnlyRelationship==null)ifM2NDeleteOnlyRelationship=Boolean.TRUE;
-			    if(deleteOneToOne==null)deleteOneToOne=Boolean.FALSE;
-			    deletePathsCascadeCore(parentVO, paths,Boolean.TRUE, ifM2NDeleteOnlyRelationship, deleteOneToOne);
-			    if(flush)flush();
-			}
-		} catch (DataOptimisticLockException e) {
-            log.error("DataOptimisticLockException thrown in BaseJpaDAO.deletePathsCascade(Object parentVO,Collection paths,Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) : " + e.toString());
-            throw new DataAccessException("Error in BaseJpaDAO.deletePathsCascade(Object parentVO,Collection paths,Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne): " + e.toString(),e);
-		}catch (Exception e) {
-            log.error("Exception thrown in BaseJpaDAO.deletePathsCascade(Object parentVO,Collection paths,Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) : " + e.toString());
-            throw new DataAccessException("Error in BaseJpaDAO.deletePathsCascade(Object parentVO,Collection paths,Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) : " + e.toString(),e);
-		}
-        log.info("************Done  ***************");
-    }
-	
-	private void deletePathsCascadeCore(Object parentVO,Collection paths,Boolean  pathsHasToBeSorted,Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) throws DataAccessException{
-        log.info("************Entering ***************");
-        //List<Graph> notDeletedGraphs = new ArrayList<Graph>();
-        try {
-			if( parentVO != null){
-				PropertyUtilsBean propertyUtilsBean = BeanUtilsBean.getInstance().getPropertyUtils();
-				
-			    if(ifM2NDeleteOnlyRelationship==null)ifM2NDeleteOnlyRelationship=Boolean.TRUE;
-			    if(deleteOneToOne==null)deleteOneToOne=Boolean.FALSE;
-			    if(pathsHasToBeSorted==null)pathsHasToBeSorted=Boolean.TRUE;
-
-			    //Class parentVOClass = parentVO.getClass();
-			    Class parentVOClass = getEntityClass(parentVO);
-			   
-
-			    if (paths == null || paths.isEmpty()){
-			        getEntityManager().remove(getEntityManager().merge(parentVO));
-			    }else{
-
-			        String[] pathsArray = new String[paths.size()];
-			        if(pathsHasToBeSorted.booleanValue()){
-			            ArrayList<String> pathsList = Collections.list(Collections.enumeration(paths));
-			            Collections.sort(pathsList);
-			            pathsArray = (String[]) pathsList.toArray(pathsArray);
-			        }  else{
-			            pathsArray = (String[]) paths.toArray(pathsArray);
-			        }
-			        int index = 0;
-
-			        HashMap<String,ArrayList<String>> directReferenceMap = new HashMap<String,ArrayList<String>>(); // map for oneToOne and MToOne
-			        
-			        HashMap<String,ArrayList<String>> oneToNReferenceMap = new HashMap<String,ArrayList<String>>();
-
-			        HashMap<String,ArrayList<String>> mToNReferenceMap = new HashMap<String,ArrayList<String>>();
-			        
-			        HashMap<String,ArrayList<String>> mToNInverseReferenceMap = new HashMap<String,ArrayList<String>>();
-			      
-
-
-
-
-			        while (index<pathsArray.length){
-			            String path = pathsArray[index];
-			            if(path!=null && !path.trim().equals("")){
-			                String[] firstAttributeNameAndRemainingPath = Utils.getFirstAttributeNameAndRemainingPath(path);
-			                String firstAttributeName=firstAttributeNameAndRemainingPath[0];
-			                ArrayList<String> subPaths = new ArrayList<String> ();
-
-			                
-			                Integer relationType = getRelationType(parentVOClass, firstAttributeName) ;
-
-
-			                if(!firstAttributeNameAndRemainingPath[1].trim().equals(""))subPaths.add(firstAttributeNameAndRemainingPath[1]);
-			                
-			                
-			                index++;
-			                boolean matchingFirstAttributeName = true;
-			                while (index < pathsArray.length  && matchingFirstAttributeName){
-			                    String path2 = pathsArray[index];
-			                    if(path2!=null && !path2.trim().equals("")){
-			                        String[] firstAttributeNameAndRemainingPath2 = Utils.getFirstAttributeNameAndRemainingPath(path2);
-			                        String firstAttributeName2=firstAttributeNameAndRemainingPath2[0];
-			                        if(firstAttributeName.equals(firstAttributeName2)){
-			                            if(!firstAttributeNameAndRemainingPath2[1].trim().equals("")) subPaths.add(firstAttributeNameAndRemainingPath2[1]);
-			                            index++;
-			                        }else{
-			                            matchingFirstAttributeName=false;
-			                        }
-			                    } else{
-			                        index++;
-			                    }
-			                }
-
-			               
-			                switch (relationType){
-			                    case ONE_TO_ONE : 			directReferenceMap.put(firstAttributeName,subPaths); break;
-			                    case M_TO_ONE : 			directReferenceMap.put(firstAttributeName,subPaths); break;
-			                    case EMBEDDED_ID : 			directReferenceMap.put(firstAttributeName,subPaths); break;
-			                    case ONE_TO_N: 				oneToNReferenceMap.put(firstAttributeName,subPaths);break;
-			                    case M_TO_N:  				mToNReferenceMap.put(firstAttributeName,subPaths);break;
-			                    case M_TO_N_INVERSE:  		mToNInverseReferenceMap.put(firstAttributeName,subPaths);break;
-			                }
- 
-			            } else {   
-			                index++;
-			            }
-			        }
-
-			       
-			        
-			        /*
-			         * ONE_TO_N
-			         */
-			        Iterator<String> iterator = oneToNReferenceMap.keySet().iterator();
-			        while(iterator.hasNext()) {
-			            String firstAttributeName = iterator.next();
-			            log.debug("deletePathsCascadeCore in oneToNReferenceMap: firstAttributeName = "+firstAttributeName);
-			            
-			            Collection storedChildren = getStoredCollection(parentVO, firstAttributeName);
-			            ArrayList<String> subPaths = oneToNReferenceMap.get(firstAttributeName);
-			            Collection children = (Collection) propertyUtilsBean.getProperty(parentVO, firstAttributeName);
-			            if(children!=null){
-			            	children.clear();
-			            }
-			            if(storedChildren!=null){
-			            	for(Object child:storedChildren){
-			            		deletePathsCascadeCore(child,subPaths,Boolean.FALSE,ifM2NDeleteOnlyRelationship,deleteOneToOne);
-			            	}
-			            }
-////			            boolean isCascadeRemove = isCascade(parentVO, firstAttributeName, CascadeType.REMOVE);
-////			            ArrayList<String> subPaths = oneToNReferenceMap.get(firstAttributeName);
-//			            Collection storedChildren = null;
-//			            if(isCascadeRemove){
-//			            	storedChildren = getCollectionOfStoredItemsNotInBean(parentVO, firstAttributeName);
-//			            	Collection storedItemsInBeanChildren = getCollectionOfStoredItemsInBean(parentVO, firstAttributeName);
-//			            	for(Object child:storedItemsInBeanChildren){
-////			            		notDeletedGraphs.addAll(deletePathsCascadeCore(child,subPaths,Boolean.FALSE,ifM2NDeleteOnlyRelationship,deleteOneToOne));
-//			            		deletePathsCascadeCore(child,subPaths,Boolean.FALSE,ifM2NDeleteOnlyRelationship,deleteOneToOne);
-//			            	}
-//			            	
-//			            }else{
-//			            	
-//			            	storedChildren = getStoredCollection(parentVO, firstAttributeName);
-//				            
-//			            }
-//			            if(storedChildren!=null && !storedChildren.isEmpty()){
-//			            	
-//			            	for(Object child:storedChildren){
-////			            		notDeletedGraphs.addAll(deletePathsCascadeCore(child,subPaths,Boolean.FALSE,ifM2NDeleteOnlyRelationship,deleteOneToOne));
-//			            		deletePathsCascadeCore(child,subPaths,Boolean.FALSE,ifM2NDeleteOnlyRelationship,deleteOneToOne);
-//			            	}
-//
-//			            }
-			        }
-
-			        /*
-			         * M_TO_N_INVERSE 
-			         */
-			        processM2NDeletePathsCascade(parentVO, mToNInverseReferenceMap,  ifM2NDeleteOnlyRelationship,  deleteOneToOne);
-//			        iterator = mToNInverseReferenceMap.keySet().iterator();
-//			        while(iterator.hasNext()){
-//			        	String firstAttributeName = iterator.next();
-//			        	log.debug("deletePathsCascadeCore in mToNInverseReferenceMap: firstAttributeName = "+firstAttributeName);
-//			        	Collection storedChildren = getStoredCollection(parentVO, firstAttributeName);
-//			        	ArrayList<String> subPaths = mToNInverseReferenceMap.get(firstAttributeName);
-//			        	
-//			        	if(storedChildren!=null){
-//			        		
-////		        			String mappedBy = getMappedBy(parentVO, firstAttributeName); // being an inverse m2m mappedyBY surely exists
-//		        			for(Object child:storedChildren){
-//		        				/*
-//				        		 * remove parentVO from  reverse collection
-//				        		 */
-//		        				
-//		        				String inverseManyToManyField = getInverseManyToManyField(parentVO, firstAttributeName);
-//		        				Collection inverseCollection = (Collection) propertyUtilsBean.getProperty(child, inverseManyToManyField);
-//		        				inverseCollection.remove(parentVO);
-//		        				
-//		        				/*
-//		        				 * clear this collection
-//		        				 */
-//		        				Collection children = (Collection) propertyUtilsBean.getProperty(parentVO, firstAttributeName);
-//				        		children.clear();
-//				        		
-//				        		/*
-//				        		 *  delete child
-//				        		 */
-//				        		if(!ifM2NDeleteOnlyRelationship){
-////				        			notDeletedGraphs.addAll(deletePathsCascadeCore(child,subPaths,Boolean.FALSE,ifM2NDeleteOnlyRelationship,deleteOneToOne));
-//				        			deletePathsCascadeCore(child,subPaths,Boolean.FALSE,ifM2NDeleteOnlyRelationship,deleteOneToOne);
-//				        		}
-//		        			}
-//		        		}
-//			        }
-			        
-			        EntityInfo entityInfo = new EntityInfo(parentVOClass);
-			        if(!entityInfo.isEmbeddable()){
-			        	deleteCore(parentVO);
-			        	
-			        }
-			        
-			        
-			        /*
-			         * M_TO_N
-			         */
-			        processM2NDeletePathsCascade(parentVO, mToNReferenceMap,  ifM2NDeleteOnlyRelationship,  deleteOneToOne);
-//			        iterator = mToNReferenceMap.keySet().iterator();
-//			        while(iterator.hasNext()) {
-//			            String firstAttributeName = iterator.next();
-//			            log.debug("deletePathsCascadeCore in mToNReferenceMap: firstAttributeName = "+firstAttributeName);
-//			            Collection storedChildren = getStoredCollection(parentVO, firstAttributeName);
-//			            ArrayList<String> subPaths = mToNInverseReferenceMap.get(firstAttributeName);
-//			            if(storedChildren!=null){
-//			            	for(Object child:storedChildren){
-//			            		/*
-//				        		 * remove parentVO from  reverse collection
-//				        		 */
-//			            		String inverseManyToManyField = getInverseManyToManyField(parentVO, firstAttributeName);
-//		        				Collection inverseCollection = (Collection) propertyUtilsBean.getProperty(child, inverseManyToManyField);
-//		        				inverseCollection.remove(parentVO);
-//		        				
-//		        				/*
-//		        				 * clear the inverse m2m collection
-//		        				 */
-//		        				Collection children = (Collection) propertyUtilsBean.getProperty(parentVO, firstAttributeName);
-//				        		children.clear();
-//				        		
-//				        		/*
-//				        		 *  delete child
-//				        		 */
-//				        		if(!ifM2NDeleteOnlyRelationship){
-//				        			deletePathsCascadeCore(child,subPaths,Boolean.FALSE,ifM2NDeleteOnlyRelationship,deleteOneToOne);
-//				        		}
-//			            	}
-//			        	}
-//			        }
-
-
-
-			        /*
-			         * ONE_TO_ONE and M_TO_ONE
-			         */
-			        //HashMap<String,Object> directReferencedObjectMap= new HashMap<String, Object>();
-			        iterator = directReferenceMap.keySet().iterator();
-			        while(iterator.hasNext()) {
-			        	String firstAttributeName = iterator.next();
-			        	if(deleteOneToOne.booleanValue()){
-				        	ArrayList<String> subPaths = directReferenceMap.get(firstAttributeName);
-				        	retrieveReference(parentVO, firstAttributeName);
-				        	Object referencedObject = propertyUtilsBean.getProperty(parentVO, firstAttributeName);
-				        	propertyUtilsBean.setProperty(parentVO, firstAttributeName, null);
-				        	deletePathsCascadeCore(referencedObject,subPaths,Boolean.FALSE,ifM2NDeleteOnlyRelationship,deleteOneToOne);
-			        	}else{
-			        		propertyUtilsBean.setProperty(parentVO, firstAttributeName, null);
-			        	}
-			        	
-			        	
-			        	
-			        }
-			        
-//			        if(deleteOneToOne){
-//			            iterator = directReferenceMap.keySet().iterator();
-//			            while(iterator.hasNext()) {
-//			                String firstAttributeName = iterator.next();
-//			                Object referencedObject = propertyUtilsBean.getProperty(parentVO, firstAttributeName);
-//			                log.debug("deletePathsCascadeCore in directReferenceMap: firstAttributeName = "+firstAttributeName);
-//			                if(referencedObject!=null)
-//			                	directReferencedObjectMap.put(firstAttributeName, referencedObject);
-//			            }
-//			        }
-
-//			        getEntityManager().remove(getEntityManager().merge(parentVO));
-
-//			        if(!ifM2NDeleteOnlyRelationship)  {
-//			            iterator = mToNReferencedCollectionMap.keySet().iterator();
-//			            while(iterator.hasNext()) {
-//			                String firstAttributeName = iterator.next();
-//			                log.debug("deletePathsCascadeCore in mToNReferencedCollectionMap iteration: firstAttributeName = "+firstAttributeName);
-//
-//			                Collection children = mToNReferencedCollectionMap.get(firstAttributeName);
-//			                if(children!=null ){ 
-//			                    Iterator childrenIterator = children.iterator();
-//			                    while(childrenIterator.hasNext()){
-//			                       	deletePathsCascadeCore(childrenIterator.next(),mToNReferenceMap.get(firstAttributeName),Boolean.FALSE,ifM2NDeleteOnlyRelationship,deleteOneToOne);
-//			                    }
-//			                }
-//			            }
-//			        }
-
-//			        if(deleteOneToOne){
-//			            iterator = directReferencedObjectMap.keySet().iterator();
-//			            while(iterator.hasNext()) {
-//			                String firstAttributeName = iterator.next();
-//			                log.debug("deleteIdentityPathsCascade in directReferencedObjectMap iteration: firstAttributeName = "+firstAttributeName);
-//
-//			                Object child = directReferencedObjectMap.get(firstAttributeName);
-//			                if(child==null){
-//			                	log.debug("child  is null");
-//			                }else {//(child==null!=null)
-//			                    log.debug("child :"+child.toString());
-//			                    deletePathsCascadeCore(child,directReferenceMap.get(firstAttributeName),Boolean.FALSE,ifM2NDeleteOnlyRelationship,deleteOneToOne);
-//			                }
-//			            }
-//			        }
-
-
-			      
-			    }
-			}
-		} catch (IllegalAccessException e) {
-            log.error("IllegalAccessException thrown in BaseJpaDAO.deletePathsCascadeCore(Object parentVO,Collection paths,Boolean  pathsHasToBeSorted,Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) : " + e.toString());
-            throw new DataAccessException("Error in BaseJpaDAO.deletePathsCascadeCore(Object parentVO,Collection paths,Boolean  pathsHasToBeSorted,Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) : " + e.toString(),e);
-		} catch (InvocationTargetException e) {
-            log.error("InvocationTargetException thrown in BaseJpaDAO.deletePathsCascadeCore(Object parentVO,Collection paths,Boolean  pathsHasToBeSorted,Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) : " + e.toString());
-            throw new DataAccessException("Error in BaseJpaDAO.deletePathsCascadeCore(Object parentVO,Collection paths,Boolean  pathsHasToBeSorted,Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) : " + e.toString(),e);
-		} catch (NoSuchMethodException e) {
-            log.error("NoSuchMethodException thrown in BaseJpaDAO.deletePathsCascadeCore(Object parentVO,Collection paths,Boolean  pathsHasToBeSorted,Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) : " + e.toString());
-            throw new DataAccessException("Error in BaseJpaDAO.deletePathsCascadeCore(Object parentVO,Collection paths,Boolean  pathsHasToBeSorted,Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) : " + e.toString(),e);
-		} catch (Exception e) {
-            log.error("Exception thrown in BaseJpaDAO.deletePathsCascadeCore(Object parentVO,Collection paths,Boolean  pathsHasToBeSorted,Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) : " + e.toString());
-            throw new DataAccessException("Error in BaseJpaDAO.deletePathsCascadeCore(Object parentVO,Collection paths,Boolean  pathsHasToBeSorted,Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) : " + e.toString(),e);
-		}
-
-       
-        log.info("************Done  ***************");
-    }
-	
-	private void processM2NDeletePathsCascade(Object parentVO, HashMap<String,ArrayList<String>> map, boolean ifM2NDeleteOnlyRelationship, boolean deleteOneToOne) throws DataAccessException{
-		
-		try {
-			PropertyUtilsBean propertyUtilsBean = BeanUtilsBean.getInstance().getPropertyUtils();
-			Iterator<String> iterator = map.keySet().iterator();
-			while(iterator.hasNext()) {
-			    String firstAttributeName = iterator.next();
-			    Collection storedChildren = getStoredCollection(parentVO, firstAttributeName);
-			    ArrayList<String> subPaths = map.get(firstAttributeName);
-			    /*
-				 * clear the inverse m2m collection
-				 */
-				Collection children = (Collection) propertyUtilsBean.getProperty(parentVO, firstAttributeName);
-	    		if(children!=null){
-	    			children.clear();
-	    		}
-			    if(storedChildren!=null){
-			    	for(Object child:storedChildren){
-			    		/*
-			    		 * remove parentVO from  reverse collection
-			    		 */
-			    		String inverseManyToManyField = getInverseManyToManyField(parentVO, firstAttributeName);
-				    	if(!StringUtils.isEmpty(inverseManyToManyField) ){
-							Collection inverseCollection = (Collection) propertyUtilsBean.getProperty(child, inverseManyToManyField);
-							inverseCollection.remove(parentVO);
-			    		}
-						
-			    		
-			    		/*
-			    		 *  delete child
-			    		 */
-			    		if(!ifM2NDeleteOnlyRelationship){
-//	        			notDeletedGraphs.addAll(deletePathsCascadeCore(child,subPaths,Boolean.FALSE,ifM2NDeleteOnlyRelationship,deleteOneToOne));
-			    			deletePathsCascadeCore(child,subPaths,Boolean.FALSE,ifM2NDeleteOnlyRelationship,deleteOneToOne);
-			    		}
-			    	}
-				}
-			}
-		} catch (IllegalAccessException e) {
-            log.error("IllegalAccessException thrown in BaseJpaDAO.processDeletePathsCascade(Object parentVO, HashMap<String,ArrayList<String>> map, boolean ifM2NDeleteOnlyRelationship, boolean deleteOneToOne) : " + e.toString());
-            throw new DataAccessException("Error in BaseJpaDAO.processDeletePathsCascade(Object parentVO, HashMap<String,ArrayList<String>> map, boolean ifM2NDeleteOnlyRelationship, boolean deleteOneToOne): " + e.toString(),e);
-		} catch (InvocationTargetException e) {
-            log.error("InvocationTargetException thrown in BaseJpaDAO.processDeletePathsCascade(Object parentVO, HashMap<String,ArrayList<String>> map, boolean ifM2NDeleteOnlyRelationship, boolean deleteOneToOne) : " + e.toString());
-            throw new DataAccessException("Error in BaseJpaDAO.processDeletePathsCascade(Object parentVO, HashMap<String,ArrayList<String>> map, boolean ifM2NDeleteOnlyRelationship, boolean deleteOneToOne): " + e.toString(),e);
-		} catch (NoSuchMethodException e) {
-            log.error("NoSuchMethodException thrown in BaseJpaDAO.processDeletePathsCascade(Object parentVO, HashMap<String,ArrayList<String>> map, boolean ifM2NDeleteOnlyRelationship, boolean deleteOneToOne) : " + e.toString());
-            throw new DataAccessException("Error in BaseJpaDAO.processDeletePathsCascade(Object parentVO, HashMap<String,ArrayList<String>> map, boolean ifM2NDeleteOnlyRelationship, boolean deleteOneToOne): " + e.toString(),e);
-		}catch (Exception e) {
-            log.error("Exception thrown in BaseJpaDAO.processDeletePathsCascade(Object parentVO, HashMap<String,ArrayList<String>> map, boolean ifM2NDeleteOnlyRelationship, boolean deleteOneToOne) : " + e.toString());
-            throw new DataAccessException("Error in BaseJpaDAO.processDeletePathsCascade(Object parentVO, HashMap<String,ArrayList<String>> map, boolean ifM2NDeleteOnlyRelationship, boolean deleteOneToOne): " + e.toString(),e);
-		} 
-	}
-	
-	private boolean toBeRemoved(Object deleteVO) throws DataAccessException{
-		boolean toBeRemoved=false;
-		try {
-			if (isPersisted(deleteVO)){
-				if(!getEntityManager().contains(deleteVO)){
-					getEntityManager().merge(deleteVO);
-				}
-				toBeRemoved=true;
-			}
-		} catch (Exception e) {
-            log.error("Exception thrown in BaseJpaDAO.toBeRemoved(Object deleteVO): " + e.toString());
-            throw new DataAccessException("Error in BaseJpaDAO.toBeRemoved(Object deleteVO) : " + e.toString(),e);
-		}
-		return toBeRemoved;
-	}
-	
-	private int getRelationType(Class realClass, String pAttributeName) throws DataAccessException{
-		log.info("************Entering **************");
-		int relationType;
-		
-		try {
-			ManyToMany manyToMany = (ManyToMany) getAnnotation(realClass, pAttributeName, ManyToMany.class);
-			OneToMany oneToMany = null;
-			OneToOne oneToOne = null;
-			ManyToOne manyToOne = null ;
-			EmbeddedId embeddedId = null;
-			
-			
-			if(manyToMany==null){
-				oneToMany = (OneToMany) getAnnotation(realClass, pAttributeName, OneToMany.class);   
-				if(oneToMany==null){
-					manyToOne = (ManyToOne) getAnnotation(realClass, pAttributeName, ManyToOne.class);
-					if(manyToOne == null){
-						oneToOne = (OneToOne) getAnnotation(realClass, pAttributeName, OneToOne.class);
-						if(oneToOne == null){
-							embeddedId = (EmbeddedId)getAnnotation(realClass, pAttributeName, EmbeddedId.class);
-							if(embeddedId==null){
-								throw new DataAccessException("Error in BaseJpaDAO.getRelationType(Class realClass, String pAttributeName): Error: pAttributeName  is no ManyToOne, no OneToMnay, no OneToOne, no ManyToMany, no EmbeddedId " );
-							}else{
-								relationType=EMBEDDED_ID;
-							}
-						}else{
-							relationType=ONE_TO_ONE;
-						}
-					}else{
-						relationType=M_TO_ONE;
-					}
-				}else{
-					relationType=ONE_TO_N;
-				}
-			}else{
-				if(StringUtils.isEmpty(manyToMany.mappedBy())){
-					relationType = M_TO_N;
-				}else{
-					relationType = M_TO_N_INVERSE;
-				}
-			}
-		} catch (DataAccessException e) {
-            log.error("Exception thrown in BaseJpaDAO.getRelationType(Class realClass, String pAttributeName): " + e.toString());
-            throw new DataAccessException("Error in BaseJpaDAO.getRelationType(Class realClass, String pAttributeName): " + e.toString(),e);
-		}
-		log.info("************Done  ***************");
-		return relationType;
-	}
-	
-	private ArrayList getPartialPathEntities(ArrayList startEntities, String[] splitPath, int startIndex, int endIndex) throws DataAccessException{
-        log.info("************Entering **************");
-        ArrayList partialPathEntities =new ArrayList();
-        try {
-			if (splitPath == null)  throw new DataAccessException("Error in BaseJpaDAO.getPartialPathIdentities(ArrayList startEntities, String[] splitPath, int startIndex, int endIndex):Error:splitPath can't be null " );
-			if (startEntities == null)  throw new DataAccessException("Error in BaseJpaDAO.getPartialPathIdentities(ArrayList startEntities, String[] splitPath, int startIndex, int endIndex):Error:startEntities can't be null " );
-			if (startIndex > endIndex)  throw new DataAccessException("Error in BaseJpaDAO.getPartialPathIdentities(ArrayList startEntities, String[] splitPath, int startIndex, int endIndex): Error:startIndex can't be higher than endIndex " );
-			if (endIndex >= splitPath.length)  throw new DataAccessException("Error in BaseJpaDAO.getPartialPathIdentities(ArrayList startEntities, String[] splitPath, int startIndex, int endIndex): Error:endIndex must be less than splitPath size" );
-			if (startIndex<0)  throw new DataAccessException("Error in BaseJpaDAO.getPartialPathIdentities(ArrayList startEntities, String[] splitPath, int startIndex, int endIndex): Error:startIndex can't be less than 0" );
-			if(startEntities.isEmpty() || splitPath.length==0){
-				partialPathEntities = startEntities;
-			} else{
-
-			    /** start checking all entities of startEntities have the same objectsRealClass**/
-			    Iterator iterator =  startEntities.iterator();
-			    Object firstStartEntity = iterator.next(); // at least one identity is in startIdentities as it is not empty.
-			    if(firstStartEntity== null)     throw new DataAccessException("Error in BaseJpaDAO.getPartialPathIdentities(ArrayList startEntities, String[] splitPath, int startIndex, int endIndex): Error:startEntities(0) is null" );
-			    //Class realClass =   firstStartEntity.getClass();
-			    Class realClass =   getEntityClass(firstStartEntity);
-			    while (iterator.hasNext()){
-			    	Object entity = iterator.next();
-			        if(entity== null)     throw new DataAccessException("Error in BaseJpaDAO.getPartialPathIdentities(ArrayList startEntities, String[] splitPath, int startIndex, int endIndex): Error:found one entity in startEntities that is  null" );
-			        //Class entityRealClass = entity.getClass();
-			        Class entityRealClass = getEntityClass(entity);
-			        if(!entityRealClass.equals(realClass)) throw new DataAccessException("Error in BaseJpaDAO.getPartialPathIdentities(ArrayList startEntities, String[] splitPath, int startIndex, int endIndex): Error:found two entities in startIdentities with different realClass" );
-			    }
-			    /** end checking all identities of startIdentities have the same objectsRealClass**/
-
-			    /******start calculate path from startIndex to endindex*********/
-			    String path = splitPath[startIndex];
-			    int index = startIndex +1;
-			    while (index <= endIndex){
-			        path = path+"."+ splitPath[index];
-			        index++;
-			    }
-			    /******end calculate path from startIndex to endindex*********/
-
-			    
-			    String[] selectAndJoinString =makeSelectAndJoinString(realClass, "a", path);
-			    String queryString = "SELECT "+selectAndJoinString[0]+" FROM "+ realClass.getSimpleName()+" a "+selectAndJoinString[1]+" WHERE a IN (:startEntities) ";
-			    
-			    Query query = getEntityManager().createQuery(queryString);
-			    query.setParameter("startEntities", startEntities);
-			    List result = query.getResultList();
-			    partialPathEntities.addAll(result); 
-			    
-			}
-		} catch (Exception e) {
-            log.error("Exception thrown in BaseJpaDAO.getPartialPathEntities(ArrayList startEntities, String[] splitPath, int startIndex, int endIndex) : " + e.toString());
-            throw new DataAccessException("Error in BaseJpaDAO.getPartialPathEntities(ArrayList startEntities, String[] splitPath, int startIndex, int endIndex) : " + e.toString(),e);
-		}
-        log.info("************Done ***************");
-        return  partialPathEntities;
-    }
-	
-	private String[] makeSelectAndJoinString(Class startingEntityClass, String join0, String path)  throws DataAccessException{
-		String[] selectAndJoinString = new String[2];
-		log.info("************Entering **************");
-		try {
-			if(startingEntityClass==null) throw new DataAccessException("Error in BaseJpaDAO.makeSelectAndJoinString(Class startingEntityClass, String join0, String path): startingEntityClass  is null");
-			StringBuffer joinSB= new StringBuffer("");
-			Integer joinIndex=0;
-			String lastJoin = join0;
-			//if(join0!=null && !join0.trim().equals("") && !path.trim().equals("")){
-			if(join0==null || join0.trim().equals("") || path.trim().equals("")){
-				throw new DataAccessException("Error in BaseJpaDAO.makeSelectAndJoinString(Class startingEntityClass, String join0, String path) : join0 or path null or empty");
-			}
-			StringBuffer currentPartialPath = new StringBuffer(""); 
-			String[] pathArray = path.split("\\.");
-			for(int index=0; index<pathArray.length;index++){
-				currentPartialPath.append("."+pathArray[index]);
-				if(isReferenceCollection(startingEntityClass,pathArray[index])){
-					joinIndex++;
-					String currentJoin = "join"+joinIndex;
-					joinSB.append("join "+lastJoin+currentPartialPath+" "+currentJoin+" ");
-					lastJoin=currentJoin;
-					currentPartialPath = new StringBuffer(""); 
-				}else if(!isReferenceBean(startingEntityClass,pathArray[index])){
-					throw new DataAccessException("Error in BaseJpaDAO. makeSelectAndJoinString(Class startingEntityClass, String join0, String path) : "+startingEntityClass.getSimpleName()+"."+pathArray[index]+ " is not a Bean and not a Collection");
-				}
-				startingEntityClass=getClassFromPath(startingEntityClass, pathArray[index]);// added alessandro 11/09/2011
-			}
-			selectAndJoinString[0]=lastJoin+currentPartialPath;
-			selectAndJoinString[1]=joinSB.toString();
-
-			log.info("selectAndJoinString[0] is "+selectAndJoinString[0]);
-			log.info("selectAndJoinString[1] is "+selectAndJoinString[1]);
-		} catch (Exception e) {
-            log.error("Exception thrown in BaseJpaDAO. makeSelectAndJoinString(Class startingEntityClass, String join0, String path) : " + e.toString());
-            throw new DataAccessException("Error in BaseJpaDAO. makeSelectAndJoinString(Class startingEntityClass, String join0, String path): " + e.toString(),e);
-		}
-		
-		log.info("************Done ***************");
-		return selectAndJoinString;
-		
-	}
-	
-	
-	private boolean isReferenceCollection(Class pInstanceClass, String pAttributeName) throws DataAccessException{
-		
-		return  getAnnotation(pInstanceClass,pAttributeName, OneToMany.class)!=null || getAnnotation(pInstanceClass,pAttributeName, ManyToMany.class)!=null;
-		
-	}
-	
-	private boolean isReferenceBean(Class pInstanceClass, String pAttributeName) throws DataAccessException{
-		
-		return  getAnnotation(pInstanceClass,pAttributeName, OneToOne.class)!=null || getAnnotation(pInstanceClass,pAttributeName, ManyToOne.class)!=null;
-		
-	}
-	
-	private boolean isManyToMany(Class pInstanceClass, String pAttributeName) throws DataAccessException{
-		
-		return  getAnnotation(pInstanceClass,pAttributeName, ManyToMany.class)!=null;
-		
-	}
-	
-	private boolean isOneToMany(Class pInstanceClass, String pAttributeName) throws DataAccessException{
-		
-		return  getAnnotation(pInstanceClass,pAttributeName, OneToMany.class)!=null;
-		
-	}
-	
-	public Object refresh(Object refreshVO) throws DataAccessException {
-		log.debug("************Entering ***************");
-		try {
-
-			if(refreshVO!=null)getEntityManager().refresh(refreshVO);
-
-		} catch (EntityNotFoundException e) {
-			log.warn("Entity Not Found  ") ;
-			refreshVO=null;
-		} catch (Exception e) {
-			log.error("Exception caught: " + e.toString());
-			throw new DataAccessException("Error in  BaseJpaDAO.refresh(Object refreshVO) : "+ e.toString(), e);
-		}
-		log.debug("************Done **************");
-		return refreshVO;
-	}
-
-	public Object update(Object storeVO) throws DataAccessException, DataOptimisticLockException {
-		log.debug("************Entering ***************");
-		try {
-			if (storeVO != null)
-				storeVO = getEntityManager().merge(storeVO);
-			if (flush)
-				flush();
-		} catch (Exception e) {
-			log.error("Exception caught: " + e.toString());
-			throw new DataAccessException("Error in  BaseJpaDAO.update(Object storeVO) : "+ e.toString(), e);
-		}
-		log.debug("************Done **************");
-		return storeVO;
-	}
-
-	public void updateCollection(Collection storeVOs) throws DataAccessException, DataOptimisticLockException {
-		log.debug("Entering ");
-		try {
-			updateCollectionCore(storeVOs);
-			if (flush) flush();
-		} catch (Exception e) {
-			log.error("Exception caught: " + e.toString());
-			throw new DataAccessException( "Error in BaseJpaDAO.updateCollection(Collection storeVOs): "+ e.toString(), e);
-		}
-		log.info("************Done with the BaseJpaDAO.updateCollection(Collection storeVOs)***************");
-	}
-	
-	private void updateCollectionCore(Collection storeVOs) throws DataAccessException{
-		log.info("Entering ");
-		try {
-			if (storeVOs == null) throw new DataAccessException("Error in BaseJpaDAO.updateCollectionCore(Collection storeVOs): storeVOs can't be null. ");
-			Iterator iterator = storeVOs.iterator();
-			while (iterator.hasNext()) {
-				
-				Object storeVO = iterator.next();
-				
-				//if (getEntityManager().contains(storeVO)) {
-				if(isPersisted(storeVO)){
-					getEntityManager().merge(storeVO);
+		    } else if (accessibleObjectAnnotations[i].annotationType().equals(AssociationOverrides.class)) {
+			associationOverrides = accessibleObject.getAnnotation(AssociationOverrides.class);
+			final AssociationOverride[] associationOverrideArray = associationOverrides.value();
+			for (final AssociationOverride associationOverride : associationOverrideArray) {
+			    if (isEntityClass(pkValues[pkIndex.getValue()])) {
+				if (isPersisted(pkValues[pkIndex.getValue()])) {// condition
+										// and
+										// else
+										// added
+										// alessandro
+										// on
+										// 12/8/2012
+				    propertyUtilsBean.setProperty(pkValue, associationOverride.name(), pkValues[pkIndex.getValue()]);
+				    pkIndex.increment();
 				} else {
-					getEntityManager().persist(storeVO);
+				    pkValue = null;
 				}
-			}
-		} catch (Exception e) {
-			log.error("Exception caught: " + e.toString());
-			throw new DataAccessException( "Error in BaseJpaDAO.updateCollectionCore(Collection storeVOs): "+ e.toString(), e);
-		}
-		log.info("************Done with the BaseJpaDAO.updateCollectionCore(Collection storeVOs)***************");
-	}
-
-	public Object insert(Object storeVO) throws DataAccessException, DataOptimisticLockException {
-		log.debug("************Entering ***************");
-		try {
-			if (storeVO != null)
-				getEntityManager().persist(storeVO);//getEntityManager().getFlushMode()
-			if (flush) flush();
-		} catch (Exception e) {
-			log.error("Exception caught: " + e.toString());
-			throw new DataAccessException( "Error in  BaseJpaDAO.insert(Object storeVO) : " + e.toString(), e);
-		}
-		log.debug("************Done **************");
-		return storeVO;
-	}
-	
-	private Object storeCore(Object storeVO) throws DataAccessException{
-		log.debug("************Entering ***************");
-		try {
-			if (storeVO != null){
-				if(isPersisted(storeVO))
-						storeVO = getEntityManager().merge(storeVO);
-				else
-					getEntityManager().persist(storeVO);
-			}
-		} catch (Exception e) {
-			log.error("Exception caught: " + e.toString());
-			throw new DataAccessException( "Error in  BaseJpaDAO.storeCore(Object storeVO): " + e.toString(), e);
-		}
-		log.debug("************Done **************");
-		return storeVO;
-	}
-	
-	private Object persistIfNotPersisted(Object storeVO) throws DataAccessException{
-		log.debug("************Entering ***************");
-		try {
-			if (storeVO != null && !isPersisted(storeVO)){
-				
-					getEntityManager().persist(storeVO);
-				
-			}
-		} catch (Exception e) {
-			log.error("Exception caught: " + e.toString());
-			throw new DataAccessException( "Error in  BaseJpaDAO.persistIfNotPersisted(Object storeVO): " + e.toString(), e);
-		}
-		log.debug("************Done **************");
-		return storeVO;
-	}
-	
-	
-	private Object store(Object storeVO) throws DataAccessException{
-		log.debug("************Entering ***************");
-		try {
-			storeVO= storeCore(storeVO);
-			if (flush) flush();
-		} catch (Exception e) {
-			log.error("Exception caught: " + e.toString());
-			throw new DataAccessException( "Error in  BaseJpaDAO.store(Object storeVO): " + e.toString(), e);
-		}
-		log.debug("************Done **************");
-		return storeVO;
-	}
-	
-	public Object updateCollectionReference(Object storeVO, String pAttributeName) throws DataAccessException, DataOptimisticLockException{
-        log.info("************Entering ***************");
-        
-
-        try{
-        	if(storeVO==null) throw new DataAccessException("Error in BaseJpaDAO.updateCollectionReference(Object storeVO, String pAttributeName): storeVO can't be null. ");
-        	//if(!isReferenceCollection(storeVO.getClass(), pAttributeName)) throw new DataAccessException("Error in BaseJpaDAO.updateCollectionReference(Object storeVO, String pAttributeName) : pAttributeName doesn't represent a collection ");
-        	if(!isReferenceCollection(getEntityClass(storeVO), pAttributeName)) throw new DataAccessException("Error in BaseJpaDAO.updateCollectionReference(Object storeVO, String pAttributeName) : pAttributeName doesn't represent a collection ");
-            //getAnnotation(pInstanceClass,pAttributeName, OneToMany.class)!=null || getAnnotation(pInstanceClass,pAttributeName, ManyToMany.class)!=null;
-        	//if(getAnnotation(storeVO.getClass(),pAttributeName, OneToMany.class)!=null){
-        	if(getAnnotation(getEntityClass(storeVO),pAttributeName, OneToMany.class)!=null){
-//	        	storeVO = storeCore(storeVO);
-	        	updateCollectionReferenceWithoutMain(storeVO, pAttributeName, Boolean.TRUE, Boolean.TRUE, Boolean.TRUE) ;
-	        	//storeVO = storeCore(storeVO);
-	        	persistIfNotPersisted(storeVO);
-	        	setInverseForeignKeyFields(storeVO, pAttributeName);
-        	}else{
-        		updateCollectionReferenceWithoutMain(storeVO, pAttributeName, Boolean.TRUE, Boolean.TRUE, Boolean.TRUE) ;
-//        		storeVO = storeCore(storeVO);
-        		persistIfNotPersisted(storeVO);
-        	}
-        	if (flush) flush();
-        } catch (OptimisticLockException e) {
-            log.error("OptimisticLockException caught in BaseJpaDAO.updateCollectionReference(Object storeVO, String pAttributeName): " + e.toString());
-            throw new DataOptimisticLockException("Error in BaseJpaDAO.updateCollectionReference(Object storeVO, String pAttributeName): " + e.toString(),e);
-        } catch (Exception e) {
-            log.error("Exception  in BaseJpaDAO.updateCollectionReference(Object storeVO, String pAttributeName): " + e.toString());
-            throw new DataAccessException("Error in BaseJpaDAO.updateCollectionReference(Object storeVO, String pAttributeName): " + e.toString(),e);
-        }
-        log.info("************Done **************");
-        return storeVO;
-    }
-	
-	private Object updateCollectionReferenceWithoutMain(Object storeVO, String pAttributeName, Boolean deleteNotInBeanReferencedObjects, Boolean storeCollection, Boolean ifM2NDeleteOnlyRelationship) throws DataAccessException{
-        log.info("************Entering   **************");
-        
-        try{
-        	if(storeVO==null) throw new DataAccessException("Error in BaseJpaDAO.updateCollectionReferenceWithoutMain(Object storeVO, String pAttributeName, Boolean deleteNotInBeanReferencedObjects, Boolean storeCollection, Boolean ifM2NDeleteOnlyRelationship): storeVO can't be null. ");
-            if(pAttributeName==null||pAttributeName.trim().equals("")) throw new DataAccessException("Error in BaseJpaDAO.updateCollectionReferenceWithoutMain(Object storeVO, String pAttributeName, Boolean deleteNotInBeanReferencedObjects, Boolean storeCollection, Boolean ifM2NDeleteOnlyRelationship) : pAttributeName can't be null or empty or blank characters string. ");
-            //if(!isReferenceCollection(storeVO.getClass(), pAttributeName)) throw new DataAccessException("Error in BaseJpaDAO.updateCollectionReferenceWithoutMain(Object storeVO, String pAttributeName, Boolean deleteNotInBeanReferencedObjects, Boolean storeCollection, Boolean ifM2NDeleteOnlyRelationship) : pAttributeName doesn't represent a collection ");
-            if(!isReferenceCollection(getEntityClass(storeVO), pAttributeName)) throw new DataAccessException("Error in BaseJpaDAO.updateCollectionReferenceWithoutMain(Object storeVO, String pAttributeName, Boolean deleteNotInBeanReferencedObjects, Boolean storeCollection, Boolean ifM2NDeleteOnlyRelationship) : pAttributeName doesn't represent a collection ");
-            
-        	PropertyUtilsBean propertyUtilsBean = BeanUtilsBean.getInstance().getPropertyUtils();
-
-            if(deleteNotInBeanReferencedObjects.booleanValue())  {
-            	deleteItemsNotInCollectionsInPathCore(storeVO, pAttributeName, false,  ifM2NDeleteOnlyRelationship,false);
-            }
-
-            Collection pAttributeNameCollection = (Collection) propertyUtilsBean.getProperty(storeVO, pAttributeName);
-
-            if(pAttributeNameCollection!=null ){
-
-                if(storeCollection.booleanValue())  {
-                    
-                    updateCollectionCore(pAttributeNameCollection);
-                }
-
-                
-            }
-
-        }  catch (Exception e) {
-            log.error("Exception thrown in BaseJpaDAO.updateCollectionReferenceWithoutMain(Object storeVO, String pAttributeName, Boolean deleteNotInBeanReferencedObjects, Boolean storeCollection, Boolean ifM2NDeleteOnlyRelationship): " + e.toString());
-            throw new DataAccessException("Error in BaseJpaDAO.updateCollectionReferenceWithoutMain(Object storeVO, String pAttributeName, Boolean deleteNotInBeanReferencedObjects, Boolean storeCollection, Boolean ifM2NDeleteOnlyRelationship): " + e.toString(),e);
-        }
-        log.info("************Done  ***************");
-        return storeVO;
-    }
-	
-	
-	@SuppressWarnings("unused")
-	private void deleteReferencedCollection(Object parentVO, String pAttributeName, Collection toBeDeletedCollection, Boolean ifM2NDeleteOnlyRelationship) throws DataAccessException{
-        log.info("************Entering **************");
-
-        try{
-            if(parentVO ==null) throw new DataAccessException("Error in BaseJpaDAO.deleteReferencedCollection(Object parentVO, String pAttributeName, Collection toBeDeletedIdentities, Boolean ifM2NDeleteOnlyRelationship) : parentVO can't be null. ");
-            if(pAttributeName==null||pAttributeName.trim().equals("")) throw new DataAccessException("Error in BaseJpaDAO.deleteReferencedCollection(Object parentVO, String pAttributeName, Collection toBeDeletedIdentities,Boolean ifM2NDeleteOnlyRelationship)  : pAttributeName can't be null or empty or blank characters string. ");
-            //if(!isReferenceCollection(parentVO.getClass(), pAttributeName)) throw new DataAccessException("Error in BaseJpaDAO.deleteReferencedCollection(Object parentVO, String pAttributeName, Collection toBeDeletedIdentities, Boolean ifM2NDeleteOnlyRelationship)  : pAttributeName doesn't represent a collection ");
-            if(!isReferenceCollection(getEntityClass(parentVO), pAttributeName)) throw new DataAccessException("Error in BaseJpaDAO.deleteReferencedCollection(Object parentVO, String pAttributeName, Collection toBeDeletedIdentities, Boolean ifM2NDeleteOnlyRelationship)  : pAttributeName doesn't represent a collection ");
-                
-            if (toBeDeletedCollection != null) {
-
-	            
-	
-	            //if(collectionDescriptor.isMtoNRelation()){
-            	//if(getAnnotation(parentVO.getClass(),pAttributeName, ManyToMany.class)!=null){
-            	if(getAnnotation(getEntityClass(parentVO),pAttributeName, ManyToMany.class)!=null){
-	                //deleteMToNRelationshipIdentitiesCollection(parentVO,pAttributeName,toBeDeletedIdentities,broker);
-	                deleteMToNRelationshipCollectionCore(parentVO, pAttributeName, toBeDeletedCollection);
-	                if(!ifM2NDeleteOnlyRelationship.booleanValue()) deleteCollectionCore(toBeDeletedCollection);
-	            } else{
-	            	deleteCollectionCore(toBeDeletedCollection);
-	            }
-           
-            }
-           
-        } catch (Exception e) {
-            log.error("Exception thrown in BaseJpaDAO.deleteReferencedCollection(Object parentVO, String pAttributeName, Collection toBeDeletedIdentities, Boolean ifM2NDeleteOnlyRelationship)  : " + e.toString());
-            throw new DataAccessException("Error in BaseJpaDAO.deleteReferencedCollection(Object parentVO, String pAttributeName, Collection toBeDeletedIdentities, Boolean ifM2NDeleteOnlyRelationship)  : " + e.toString(),e);
-        }
-        log.info("************Done **************");
-    }
-	
-	
-	
-	
-	public Object updateCollectionReferences(Object storeVO) throws DataAccessException, DataOptimisticLockException{
-        log.info("************Entering **************");
-        if(storeVO==null) throw new DataAccessException("Error in BaseJpaDAO.updateCollectionReferences(Object storeVO) : storeVO can't be null. ");
-
-        try{
-        	PropertyUtilsBean propertyUtilsBean = BeanUtilsBean.getInstance().getPropertyUtils();
-			
-        	//Class storeVOClass=storeVO.getClass();
-        	Class storeVOClass=getEntityClass(storeVO);
-			
-        	//storeVO = getEntityManager().merge(storeVO);
-        	
-			
-			Map describe = propertyUtilsBean.describe(storeVO);
-			Iterator iterator = describe.keySet().iterator();
-			while (iterator.hasNext()){
-				String pAttributeName = (String) iterator.next();
-				if(getAnnotation(storeVOClass,pAttributeName, ManyToMany.class)!=null){
-					updateCollectionReferenceWithoutMain(storeVO, pAttributeName, Boolean.TRUE, Boolean.TRUE, Boolean.TRUE) ;
-				}
-			}
-			
-			//storeVO=storeCore(storeVO);
-			persistIfNotPersisted(storeVO);
-			
-			iterator = describe.keySet().iterator();
-			while (iterator.hasNext()){
-				String pAttributeName = (String) iterator.next();
-				if(getAnnotation(storeVOClass,pAttributeName, OneToMany.class)!=null){
-					updateCollectionReferenceWithoutMain(storeVO, pAttributeName, Boolean.TRUE, Boolean.TRUE, Boolean.TRUE) ;
-				}
-			}
-			if (flush) flush();
-        	
- 
-        } catch (OptimisticLockException e) {
-        	log.error("OptimisticLockException  in BaseJpaDAO.updateCollectionReferences(Object storeVO): " + e.toString());
-            throw new DataOptimisticLockException("Error in BaseJpaDAO.updateCollectionReferences(Object storeVO): " + e.toString(),e);
-        } catch (Exception e) {
-            log.error("Exception thrown in BaseJpaDAO.updateCollectionReferences(Object storeVO): " + e.toString());
-            throw new DataAccessException("Error in BaseJpaDAO.updateCollectionReferences(Object storeVO): " + e.toString(),e);
-        }
-        log.info("************Done************");
-        return storeVO;
-    }
-	
-	public void storePathCascade(Object storeVO, String path) throws DataAccessException, DataOptimisticLockException{
-        log.info("************Entering ***************");
-
-        try{
-            if (storeVO!=null){
-                if (path == null || path.trim().equals("")){
-                    store(storeVO);
-                } else{
-                	Collection paths = new ArrayList();
-                	paths.add(path);
-                	storePathsCascadeCore(storeVO, paths, false, true);
-//                    ArrayList storeVOs =new ArrayList();
-//                    storeVOs.add(storeVO);
-//                    storeCollectionPathCascadeCore(storeVOs, path);
-                }
-
-            }
-            
-            
-            if (flush) flush();
-
-        } catch (OptimisticLockException e) {
-        	log.error("OptimisticLockException  in BaseJpaDAO.storePathCascade(Object storeVO, String path) : " + e.toString());
-            throw new DataOptimisticLockException("Error in BaseJpaDAO.storePathCascade(Object storeVO, String path) : " + e.toString(),e);
-        } catch (Exception e) {
-            log.error("Exception thrown in BaseJpaDAO.storePathCascade(Object storeVO, String path) : " + e.toString());
-            throw new DataAccessException("Error in BaseJpaDAO.storePathCascade(Object storeVO, String path) : " + e.toString(),e);
-        }
-        log.info("************Done **************");
-
-    }
-	
-	
-	private void storeCollectionPathCascadeCore(Collection storeVOs, String path) throws DataAccessException{
-        log.info("************Entering  ***************");
-
-        try{
-            if(log.isDebugEnabled()){
-	            if (storeVOs==null) {
-	                log.debug("storeVOs==null");
-	            }else{
-	                log.debug("storeVOs.size() == "+ storeVOs.size());
-	            }
-            }
-
-
-
-            if (storeVOs!=null && !storeVOs.isEmpty()){
-            	if(path==null || path.trim().equals("")){
-                    updateCollectionCore(storeVOs);
-                } else {
-
-                	String[] firstAttributeNameAndRemainingPath = Utils.getFirstAttributeNameAndRemainingPath(path);
-                	String firstAttributeName =firstAttributeNameAndRemainingPath[0];
-                	String remainingPath =firstAttributeNameAndRemainingPath[1];
-                	
-                	//Class realClass = storeVOs.iterator().next().getClass();
-                	Class realClass = getEntityClass(storeVOs.iterator().next());
-                	Collection childrenVOs = BeanCollectionUtils.getTreeLeaves(storeVOs,firstAttributeName);
-                	//if(isReferenceBean(realClass,firstAttributeName) || isManyToMany(realClass,firstAttributeName)){
-                	if(isReferenceBean(realClass,firstAttributeName)){
-                		storeCollectionPathCascadeCore(childrenVOs,remainingPath);
-                		updateCollectionCore(storeVOs);
-                	}else if (isManyToMany(realClass,firstAttributeName)){ 
-                		setInverseForeignKeyFields(storeVOs,firstAttributeName);
-                		storeCollectionPathCascadeCore(childrenVOs,remainingPath);
-                		updateCollectionCore(storeVOs);
-                	}else if (isOneToMany(realClass,firstAttributeName)){
-                		setInverseForeignKeyFields(storeVOs,firstAttributeName);
-                		//updateCollectionCore(storeVOs); moved bottom for entitynotfoundexception  https://hibernate.onjira.com/browse/HHH-3217
-                		storeCollectionPathCascadeCore(childrenVOs,remainingPath);
-                		updateCollectionCore(storeVOs);
-                	}else{
-                		throw new DataAccessException("Error in BaseJpaDAO.storeCollectionPathCascadeCore(Collection storeVOs, String path): The relation between  "+realClass.getSimpleName()+ " and "+firstAttributeName+" is no one of oneToOne, oneToMany, manyToMany, manyToOne");
-                	}
-                }
-
-            }
-        } catch (Exception e) {
-            log.error("Exception thrown in BaseJpaDAO.storeCollectionPathCascadeCore(Collection storeVOs, String path): " + e.toString());
-            throw new DataAccessException("Error in BaseOjbPbCore.BaseJpaDAO.storeCollectionPathCascadeCore(Collection storeVOs, String path): " + e.toString(),e);
-        }
-        log.info("************Done **************");
-
-    }
-	
-	
-	
-	
-	
-	
-	
-	/**
-	 * This method checks if all elements in a collection are of instances of the same class
-	 * @param valueObjects
-	 * @return true if the collection is null or empty, or if none of its elements is null and are all instances of the same class; it returns false, if at least one of its elements is null or not instances of the same class
-	 * @throws DataAccessException
-	 */
-	@SuppressWarnings("unused")
-	private boolean allElementsInCollectionSameClass(Collection valueObjects) throws DataAccessException{
-		log.info("************Entering  ***************");
-		boolean allElementsInCollectionSameClass=true;
-		try {
-			if(valueObjects!=null && !valueObjects.isEmpty()){
-				Iterator iterator =  valueObjects.iterator();
-			    Object firstElement = iterator.next(); // at least one identity is in valueObjects as it is not empty.
-			    if(firstElement== null)  {
-			    	allElementsInCollectionSameClass=false;   
-			    }else{
-//			    	Class realClass =   firstElement.getClass();
-			    	Class realClass =   getEntityClass(firstElement);
-				    while (iterator.hasNext() && allElementsInCollectionSameClass){
-				    	Object element = iterator.next();
-				        //if(element== null || !element.getClass().equals(realClass)){
-				    	if(element== null || !getEntityClass(element).equals(realClass)){
-				        	allElementsInCollectionSameClass=false; 
-				        }
+			    } else {
+				final Object associationPKValue = buildPKValue(idClass.getDeclaredField(associationOverride.name()).getType(), pkValues, pkIndex);
+				if (associationPKValue != null) {// condition
+								 // and else
+								 // added
+								 // alessandro
+								 // on 12/8/2012
+				    final Class accociationClass = idClass.getDeclaredField(associationOverride.name()).getType();
+				    /*
+				     * deleted alessandro on 5/8/2012 Object
+				     * accociationValue =
+				     * accociationClass.getConstructor().
+				     * newInstance(); String accociationIdName=
+				     * (new
+				     * EntityInfo(accociationClass)).getIdField(
+				     * ).getName();
+				     * propertyUtilsBean.setProperty(
+				     * accociationValue,accociationIdName,
+				     * associationPKValue);
+				     */
+				    final Object accociationValue = findByPrimaryKey(accociationClass, associationPKValue);// added
+															   // alessandro
+															   // on
+															   // 5/8/2012
+				    if (accociationValue != null) {// condition
+								   // and else
+								   // added
+								   // alessandro
+								   // on
+								   // 12/8/2012
+					propertyUtilsBean.setProperty(pkValue, associationOverride.name(), accociationValue);
+				    } else {
+					pkValue = null;
 				    }
+				} else {
+				    pkValue = null;
+				}
 			    }
+
 			}
-		} catch (Exception e) {
-           log.error("Exception thrown in BaseJpaDAO.allElementsInCollectionSameClass(Collection valueObjects): " + e.toString());
-           throw new DataAccessException("Error in BaseJpaDAO.allElementsInCollectionSameClass(Collection valueObjects): " + e.toString(),e);
-	 	}
-		log.info("************ Done  ***************");
-	    return allElementsInCollectionSameClass;
-	}
-	
-	
-	
-	
-	public void storePathsCascade(Object storeVO, Collection paths, Boolean pathsHasToBeSorted, Boolean  storeVOHasToBeStored) throws DataAccessException, DataOptimisticLockException {
-        log.info("************Entering ***************");
-      
-        storePathsCascadeCore( storeVO,  paths,  pathsHasToBeSorted,   storeVOHasToBeStored);
-		if (flush) flush();
-		
-        log.info("************Done **************");
-    }
-
-
-	/**
-	 * 
-	 *  
-	 * @param storeVO
-	 * @param paths
-	 * @param pathsHasToBeSorted
-	 * @param storeVOHasToBeStored
-	 * @param isStoreVORightHandM2N
-	 * @return
-	 * @throws DataAccessException
-	 */
-    private  List<Graph> storePathsCascadeCore(Object storeVO, Collection<String> paths, Boolean pathsHasToBeSorted, Boolean  storeVOHasToBeStored) throws DataAccessException{
-        log.info("************Entering   ***************");
-        List<Graph> notStoredGraphs = new ArrayList<Graph>();
-        try{
-            if(storeVO!=null){
-                if(pathsHasToBeSorted==null)pathsHasToBeSorted= Boolean.TRUE;
-                if(storeVOHasToBeStored==null)storeVOHasToBeStored= Boolean.TRUE;
-                if(paths!=null && !paths.isEmpty()){
-                	Class storeVOClass = getEntityClass(storeVO);
-                    PropertyUtilsBean propertyUtilsBean = BeanUtilsBean.getInstance().getPropertyUtils();
-
-                   
-                    HashMap<String,ArrayList<String>> directReferenceMap = new HashMap<String,ArrayList<String>>();
-                    HashMap<String,ArrayList<String>> oneToNReferenceMap = new HashMap<String,ArrayList<String>>();
-                    HashMap<String,ArrayList<String>> mToNReferenceMap = new HashMap<String,ArrayList<String>>();
-                    
-                    HashMap<String,ArrayList<String>> mToNInverseReferenceMap = new HashMap<String,ArrayList<String>>();
-
-
-                    Collection<String> sortedPaths = null;
-                    if(pathsHasToBeSorted.booleanValue()){
-                        ArrayList<String> tempPaths = Collections.list(Collections.enumeration(paths));
-                        Collections.sort(tempPaths);
-                        sortedPaths = tempPaths;
-                    }  else{
-                        sortedPaths = paths;
-                    }// no side effects on paths
-
-                    String firstAttributeName="";
-                    ArrayList<String> subPaths = null;
-                    Iterator iterator = sortedPaths.iterator();  //sure  sortedPaths!=null
-                    while(iterator.hasNext()){
-                        //log.debug("storePathsCascade : entering in the iterator ");
-                        String path = (String) iterator.next();
-                        if(path!=null && !path.trim().equals("")){
-                            String[] firstAttributeNameAndRemainingPath = Utils.getFirstAttributeNameAndRemainingPath(path);
-                            String firstAttributeName2 = firstAttributeNameAndRemainingPath[0];
-                            if(!firstAttributeName.equals(firstAttributeName2)){
-                                firstAttributeName=firstAttributeName2;
-                                //log.debug("storePathsCascade : in iterator firstAttributeName= "+firstAttributeName);
-
-                                //int relationType = getRelationType(storeVO.getClass(), firstAttributeName);
-                                int relationType = getRelationType(storeVOClass, firstAttributeName);
-                                HashMap<String,ArrayList<String>> map = null;
-                                switch (relationType){
-	                                case ONE_TO_ONE: map = directReferenceMap; break;
-	                                case M_TO_ONE: map = directReferenceMap; break;
-	                                case EMBEDDED_ID: map = directReferenceMap; break;
-	                                case ONE_TO_N: map = oneToNReferenceMap;break;
-	                                case M_TO_N: map = mToNReferenceMap;break;
-	                                case M_TO_N_INVERSE: map = mToNInverseReferenceMap;break;
-	                            }
-                                //log.debug("storePathsCascade : in iterator before map.put(firstAttributeName, new ArrayList()); ");
-                                if(map==null) {
-                                	throw new DataAccessException("Error in BaseJpaDAO.storePathsCascadeCore(Object storeVO, Collection<String> paths, Boolean pathsHasToBeSorted, Boolean  storeVOHasToBeStored): no relation annotation found " );
-                                }
-                                map.put(firstAttributeName, new ArrayList<String>());   // each key firstAttributeName inserted has always an arraylist at least empty , never nul
-                                subPaths = map.get(firstAttributeName);
-                            }
-                            String remainingPath = firstAttributeNameAndRemainingPath[1];
-                            if(remainingPath != null && !remainingPath.trim().equals("")){
-                                if(subPaths==null) {
-                                	throw new DataAccessException("Error in BaseJpaDAO.storePathsCascadeCore(Object storeVO, Collection<String> paths, Boolean pathsHasToBeSorted, Boolean  storeVOHasToBeStored): subpaths is null" );
-                                }
-                            	subPaths.add(remainingPath);
-                            }
-                        }
-                    }
-
-
-                    /* 
-                     * ONE TO ONE and M TO ONE
-                     */
-                    iterator = directReferenceMap.keySet().iterator();
-                    String  directReferenceMapFirstAttributeName;
-                    while(iterator.hasNext()){
-                    	directReferenceMapFirstAttributeName = (String) iterator.next();
-                    	boolean nuevoStoreVOHasToBeStored = getNuevoStoreVOHasToBeStored(storeVO, directReferenceMapFirstAttributeName);
-                        log.debug("storePathsCascade : directReferenceMapFirstAttributeName = "+ directReferenceMapFirstAttributeName);
-                        //storePathsCascadeCore(propertyUtilsBean.getProperty(storeVO, directReferenceMapFirstAttributeName), directReferenceMap.get(directReferenceMapFirstAttributeName), Boolean.FALSE, Boolean.TRUE,false);
-                        notStoredGraphs.addAll(storePathsCascadeCore(propertyUtilsBean.getProperty(storeVO, directReferenceMapFirstAttributeName), directReferenceMap.get(directReferenceMapFirstAttributeName), Boolean.FALSE, nuevoStoreVOHasToBeStored));
-                    }
-
-                    /*
-                     * M TO N
-                     */
-                    notStoredGraphs.addAll(processStorePathsCascadeToMany(storeVO, mToNReferenceMap, false));
-//                    iterator = mToNReferenceMap.keySet().iterator();
-//                    String  mToNReferenceFirstAttributeName;
-//                    while(iterator.hasNext()){
-//                        mToNReferenceFirstAttributeName = (String) iterator.next();
-//                        Collection mToNReferenceFirstAttributeValue = (Collection)propertyUtilsBean.getProperty(storeVO, mToNReferenceFirstAttributeName);
-//                        setInverseForeignKeyFields(storeVO, mToNReferenceFirstAttributeName);
-//                        boolean isCascadeAll = isCascade(storeVO, mToNReferenceFirstAttributeName, CascadeType.ALL );
-//                        boolean isCascadePersist = isCascade(storeVO, mToNReferenceFirstAttributeName, CascadeType.PERSIST );
-//                        boolean isCascadeMerge = isCascade(storeVO, mToNReferenceFirstAttributeName, CascadeType.MERGE );
-//                        if(mToNReferenceFirstAttributeValue!=null){
-//                            ArrayList<String>  mToNReferenceSubPaths = mToNReferenceMap.get(mToNReferenceFirstAttributeName);
-//                            for(Object childVO:mToNReferenceFirstAttributeValue){
-//                            	boolean nuevoStoreVOHasToBeStored = getNuevoStoreVOHasToBeStored(storeVO, childVO,isCascadeAll,isCascadePersist, isCascadeMerge);
-//                            	notStoredGraphs.addAll(storePathsCascadeCore(childVO, mToNReferenceSubPaths, Boolean.FALSE, nuevoStoreVOHasToBeStored));
-//                            }
-//                        }
-//                    }
-                    
-                    /******************************************************************************/
-                    /*
-                     * ONE TO N 
-                     */
-                    notStoredGraphs.addAll(processStorePathsCascadeToMany(storeVO, oneToNReferenceMap, true));
-//                    iterator = oneToNReferenceMap.keySet().iterator();
-//                    String  oneToNReferenceFirstAttributeName;
-//                    while(iterator.hasNext()){
-//                        oneToNReferenceFirstAttributeName = (String) iterator.next();
-//                        Collection oneToNReferenceFirstAttributeValue = (Collection)propertyUtilsBean.getProperty(storeVO, oneToNReferenceFirstAttributeName);
-//                        setInverseForeignKeyFields(storeVO, oneToNReferenceFirstAttributeName);
-//                        boolean isCascadeAll = isCascade(storeVO, oneToNReferenceFirstAttributeName, CascadeType.ALL );
-//                        boolean isCascadePersist = isCascade(storeVO, oneToNReferenceFirstAttributeName, CascadeType.PERSIST );
-//                        boolean isCascadeMerge = isCascade(storeVO, oneToNReferenceFirstAttributeName, CascadeType.MERGE );
-//                        if(oneToNReferenceFirstAttributeValue!=null){
-//                        	ArrayList<String>   oneToNReferenceSubPaths = oneToNReferenceMap.get(oneToNReferenceFirstAttributeName);
-//                            
-//                            for(Object childVO:oneToNReferenceFirstAttributeValue){
-//                            	boolean nuevoStoreVOHasToBeStored = getNuevoStoreVOHasToBeStored(storeVO, childVO,isCascadeAll,isCascadePersist, isCascadeMerge);
-//                            	if(!nuevoStoreVOHasToBeStored){
-//                            		notStoredGraphs.addAll(storePathsCascadeCore( childVO, oneToNReferenceSubPaths, Boolean.FALSE,  false));
-//                            	}else{
-//                            		notStoredGraphs.add(new Graph(childVO,oneToNReferenceSubPaths));
-//                            	}
-//                            }
-//                       }
-//                    }
-                    
-                    /*
-                     * M_TO_N_INVERSE 
-                     */
-                    notStoredGraphs.addAll(processStorePathsCascadeToMany(storeVO, mToNInverseReferenceMap, true));
-//                    iterator = mToNInverseReferenceMap.keySet().iterator();
-//                    String  mToNInverseReferenceFirstAttributeName;
-//                    while(iterator.hasNext()){
-//                    	mToNInverseReferenceFirstAttributeName = (String) iterator.next();
-//                        Collection mToNInverseReferenceFirstAttributeValue = (Collection)propertyUtilsBean.getProperty(storeVO, mToNInverseReferenceFirstAttributeName);
-//                        setInverseForeignKeyFields(storeVO, mToNInverseReferenceFirstAttributeName);
-//                        boolean isCascadeAll = isCascade(storeVO, mToNInverseReferenceFirstAttributeName, CascadeType.ALL );
-//                        boolean isCascadePersist = isCascade(storeVO, mToNInverseReferenceFirstAttributeName, CascadeType.PERSIST );
-//                        boolean isCascadeMerge = isCascade(storeVO, mToNInverseReferenceFirstAttributeName, CascadeType.MERGE );
-//                        if(mToNInverseReferenceFirstAttributeValue!=null){
-//                            ArrayList<String>  mToNInverseReferenceSubPaths = mToNReferenceMap.get(mToNInverseReferenceFirstAttributeName);
-//                            for(Object childVO:mToNInverseReferenceFirstAttributeValue){
-//                            	boolean nuevoStoreVOHasToBeStored = getNuevoStoreVOHasToBeStored(storeVO, childVO,isCascadeAll,isCascadePersist, isCascadeMerge);
-//                            	if(!nuevoStoreVOHasToBeStored){
-//                            		notStoredGraphs.addAll(storePathsCascadeCore(childVO, mToNInverseReferenceSubPaths, Boolean.FALSE, false));
-//                            	}else{
-//                            		notStoredGraphs.add(new Graph(childVO,mToNInverseReferenceSubPaths));
-//                            	}
-//                            }
-//                        }
-//                    }
-                    
-                    
-                    
-                    if (storeVOHasToBeStored){
-                    	EntityInfo entityInfo = new EntityInfo(storeVOClass);
-                    	if(!entityInfo.isEmbeddable()){
-                    		persistIfNotPersisted(storeVO);
-	                    	for(Graph notStoredGraph:notStoredGraphs){
-	                    		storePathsCascadeCore(notStoredGraph.getRoot(),notStoredGraph.getPaths(),false,true);
-	                    	}
-	                    	notStoredGraphs.clear();
-                    	}
-                    }
-
-
-
-                    
-                }else{ //paths==null || paths.isEmpty()
-                	//if (storeVOHasToBeStored) storeCore(storeVO);
-                	if (storeVOHasToBeStored) persistIfNotPersisted(storeVO);
-                }
-            }
-
-        } catch (Exception e) {
-            log.error("Exception caught in BaseJpaDAO.storePathsCascadeCore(Object storeVO, Collection<String> paths, Boolean pathsHasToBeSorted, Boolean  storeVOHasToBeStored): " + e.toString());
-            throw new DataAccessException("Error in BaseJpaDAO.storePathsCascadeCore(Object storeVO, Collection<String> paths, Boolean pathsHasToBeSorted, Boolean  storeVOHasToBeStored): " + e.toString(),e);
-        }
-        log.info("************Done ***************");
-        return notStoredGraphs;
-    }
-	
-    
-    private  List<Graph> processStorePathsCascadeToMany(Object storeVO, HashMap<String,ArrayList<String>> map, boolean postStore) throws DataAccessException{
-    	List<Graph> notStoredGraphs = new ArrayList<Graph>();
-    	try {
-			PropertyUtilsBean propertyUtilsBean = BeanUtilsBean.getInstance().getPropertyUtils();
-			Iterator iterator = map.keySet().iterator();
-			String  firstAttributeName;
-			while(iterator.hasNext()){
-				firstAttributeName = (String) iterator.next();
-			    Collection firstAttributeValue = (Collection)propertyUtilsBean.getProperty(storeVO, firstAttributeName);
-			    setInverseForeignKeyFields(storeVO, firstAttributeName);
-			    boolean isCascadeAll = isCascade(storeVO, firstAttributeName, CascadeType.ALL );
-			    boolean isCascadePersist = isCascade(storeVO, firstAttributeName, CascadeType.PERSIST );
-			    boolean isCascadeMerge = isCascade(storeVO, firstAttributeName, CascadeType.MERGE );
-			    if(firstAttributeValue!=null){
-			        ArrayList<String>  subPaths = map.get(firstAttributeName);
-			        for(Object childVO:firstAttributeValue){
-			        	boolean nuevoStoreVOHasToBeStored = getNuevoStoreVOHasToBeStored(storeVO, childVO,isCascadeAll,isCascadePersist, isCascadeMerge);
-			        	if(postStore){
-			            	if(!nuevoStoreVOHasToBeStored){
-			            		notStoredGraphs.addAll(storePathsCascadeCore(childVO, subPaths, Boolean.FALSE, false));
-			            	}else{
-			            		notStoredGraphs.add(new Graph(childVO,subPaths));
-			            	}
-			        	}else{
-			        		notStoredGraphs.addAll(storePathsCascadeCore(childVO, subPaths, Boolean.FALSE, nuevoStoreVOHasToBeStored));
-			        	}
-			        }
-			    }
-			}
-		} catch (IllegalAccessException e) {
-            log.error("IllegalAccessException caught in BaseJpaDAO.processStorePathsCascadeToMany(Object storeVO, HashMap<String,ArrayList<String>> map, boolean postStore): " + e.toString());
-            throw new DataAccessException("Error in BaseJpaDAO.processStorePathsCascadeToMany(Object storeVO, HashMap<String,ArrayList<String>> map, boolean postStore): " + e.toString(),e);
-		} catch (InvocationTargetException e) {
-            log.error("InvocationTargetException caught in BaseJpaDAO.processStorePathsCascadeToMany(Object storeVO, HashMap<String,ArrayList<String>> map, boolean postStore): " + e.toString());
-            throw new DataAccessException("Error in BaseJpaDAO.processStorePathsCascadeToMany(Object storeVO, HashMap<String,ArrayList<String>> map, boolean postStore): " + e.toString(),e);
-		} catch (NoSuchMethodException e) {
-            log.error("NoSuchMethodException caught in BaseJpaDAO.processStorePathsCascadeToMany(Object storeVO, HashMap<String,ArrayList<String>> map, boolean postStore): " + e.toString());
-            throw new DataAccessException("Error in BaseJpaDAO.processStorePathsCascadeToMany(Object storeVO, HashMap<String,ArrayList<String>> map, boolean postStore): " + e.toString(),e);
-		} catch (Exception e) {
-            log.error("Exception caught in BaseJpaDAO.processStorePathsCascadeToMany(Object storeVO, HashMap<String,ArrayList<String>> map, boolean postStore): " + e.toString());
-            throw new DataAccessException("Error in BaseJpaDAO.processStorePathsCascadeToMany(Object storeVO, HashMap<String,ArrayList<String>> map, boolean postStore): " + e.toString(),e);
+		    }
 		}
-        return notStoredGraphs;
+
+	    } else if (accessibleObject.isAnnotationPresent(Id.class)) {
+		pkValue = pkValues[pkIndex.getValue()];
+		pkIndex.increment();
+	    } else {
+		throw new DataAccessException("Error in buildPKValue(Class realClass,Object[] pkValues, Cursor pkIndex): accessibleObject has no EmbeddedId and No Id annotation ");
+	    }
+	} catch (final IllegalArgumentException e) {
+	    log.error("IllegalArgumentException caught in   BaseJpaDAO.buildPKValue(Class realClass,Object[] pkValues, Cursor pkIndex): " + e.toString());
+	    throw new DataAccessException("Error in   BaseJpaDAO.buildPKValue(Class realClass,Object[] pkValues, Cursor pkIndex): " + e.toString(), e);
+	} catch (final SecurityException e) {
+	    log.error("SecurityException caught in   BaseJpaDAO.buildPKValue(Class realClass,Object[] pkValues, Cursor pkIndex): " + e.toString());
+	    throw new DataAccessException("Error in   BaseJpaDAO.buildPKValue(Class realClass,Object[] pkValues, Cursor pkIndex): " + e.toString(), e);
+	} catch (final InstantiationException e) {
+	    log.error("InstantiationException caught in   BaseJpaDAO.buildPKValue(Class realClass,Object[] pkValues, Cursor pkIndex): " + e.toString());
+	    throw new DataAccessException("Error in   BaseJpaDAO.buildPKValue(Class realClass,Object[] pkValues, Cursor pkIndex): " + e.toString(), e);
+	} catch (final IllegalAccessException e) {
+	    log.error("IllegalAccessException caught in   BaseJpaDAO.buildPKValue(Class realClass,Object[] pkValues, Cursor pkIndex): " + e.toString());
+	    throw new DataAccessException("Error in   BaseJpaDAO.buildPKValue(Class realClass,Object[] pkValues, Cursor pkIndex): " + e.toString(), e);
+	} catch (final InvocationTargetException e) {
+	    log.error("InvocationTargetException caught in   BaseJpaDAO.buildPKValue(Class realClass,Object[] pkValues, Cursor pkIndex): " + e.toString());
+	    throw new DataAccessException("Error in   BaseJpaDAO.buildPKValue(Class realClass,Object[] pkValues, Cursor pkIndex): " + e.toString(), e);
+	} catch (final NoSuchMethodException e) {
+	    log.error("NoSuchMethodException caught in   BaseJpaDAO.buildPKValue(Class realClass,Object[] pkValues, Cursor pkIndex): " + e.toString());
+	    throw new DataAccessException("Error in   BaseJpaDAO.buildPKValue(Class realClass,Object[] pkValues, Cursor pkIndex): " + e.toString(), e);
+	} catch (final NoSuchFieldException e) {
+	    log.error("NoSuchFieldException caught in   BaseJpaDAO.buildPKValue(Class realClass,Object[] pkValues, Cursor pkIndex): " + e.toString());
+	    throw new DataAccessException("Error in   BaseJpaDAO.buildPKValue(Class realClass,Object[] pkValues, Cursor pkIndex): " + e.toString(), e);
+	} catch (final Exception e) {
+	    log.error("Exception caught in   BaseJpaDAO.buildPKValue(Class realClass,Object[] pkValues, Cursor pkIndex): " + e.toString());
+	    throw new DataAccessException("Error in   BaseJpaDAO.buildPKValue(Class realClass,Object[] pkValues, Cursor pkIndex): " + e.toString(), e);
+	}
+
+	return pkValue;
+
     }
-    
+
+    public Object findByPrimaryKey(Class realClass, String[] pkFieldNames, Object[] pkValues) throws DataAccessException {
+	log.info("************Entering the BaseOjbPbDAO.findByPrimaryKey(Class realClass,String[] pkFieldNames, Object[] pkValues) ***************");
+	Object result = null;
+	try {
+	    if (pkValues == null || pkValues.length == 0) {
+		throw new DataAccessException("Error in  BaseJpaDAO.findByPrimaryKey(Class realClass,String[] pkFieldNames, Object[] pkValues): pkValues can't be null or empty ");
+	    }
+	    if (pkFieldNames != null && pkFieldNames.length != pkValues.length) {
+		throw new DataAccessException("Error in  BaseJpaDAO.findByPrimaryKey(Class realClass,String[] pkFieldNames, Object[] pkValues): pkFieldNames.length!=pkValues.length ");
+	    }
+
+	    if (pkValues.length == 1) {
+		// result = getEntityManager().find(realClass, pkValues[0]);
+		result = findByPrimaryKey(realClass, pkValues[0]);
+	    } else if (pkFieldNames != null && pkFieldNames.length > 0) {
+
+		// PropertyUtilsBean propertyUtilsBean =
+		// BeanUtilsBean.getInstance().getPropertyUtils();
+		final Node pkFieldNameNode = new Node(pkFieldNames);
+
+		if (pkFieldNameNode.getChildren().entrySet().size() != 1) {
+		    throw new DataAccessException("Error in  BaseJpaDAO.findByPrimaryKey(Class realClass,String[] pkFieldNames, Object[] pkValues): pkFieldNameNode entry size is not 1 ");
+		}
+		final String firstPkFieldName = pkFieldNameNode.getChildren().keySet().iterator().next();
+		final Object pkValue = realClass.getDeclaredField(firstPkFieldName).getType().getConstructor().newInstance();
+
+		// BeanCollectionUtils.setAttribute(pkValue,
+		// pkFieldNameNode.getChildren().get(firstPkFieldName),
+		// pkValues);
+		for (int i = 0; i < pkFieldNames.length; i++) {
+		    BeanCollectionUtils.setAttribute(pkValue, pkFieldNames[i].substring(pkFieldNames[i].indexOf(".") + 1), pkValues[i]);
+
+		}
+
+		// result = getEntityManager().find(realClass, pkValue);
+		result = findByPrimaryKey(realClass, pkValue);
+
+	    } else {
+		// result = getEntityManager().find(realClass,
+		// buildPKValue(realClass, pkValues, new Cursor()));
+		final Object pKValue = buildPKValue(realClass, pkValues, new Cursor());
+		if (pKValue != null) {// condition added by alessandro on
+				      // 12/08/2012
+		    result = findByPrimaryKey(realClass, buildPKValue(realClass, pkValues, new Cursor()));
+		}
+	    }
+	} catch (final Exception e) {
+	    log.error("Exception caught in   BaseJpaDAO.findByPrimaryKey(Class realClass,String[] pkFieldNames, Object[] pkValues): " + e.toString());
+	    throw new DataAccessException("Error in   BaseJpaDAO.findByPrimaryKey(Class realClass,String[] pkFieldNames, Object[] pkValues): " + e.toString(), e);
+	}
+	log.info("************Done with the  BaseOjbPbDAO.findByPrimaryKey(Class realClass,String[] pkFieldNames, Object[] pkValues)***************");
+	return result;
+    }
+
+    public Object findByPrimaryKey(Class realClass, Object pkValue) throws DataAccessException {
+	log.info("************Entering  ***************");
+	Object result = null;
+	try {
+
+	    try {
+		result = getEntityManager().find(realClass, pkValue);
+	    } catch (final EntityNotFoundException e) {
+		result = null;
+	    }
+
+	} catch (final Exception e) {
+	    log.error("Exception caught : " + e.toString());
+	    throw new DataAccessException("Error in  BaseJpaDAO.findByPrimaryKey(Class realClass, Object pkValue): " + e.toString(), e);
+	}
+	log.info("************ Done ***************");
+	return result;
+    }
+
+    public Object findObjectByTemplate(Object templateVO) throws DataAccessException {
+	log.info("************Entering***************");
+	Object result = null;
+
+	try {
+	    final Collection temp = findCollectionByTemplate(templateVO, 0, 1, null);
+	    if (temp != null && temp.size() > 0) {
+		result = temp.iterator().next();
+	    }
+	} catch (final Exception e) {
+	    log.error("Exception caught : " + e.toString());
+	    throw new DataAccessException("Error in  BaseJpaDAO.findObjectByTemplate(Object templateVO): " + e.toString(), e);
+	}
+
+	log.info("************Done ***************");
+	return result;
+    }
+
+    public Object findObjectByQueryString(String queryString, Map parameters) throws DataAccessException {
+	log.debug("************Entering ***************");
+	Object result = null;
+	try {
+
+	    final Query query = getEntityManager().createQuery(queryString);
+
+	    setQueryParameters(query, parameters);
+	    result = query.getSingleResult();
+
+	} catch (final NoResultException e) {
+	    /**
+	     * NADA result queda null
+	     */
+	} catch (final Exception e) {
+	    log.error("Exception caught  : " + e.toString());
+	    throw new DataAccessException("Error in  BaseJPADAO.findCollectionByQueryString(String queryString, Map parameters) : " + e.toString(), e);
+	}
+	log.debug("************Done **************");
+	return result;
+    }
+
+    public Object findObjectByQueryString(String queryString) throws DataAccessException {
+	log.debug("************Entering ***************");
+	Object result = null;
+	try {
+
+	    final Query query = getEntityManager().createQuery(queryString);
+
+	    result = query.getSingleResult();
+
+	} catch (final NoResultException e) {
+	    /**
+	     * NADA result queda null
+	     */
+	} catch (final Exception e) {
+	    log.error("Exception caught  : " + e.toString());
+	    throw new DataAccessException("Error in  BaseJPADAO.findCollectionByQueryString(String queryString, Map parameters) : " + e.toString(), e);
+	}
+	log.debug("************Done **************");
+	return result;
+    }
+
+    public Object findObjectByQueryString(String queryString, String parameterName, Object parameterValue) throws DataAccessException {
+	log.debug("************Entering ***************");
+	Object result = null;
+	try {
+
+	    final HashMap parameters = new HashMap();
+	    parameters.put(parameterName, parameterValue);
+	    result = findObjectByQueryString(queryString, parameters);
+	} catch (final NoResultException e) {
+	    /**
+	     * NADA result queda null
+	     */
+	} catch (final Exception e) {
+	    log.error("Exception caught  : " + e.toString());
+	    throw new DataAccessException("Error in  BaseJpaDAO.findCollectionByQueryString(String queryString, String parameterName, Object parameterValue) : " + e.toString(), e);
+	}
+	log.debug("************Done **************");
+	return result;
+    }
+
+    public Collection findCollectionByQueryString(String queryString) throws DataAccessException {
+	log.debug("************Entering ***************");
+	Collection result;
+	try {
+	    queryString = translateIn(queryString);// added alessandro
+						   // 21-mar-2010
+	    final Query query = getEntityManager().createQuery(queryString);
+	    result = query.getResultList();
+
+	} catch (final Exception e) {
+	    log.error("Exception caught  : " + e.toString());
+	    throw new DataAccessException("Error in  BaseJpaDAO.findCollectionByQueryString(String queryString) : " + e.toString(), e);
+	}
+	log.debug("************Done **************");
+	return result;
+    }
+
+    public Collection findCollectionByQueryString(String queryString, String parameterName, Object parameterValue) throws DataAccessException {
+	log.debug("************Entering ***************");
+	Collection result;
+	try {
+
+	    final HashMap parameters = new HashMap();
+	    parameters.put(parameterName, parameterValue);
+	    result = findCollectionByQueryString(queryString, parameters);
+	} catch (final Exception e) {
+	    log.error("Exception caught  : " + e.toString());
+	    throw new DataAccessException("Error in  BaseJpaDAO.findCollectionByQueryString(String queryString, String parameterName, Object parameterValue) : " + e.toString(), e);
+	}
+	log.debug("************Done **************");
+	return result;
+    }
+
+    public Collection findCollectionByQueryString(String queryString, Integer firstResult, Integer maxResults) throws DataAccessException {
+	return findCollectionByQueryString(queryString, new HashMap(), firstResult, maxResults);
+    }
+
+    public Collection findCollectionByQueryString(String queryString, Map parameters, Integer firstResult, Integer maxResults) throws DataAccessException {
+	log.debug("************Entering ***************");
+	Collection result;
+	try {
+	    /*
+	     * queryString = translateInAll(queryString, parameters);// added //
+	     * alessandro // 21-mar-2010
+	     *
+	     */
+	    final Query query = getEntityManager().createQuery(queryString);
+
+	    setQueryParameters(query, parameters);
+	    if (firstResult != null) {
+		query.setFirstResult(firstResult.intValue());
+	    }
+	    if (maxResults != null) {
+		query.setMaxResults(maxResults.intValue());
+	    }
+	    result = query.getResultList();
+
+	} catch (final Exception e) {
+	    log.error("Exception caught  : " + e.toString());
+	    throw new DataAccessException("Error in  ImplIrisDAO.findCollectionByQueryString(String queryString, Map parameters,Integer firstResult, Integer maxResults) : " + e.toString(), e);
+	}
+	log.debug("************Done **************");
+	return result;
+    }
+
+    public Collection findCollectionByQueryString(String queryString, Map parameters) throws DataAccessException {
+	log.debug("************Entering ***************");
+	Collection result;
+	try {
+	    queryString = translateInAll(queryString, parameters);// added
+								  // alessandro
+								  // 21-mar-2010
+	    final Query query = getEntityManager().createQuery(queryString);
+
+	    setQueryParameters(query, parameters);
+	    result = query.getResultList();
+
+	} catch (final Exception e) {
+	    log.error("Exception caught  : " + e.toString());
+	    throw new DataAccessException("Error in  ImplIrisDAO.findCollectionByQueryString(String queryString, Map parameters) : " + e.toString(), e);
+	}
+	log.debug("************Done **************");
+	return result;
+    }
+
+    public Collection findCollectionByNativeQueryString(String queryString) throws DataAccessException {
+	log.debug("************Entering ***************");
+	Collection result;
+	try {
+	    final Query query = getEntityManager().createNativeQuery(queryString);
+	    result = query.getResultList();
+
+	} catch (final Exception e) {
+	    log.error("Exception caught  : " + e.toString());
+	    throw new DataAccessException("Error in  BaseJpaDAO.findCollectionByNativeQueryString(String queryString) : " + e.toString(), e);
+	}
+	log.debug("************Done **************");
+	return result;
+    }
+
+    public Collection findCollectionByNativeQueryString(String queryString, String parameterName, Object parameterValue) throws DataAccessException {
+	log.debug("************Entering ***************");
+	Collection result;
+	try {
+
+	    final HashMap parameters = new HashMap();
+	    parameters.put(parameterName, parameterValue);
+	    result = findCollectionByNativeQueryString(queryString, parameters);
+	} catch (final Exception e) {
+	    log.error("Exception caught  : " + e.toString());
+	    throw new DataAccessException("Error in  BaseJpaDAO.findCollectionByNativeQueryString(String queryString, String parameterName, Object parameterValue) : " + e.toString(), e);
+	}
+	log.debug("************Done **************");
+	return result;
+    }
+
+    public Collection findCollectionByNativeQueryString(String queryString, Map parameters) throws DataAccessException {
+	log.debug("************Entering ***************");
+	Collection result;
+	try {
+	    final Query query = getEntityManager().createNativeQuery(queryString);
+
+	    setQueryParameters(query, parameters);
+	    result = query.getResultList();
+
+	} catch (final Exception e) {
+	    log.error("Exception caught  : " + e.toString());
+	    throw new DataAccessException("Error in  ImplIrisDAO.findCollectionByNativeQueryString(String queryString, Map parameters) : " + e.toString(), e);
+	}
+	log.debug("************Done **************");
+	return result;
+    }
+
+    public Collection findCollectionByTemplate(Object templateVO, Integer firstResult, Integer maxResults, String orderingField) throws DataAccessException {
+	log.info("************Entering ***************");
+	Collection result = null;
+
+	final PropertyUtilsBean propertyUtilsBean = BeanUtilsBean.getInstance().getPropertyUtils();
+
+	try {
+	    final Map m = propertyUtilsBean.describe(templateVO);
+	    final Map parameters = new HashMap();
+	    // String queryString = "SELECT c FROM " +
+	    // templateVO.getClass().getSimpleName() + " c ";
+	    String queryString = "SELECT c FROM " + getEntityClass(templateVO).getSimpleName() + " c ";
+	    String whereCondition = "";
+	    if (m != null) {
+		int i = 0;
+		for (final Object key : m.keySet()) {
+		    // if (!key.equals("class") &&
+		    // getAnnotation(templateVO.getClass(), key.toString(),
+		    // Transient.class)==null) {
+		    if (!key.equals("class") && getAnnotation(getEntityClass(templateVO), key.toString(), Transient.class) == null) {
+			final Object value = m.get(key);
+
+			if (value != null) {
+			    final String lastToken = Utils.getExceptLastTokenAndLastToken((String) key)[1];
+			    // ConvertUtils.convert(m.get(key),
+			    // propertyUtilsBean.getPropertyType(templateVO,
+			    // key.toString()));
+			    whereCondition += " c." + key + " = :" + lastToken + i + " AND";
+			    parameters.put(lastToken + i, value);
+			    i++;
+			}
+		    }
+		}
+		if (!whereCondition.trim().equals("")) {
+		    whereCondition = whereCondition.substring(0, whereCondition.lastIndexOf("AND"));
+		    queryString += " WHERE " + whereCondition;
+		}
+		if (orderingField != null && !orderingField.trim().equals("")) {
+		    queryString += " ORDER BY " + orderingField;
+		}
+
+		final Query query = getEntityManager().createQuery(queryString);
+
+		setQueryParameters(query, parameters);
+		if (firstResult != null) {
+		    query.setFirstResult(firstResult.intValue());
+		}
+		if (maxResults != null) {
+		    query.setMaxResults(maxResults.intValue());
+		}
+		result = query.getResultList();
+
+	    }
+	} catch (final IllegalAccessException e) {
+	    log.error("IllegalAccessException caught : " + e.toString());
+	    throw new DataAccessException("Error in  BaseJpaDAO.findCollectionByTemplate(Object templateVO, Integer firstResult, Integer maxResults, String orderingField): " + e.toString(), e);
+	} catch (final InvocationTargetException e) {
+	    log.error("InvocationTargetException caught : " + e.toString());
+	    throw new DataAccessException("Error in  BaseJpaDAO.findCollectionByTemplate(Object templateVO, Integer firstResult, Integer maxResults, String orderingField): " + e.toString(), e);
+	} catch (final NoSuchMethodException e) {
+	    log.error("NoSuchMethodException caught : " + e.toString());
+	    throw new DataAccessException("Error in  BaseJpaDAO.findCollectionByTemplate(Object templateVO, Integer firstResult, Integer maxResults, String orderingField): " + e.toString(), e);
+	} catch (final Exception e) {
+	    log.error("Exception caught : " + e.toString());
+	    throw new DataAccessException("Error in  BaseJpaDAO.findCollectionByTemplate(Object templateVO, Integer firstResult, Integer maxResults, String orderingField): " + e.toString(), e);
+	}
+
+	log.info("************Done   ***************");
+	return result;
+    }
+
+    public Collection findCollectionByTemplate(Object templateVO) throws DataAccessException {
+	log.info("************Entering ***************");
+	Collection result = null;
+
+	try {
+	    result = findCollectionByTemplate(templateVO, null, null, null);
+	} catch (final Exception e) {
+	    log.error("Exception caught : " + e.toString());
+	    throw new DataAccessException("Error in  BaseJpaDAO.findCollectionByTemplate(Object templateVO): " + e.toString(), e);
+	}
+
+	log.info("************Done ***************");
+	return result;
+    }
+
+    public Collection findCollectionByTemplate(Object templateVO, String orderingField, Boolean asc) throws DataAccessException {
+	log.info("************Entering ***************");
+	Collection result = null;
+
+	try {
+	    String order = null;
+	    if (orderingField != null && !orderingField.trim().equals("")) {
+		if (asc != null) {
+		    if (asc) {
+			order = orderingField + " ASC";
+		    } else {
+			order = orderingField + " DESC";
+		    }
+		}
+	    }
+
+	    result = findCollectionByTemplate(templateVO, null, null, order);
+	} catch (final Exception e) {
+	    log.error("Exception caught : " + e.toString());
+	    throw new DataAccessException("Error in  BaseJpaDAO.findCollectionByTemplate(Object templateVO, String orderingField, Boolean asc): " + e.toString(), e);
+	}
+
+	log.info("************Done ***************");
+	return result;
+    }
+
+    public Collection findCollectionByNullFields(Class realClass, String[] nullFields) throws DataAccessException {
+	log.info("************Entering ***************");
+	Collection result = null;
+
+	try {
+	    String queryString = "SELECT c FROM " + realClass.getSimpleName() + " c ";
+	    String whereCondition = "";
+	    if (nullFields != null) {
+		for (final String nullField : nullFields) {
+		    whereCondition += " c." + nullField + " IS  NULL AND";
+		}
+	    }
+	    if (!whereCondition.equals("")) {
+		whereCondition = whereCondition.substring(0, whereCondition.lastIndexOf("AND"));
+		queryString += " WHERE " + whereCondition;
+	    }
+	    log.debug("queryString is " + queryString);
+	    final Query query = getEntityManager().createQuery(queryString);
+	    result = query.getResultList();
+	} catch (final Exception e) {
+	    log.error("Exception caught : " + e.toString());
+	    throw new DataAccessException("Error in  BaseJpaDAO.findCollectionByNullFields(Class realClass, String[] nullFields) : " + e.toString(), e);
+	}
+	log.info("************Done **************");
+	return result;
+    }
+
+    public Object findObjectByLogicCondition(java.lang.Class realClass, LogicCondition logicCondition) throws DataAccessException {
+	log.debug("************Entering ***************");
+	Object result;
+	try {
+
+	    // Query query = createQuery(realClass, logicCondition);
+	    // result = query.getSingleResult();
+	    result = findObjectByLogicCondition(null, realClass, logicCondition, null);
+
+	} catch (final Exception e) {
+	    log.error("Exception caught  : " + e.toString());
+	    throw new DataAccessException("Error in  BaseJpaDAO.findObjectByLogicCondition(java.lang.Class realClass, LogicCondition logicCondition) : " + e.toString(), e);
+	}
+	log.info("************Done **************");
+	return result;
+    }
+
+    public Object findObjectByLogicCondition(String[] selectFields, java.lang.Class realClass, LogicCondition logicCondition) throws DataAccessException {
+	log.debug("************Entering ***************");
+	Object result;
+	try {
+
+	    // Query query = createQuery(selectFields, realClass,
+	    // logicCondition);
+	    // result = query.getSingleResult();
+	    result = findObjectByLogicCondition(selectFields, realClass, logicCondition, null);
+
+	} catch (final Exception e) {
+	    log.error("Exception caught: " + e.toString());
+	    throw new DataAccessException("Error in  BaseJpaDAO.findObjectByLogicCondition(String[]selectFields, java.lang.Class realClass, LogicCondition logicCondition) : " + e.toString(), e);
+	}
+	log.info("************Done **************");
+	return result;
+    }
+
+    public Object findObjectByLogicCondition(String[] selectFields, java.lang.Class realClass, LogicCondition logicCondition, String orderBy) throws DataAccessException {
+	log.debug("************Entering ***************");
+	Object result = null;
+	try {
+
+	    final Query query = createQuery(null, selectFields, realClass, logicCondition, orderBy);
+	    result = query.getSingleResult();
+	    // Collection collectionResult = query.getResultList();
+	    // if(collectionResult!=null && !collectionResult.isEmpty()){
+	    // result=collectionResult.iterator().next();
+	    // }
+
+	} catch (final NoResultException e) {
+	    return null;
+	} catch (final Exception e) {
+	    log.error("Exception caught: " + e.toString());
+	    throw new DataAccessException(
+		    "Error in  BaseJpaDAO.findObjectByLogicCondition(String[]selectFields, java.lang.Class realClass, LogicCondition logicCondition, String orderBy) : " + e.toString(), e);
+	}
+	log.info("************Done **************");
+	return result;
+    }
+
+    public Object findObjectByLogicCondition(java.lang.Class realClass, LogicCondition logicCondition, String orderBy) throws DataAccessException {
+	log.debug("************Entering ***************");
+	Object result;
+	try {
+
+	    // Query query = createQuery(null, null, realClass, logicCondition,
+	    // orderBy);
+	    // result = query.getSingleResult();
+	    result = findObjectByLogicCondition(null, realClass, logicCondition, orderBy);
+
+	} catch (final Exception e) {
+	    log.error("Exception caught: " + e.toString());
+	    throw new DataAccessException("Error in  BaseJpaDAO.findObjectByLogicCondition(java.lang.Class realClass, LogicCondition logicCondition, String orderBy) : " + e.toString(), e);
+	}
+	log.info("************Done **************");
+	return result;
+    }
+
+    public Collection findCollectionByLogicCondition(java.lang.Class realClass, LogicCondition logicCondition) throws DataAccessException {
+	log.debug("************Entering ***************");
+	Collection result;
+	try {
+
+	    final Query query = createQuery(realClass, logicCondition);
+	    result = query.getResultList();
+
+	} catch (final NoResultException e) {
+	    result = null;
+	} catch (final Exception e) {
+	    log.error("Exception caught  : " + e.toString());
+	    throw new DataAccessException("Error in  BaseJpaDAO.findCollectionByLogicCondition(java.lang.Class realClass, LogicCondition logicCondition) : " + e.toString(), e);
+	}
+	log.info("************Done **************");
+	return result;
+    }
+
+    public Collection findCollectionByLogicCondition(Class realClass, LogicCondition logicCondition, String orderingField, Boolean asc, Integer startAtIndex, Integer maxResults)
+	    throws DataAccessException {
+	log.info("************Entering ***************");
+	Collection result = null;
+
+	try {
+	    String orderBy = null;
+	    if (orderingField != null && !orderingField.trim().equals("")) {
+		if (asc != null) {
+		    if (asc) {
+			orderBy = orderingField + " ASC";
+		    } else {
+			orderBy = orderingField + " DESC";
+		    }
+		}
+	    }
+	    // Integer maxResults = null;
+	    // if(startAtIndex!=null && endAtIndex!=null)
+	    // maxResults=endAtIndex-startAtIndex;
+
+	    // result = findCollectionByLogicCondition(realClass,
+	    // logicCondition, orderBy, startAtIndex, endAtIndex-startAtIndex);
+	    result = findCollectionByLogicCondition(realClass, logicCondition, orderBy, startAtIndex, maxResults);
+	} catch (final Exception e) {
+	    log.error("Exception caught  : " + e.toString());
+	    throw new DataAccessException(
+		    "Error in  BaseJpaDAO.findCollectionByLogicCondition(Class realClass,LogicCondition logicCondition,String orderingField, Boolean asc,Integer startAtIndex, Integer endAtIndex) : "
+			    + e.toString(),
+		    e);
+	}
+
+	log.info("************Done ***************");
+	return result;
+    }
+
+    public Collection findCollectionByLogicCondition(String[] selectFields, java.lang.Class realClass, LogicCondition logicCondition) throws DataAccessException {
+	log.debug("************Entering ***************");
+	Collection result;
+	try {
+
+	    final Query query = createQuery(selectFields, realClass, logicCondition);
+	    result = query.getResultList();
+
+	} catch (final Exception e) {
+	    log.error("Exception caught: " + e.toString());
+	    throw new DataAccessException("Error in  BaseJpaDAO.findCollectionByLogicCondition(String[]selectFields, java.lang.Class realClass, LogicCondition logicCondition) : " + e.toString(), e);
+	}
+	log.info("************Done **************");
+	return result;
+    }
+
+    public Collection findCollectionByLogicCondition(String[] selectFields, java.lang.Class realClass, LogicCondition logicCondition, String orderBy) throws DataAccessException {
+	log.debug("************Entering ***************");
+	Collection result;
+	try {
+
+	    // Query query = createQuery(selectFields, realClass,
+	    // logicCondition, orderBy);
+	    final Query query = createQuery(null, selectFields, realClass, logicCondition, orderBy);
+	    result = query.getResultList();
+
+	} catch (final Exception e) {
+	    log.error("Exception caught: " + e.toString());
+	    throw new DataAccessException(
+		    "Error in  BaseJpaDAO.findCollectionByLogicCondition(String[]selectFields, java.lang.Class realClass, LogicCondition logicCondition, String orderBy) : " + e.toString(), e);
+	}
+	log.info("************Done **************");
+	return result;
+    }
+
+    public Collection findCollectionByLogicCondition(java.lang.Class realClass, LogicCondition logicCondition, String orderBy) throws DataAccessException {
+	log.debug("************Entering ***************");
+	Collection result;
+	try {
+
+	    // Query query = createQuery(null, realClass, logicCondition,
+	    // orderBy);
+	    final Query query = createQuery(null, null, realClass, logicCondition, orderBy);
+	    result = query.getResultList();
+
+	} catch (final Exception e) {
+	    log.error("Exception caught: " + e.toString());
+	    throw new DataAccessException("Error in  BaseJpaDAO.findCollectionByLogicCondition(java.lang.Class realClass, LogicCondition logicCondition, String orderBy) : " + e.toString(), e);
+	}
+	log.info("************Done **************");
+	return result;
+    }
+
+    public Collection findCollectionByLogicCondition(Boolean distinct, String[] selectFields, java.lang.Class realClass, LogicCondition logicCondition, String orderBy) throws DataAccessException {
+	log.debug("************Entering ***************");
+	Collection result;
+	try {
+
+	    // Query query = createQuery(selectFields, realClass,
+	    // logicCondition, orderBy);
+	    final Query query = createQuery(distinct, selectFields, realClass, logicCondition, orderBy);
+	    result = query.getResultList();
+
+	} catch (final Exception e) {
+	    log.error("Exception caught: " + e.toString());
+	    throw new DataAccessException(
+		    "Error in  BaseJpaDAO.findCollectionByLogicCondition(Boolean distinct,String[]selectFields, java.lang.Class realClass, LogicCondition logicCondition, String orderBy) : "
+			    + e.toString(),
+		    e);
+	}
+	log.info("************Done **************");
+	return result;
+    }
+
+    public Collection findCollectionByLogicCondition(Boolean distinct, String[] selectFields, java.lang.Class realClass, LogicCondition logicCondition, String orderBy, String[] groupBy,
+	    Integer firstResult, Integer maxResults) throws DataAccessException {
+	log.debug("************Entering ***************");
+	Collection result;
+	try {
+	    final Query query = createQuery(distinct, selectFields, realClass, logicCondition, orderBy, groupBy);
+
+	    if (firstResult != null) {
+		query.setFirstResult(firstResult.intValue());
+	    }
+	    if (maxResults != null) {
+		query.setMaxResults(maxResults.intValue());
+	    }
+
+	    result = query.getResultList();
+
+	} catch (final Exception e) {
+	    log.error("Exception caught: " + e.toString());
+	    throw new DataAccessException(
+		    "Error in  BaseJpaDAO.findCollectionByLogicCondition(Boolean distinct,String[] selectFields, java.lang.Class realClass, LogicCondition logicCondition, String orderBy,String[] groupBy,Integer firstResult, Integer maxResults) : "
+			    + e.toString(),
+		    e);
+	}
+	log.info("************Done **************");
+	return result;
+    }
+
+    public Collection findCollectionByLogicCondition(Boolean distinct, String[] selectFields, java.lang.Class realClass, LogicCondition logicCondition, String orderBy, Integer firstResult,
+	    Integer maxResults) throws DataAccessException {
+	log.debug("************Entering ***************");
+	Collection result;
+	try {
+	    final Query query = createQuery(distinct, selectFields, realClass, logicCondition, orderBy);
+
+	    if (firstResult != null) {
+		query.setFirstResult(firstResult.intValue());
+	    }
+	    if (maxResults != null) {
+		query.setMaxResults(maxResults.intValue());
+	    }
+
+	    result = query.getResultList();
+
+	} catch (final Exception e) {
+	    log.error("Exception caught: " + e.toString());
+	    throw new DataAccessException(
+		    "Error in  BaseJpaDAO.findCollectionByLogicCondition(Boolean distinct,String[] selectFields, java.lang.Class realClass, LogicCondition logicCondition, String orderBy,Integer firstResult, Integer maxResults) : "
+			    + e.toString(),
+		    e);
+	}
+	log.info("************Done **************");
+	return result;
+    }
+
+    public Collection findCollectionByLogicCondition(String[] selectFields, java.lang.Class realClass, LogicCondition logicCondition, String orderBy, Integer firstResult, Integer maxResults)
+	    throws DataAccessException {
+	log.debug("************Entering ***************");
+	Collection result;
+	try {
+	    final Query query = createQuery(null, selectFields, realClass, logicCondition, orderBy);
+
+	    if (firstResult != null) {
+		query.setFirstResult(firstResult.intValue());
+	    }
+	    if (maxResults != null) {
+		query.setMaxResults(maxResults.intValue());
+	    }
+
+	    result = query.getResultList();
+
+	} catch (final Exception e) {
+	    log.error("Exception caught: " + e.toString());
+	    throw new DataAccessException(
+		    "Error in  BaseJpaDAO.findCollectionByLogicCondition(String[] selectFields, java.lang.Class realClass, LogicCondition logicCondition, String orderBy,Integer firstResult, Integer maxResults) : "
+			    + e.toString(),
+		    e);
+	}
+	log.info("************Done **************");
+	return result;
+    }
+
+    public Collection findCollectionByLogicCondition(java.lang.Class realClass, LogicCondition logicCondition, String orderBy, Integer firstResult, Integer maxResults) throws DataAccessException {
+	log.debug("************Entering ***************");
+	Collection result;
+	try {
+	    final Query query = createQuery(null, null, realClass, logicCondition, orderBy);
+
+	    if (firstResult != null) {
+		query.setFirstResult(firstResult.intValue());
+	    }
+	    if (maxResults != null) {
+		query.setMaxResults(maxResults.intValue());
+	    }
+
+	    result = query.getResultList();
+
+	} catch (final Exception e) {
+	    log.error("Exception caught: " + e.toString());
+	    throw new DataAccessException("Error in  BaseJpaDAO.findCollectionByLogicCondition(java.lang.Class realClass, LogicCondition logicCondition, String orderBy) : " + e.toString(), e);
+	}
+	log.info("************Done **************");
+	return result;
+    }
+
+    public Collection findCollectionByLogicCondition(Boolean distinct, java.lang.Class realClass, LogicCondition logicCondition, String orderBy) throws DataAccessException {
+	log.debug("************Entering ***************");
+	Collection result;
+	try {
+
+	    // Query query = createQuery(selectFields, realClass,
+	    // logicCondition, orderBy);
+	    final Query query = createQuery(distinct, null, realClass, logicCondition, orderBy);
+	    result = query.getResultList();
+
+	} catch (final Exception e) {
+	    log.error("Exception caught: " + e.toString());
+	    throw new DataAccessException(
+		    "Error in  BaseJpaDAO.findCollectionByLogicCondition(Boolean distinct, java.lang.Class realClass, LogicCondition logicCondition, String orderBy) : " + e.toString(), e);
+	}
+	log.info("************Done **************");
+	return result;
+    }
+
+    public Collection findCollectionByLogicCondition(Boolean distinct, java.lang.Class realClass, LogicCondition logicCondition) throws DataAccessException {
+	log.debug("************Entering ***************");
+	Collection result;
+	try {
+
+	    // Query query = createQuery(selectFields, realClass,
+	    // logicCondition, orderBy);
+	    final Query query = createQuery(distinct, null, realClass, logicCondition, null);
+	    result = query.getResultList();
+
+	} catch (final Exception e) {
+	    log.error("Exception caught: " + e.toString());
+	    throw new DataAccessException("Error in  BaseJpaDAO.findCollectionByLogicCondition(Boolean distinct, java.lang.Class realClass, LogicCondition logicCondition) : " + e.toString(), e);
+	}
+	log.info("************Done **************");
+	return result;
+    }
+
+    public Collection findCollectionByLogicCondition(Boolean distinct, String[] selectFields, java.lang.Class realClass, LogicCondition logicCondition) throws DataAccessException {
+	log.debug("************Entering ***************");
+	Collection result;
+	try {
+
+	    // Query query = createQuery(selectFields, realClass,
+	    // logicCondition, orderBy);
+	    final Query query = createQuery(distinct, selectFields, realClass, logicCondition, null);
+	    result = query.getResultList();
+
+	} catch (final Exception e) {
+	    log.error("Exception caught: " + e.toString());
+	    throw new DataAccessException(
+		    "Error in  BaseJpaDAO.findCollectionByLogicCondition(Boolean distinct,String[]selectFields, java.lang.Class realClass, LogicCondition logicCondition) : " + e.toString(), e);
+	}
+	log.info("************Done **************");
+	return result;
+    }
+
     /**
-     * It works only id pAttributeName is a direct reference (ManyToOne, OneToOne)
+     * @deprecated use
+     *             {@link #findCollectionByLogicCondition(Class realClass, it.aco.mandragora.query.LogicCondition logicCondition,String orderingField, Boolean asc, Integer startAtIndex, Integer endAtIndex)}
+     */
+    @Deprecated
+    public Collection findLimitedOrderedCollectionByLogicCondition(Class realClass, LogicCondition logicCondition, String orderingField, boolean asc, int startAtIndex, int endAtIndex)
+	    throws DataAccessException {
+	return findCollectionByLogicCondition(realClass, logicCondition, orderingField, new Boolean(asc), new Integer(startAtIndex), new Integer(endAtIndex));
+    }
+
+    public Collection findCollectionByOrValues(Class realClass, String pAttributeName, Collection valuesCollection) throws DataAccessException {
+	log.info("************Entering  ***************");
+	Collection result = null;
+
+	try {
+	    if (valuesCollection != null && !valuesCollection.isEmpty()) {
+		final Map parameters = new HashMap();
+		String queryString = "SELECT c FROM " + realClass.getSimpleName() + " c  WHERE ";
+
+		int i = 0;
+		final Iterator iterator = valuesCollection.iterator();
+		while (iterator.hasNext()) {
+
+		    Object value = new Object();
+		    value = iterator.next();
+		    if (value != null) {
+			final String parameter = "parameter" + i;
+			queryString += " c." + pAttributeName + " = :" + parameter + " OR";
+			parameters.put(parameter, value);
+			i++;
+		    } else {
+			queryString += " c." + pAttributeName + "IS NULL OR";
+		    }
+		}
+		queryString = queryString.substring(0, queryString.lastIndexOf("OR"));
+
+		final Query query = getEntityManager().createQuery(queryString);
+
+		setQueryParameters(query, parameters);
+		result = query.getResultList();
+	    }
+	} catch (final Exception e) {
+	    log.error("Exception caught: " + e.toString());
+	    throw new DataAccessException("Error in  BaseJpaDAO.findCollectionByOrValues(Class realClass,String pAttributeName,Collection valuesCollection) : " + e.toString(), e);
+	}
+	log.info("************Done ***************");
+	return result;
+    }
+
+    public Collection findCollectionByFieldsNotEqualsToValues(Class realClass, String[] pAttributeNames, Object[] valuesArray) throws DataAccessException {
+	log.info("************Entering ***************");
+
+	Collection result;
+	try {
+	    result = null;
+	    if (valuesArray == null || pAttributeNames == null || valuesArray.length != pAttributeNames.length) {
+		throw new DataAccessException(
+			"DataAccessException in BaseJpaDAO.findCollectionByFieldsNotEqualsToValues(Class realClass,String[] pAttributeNames,Object[] valuesArray): pAttributeNames and values must not be null and must have the same length ");
+	    }
+
+	    final Map parameters = new HashMap();
+	    String queryString = "SELECT c FROM " + realClass.getSimpleName() + " c   ";
+
+	    if (pAttributeNames.length > 0) {
+		String whereCondition = "";
+		for (int i = 0; i < pAttributeNames.length; i++) {
+		    final String parameter = "parameter" + i;
+		    whereCondition += " c." + pAttributeNames[i] + " <> :" + parameter + " AND";
+		    parameters.put(parameter, valuesArray[i]);
+		}
+
+		whereCondition = whereCondition.substring(0, whereCondition.lastIndexOf("AND"));
+		queryString += " WHERE " + whereCondition;
+	    }
+	    final Query query = getEntityManager().createQuery(queryString);
+
+	    setQueryParameters(query, parameters);
+	    result = query.getResultList();
+	} catch (final Exception e) {
+	    log.error("Exception caught: " + e.toString());
+	    throw new DataAccessException("Error in  BaseJpaDAO.findCollectionByFieldsNotEqualsToValues(Class realClass,String[] pAttributeNames,Object[] valuesArray) : " + e.toString(), e);
+	}
+	log.info("************Done *************");
+	return result;
+    }
+
+    public Collection findCollectionByAndFieldsOperatorValues(Class realClass, String[] pAttributeNames, String[] operators, Object[] valuesArray) throws DataAccessException {
+	log.info("************Entering ***************");
+	Collection result = null;
+
+	try {
+	    if (valuesArray == null || pAttributeNames == null || operators == null || valuesArray.length != pAttributeNames.length || operators.length != pAttributeNames.length) {
+		throw new DataAccessException(
+			"DataAccessException in BaseJpaDAO.findCollectionByAndFieldsOperatorValues(Class realClass,String[] pAttributeNames, String[] operators,Object[] valuesArray):properties,operators and values must not be null and must have the same length ");
+	    }
+
+	    final Map parameters = new HashMap();
+	    String queryString = "SELECT c FROM " + realClass.getSimpleName() + " c ";
+
+	    if (pAttributeNames.length > 0) {
+		String whereCondition = "";
+		for (int i = 0; i < pAttributeNames.length; i++) {
+
+		    final String parameter = "parameter" + i;
+		    final String operator = operators[i].equals("!=") ? "<>" : operators[i].equals("==") ? "=" : operators[i];
+		    whereCondition += " c." + pAttributeNames[i] + " " + operator + " :" + parameter + " AND";
+		    parameters.put(parameter, valuesArray[i]);
+		}
+		whereCondition = whereCondition.substring(0, whereCondition.lastIndexOf("AND"));
+		queryString += " WHERE " + whereCondition;
+	    }
+	    final Query query = getEntityManager().createQuery(queryString);
+
+	    setQueryParameters(query, parameters);
+	    result = query.getResultList();
+	} catch (final Exception e) {
+	    log.error("Exception caught: " + e.toString());
+	    throw new DataAccessException(
+		    "Error in  BaseJpaDAO.findCollectionByAndFieldsOperatorValues(Class realClass,String[] pAttributeNames, String[] operators,Object[] valuesArray): " + e.toString(), e);
+	}
+
+	log.info("************Done *************");
+	return result;
+    }
+
+    public Collection findCollectionByArrayOfFieldsOperatorsMatrixAndOrValues(Class realClass, String[] pAttributeNames, String[] operators, Object[][] valuesMatrix) throws DataAccessException {
+	log.info("************Entering **************");
+	Collection result = null;
+	try {
+	    if (valuesMatrix == null || pAttributeNames == null || operators == null || operators.length != pAttributeNames.length || operators.length == 0) {
+		throw new DataAccessException(
+			"DataAccessException in BaseJpaDAO.findCollectionByArrayOfFieldsOperatorsMatrixAndOrValues(Class realClass,String[] pAttributeNames, String[] operators,Object[][] valuesMatrix, PersistenceBroker broker ):pAttributeNames and operators  must not be null,  must have the same length and can't be empty ");
+	    }
+	    if (valuesMatrix.length == 0) {
+		throw new DataAccessException(
+			"DataAccessException in BaseJpaDAO.findCollectionByArrayOfFieldsOperatorsMatrixAndOrValues(Class realClass,String[] pAttributeNames, String[] operators,Object[][] valuesMatrix):valuesMatrix must not be empty");
+	    }
+
+	    final Map parameters = new HashMap();
+	    String queryString = "SELECT c FROM " + realClass.getSimpleName() + " c  WHERE ";
+
+	    for (int i = 0; i < valuesMatrix.length; i++) {
+		if (valuesMatrix[i].length != pAttributeNames.length) {
+		    throw new DataAccessException(
+			    "OjbPbCoreException in DataAccessException.findCollectionByArrayOfFieldsOperatorsMatrixAndOrValues(Class realClass,String[] pAttributeNames, String[] operators,Object[][] valuesMatrix):valuesMatrix["
+				    + i + "] have the same length of pAttributeNames");
+		}
+		queryString += " ( ";
+		for (int j = 0; j < valuesMatrix[i].length; j++) {
+
+		    final String parameter = "parameter" + i + "_" + j;
+		    final String operator = operators[i].equals("!=") ? "<>" : operators[i].equals("==") ? "=" : operators[i];
+
+		    queryString += " c." + pAttributeNames[j] + " " + operator + " :" + parameter + " AND";
+		    parameters.put(parameter, valuesMatrix[i][j]);
+		}
+		queryString = queryString.substring(0, queryString.lastIndexOf("AND"));
+		queryString += " ) OR ";
+	    }
+	    queryString = queryString.substring(0, queryString.lastIndexOf("OR"));
+	    final Query query = getEntityManager().createQuery(queryString);
+	    setQueryParameters(query, parameters);
+	    result = query.getResultList();
+	} catch (final Exception e) {
+	    log.error("Exception caught: " + e.toString());
+	    throw new DataAccessException(
+		    "Error in  BaseJpaDAO.findCollectionByArrayOfFieldsOperatorsMatrixAndOrValues(Class realClass,String[] pAttributeNames, String[] operators, Object[][] valuesMatrix): "
+			    + e.toString(),
+		    e);
+	}
+	log.info("************Done ************");
+	return result;
+    }
+
+    public Collection findCollectionByFieldInCollection(Class realClass, String pAttributeName, Collection valuesCollection) throws DataAccessException {
+
+	log.info("************Entering ***************");
+	Collection result = null;
+	try {
+	    if (valuesCollection != null && !valuesCollection.isEmpty()) {
+		final Map parameters = new HashMap();
+		String queryString = "SELECT c FROM " + realClass.getSimpleName() + " c ";
+		if (valuesCollection.size() > this.inLimit) {
+		    final ArrayList<List> splitIn = splitIn(valuesCollection);
+		    queryString += " WHERE (" + orOfInsCollection("c." + pAttributeName, "parameter", splitIn, parameters) + " )";
+		} else {
+		    queryString += " WHERE c." + pAttributeName + " IN (:parameter)";
+		    parameters.put("parameter", valuesCollection);
+		}
+		final Query query = getEntityManager().createQuery(queryString);
+		setQueryParameters(query, parameters);
+		result = query.getResultList();
+	    }
+	} catch (final Exception e) {
+	    log.error("Exception caught: " + e.toString());
+	    throw new DataAccessException("Error in  BaseJpaDAO.findCollectionByFieldInCollection(Class realClass,String pAttributeName,Collection valuesCollection): " + e.toString(), e);
+	}
+
+	log.info("************Done *************");
+	return result;
+    }
+
+    public Collection searchValueInFields(Class realClass, String[] pAttributeNames, Object value) throws DataAccessException {
+	log.info("************Entering ***************");
+	Collection result = null;
+
+	try {
+	    if (pAttributeNames != null && pAttributeNames.length > 0 && value != null) {
+
+		final Map parameters = new HashMap();
+		parameters.put("parameter", value);
+
+		String queryString = "SELECT c FROM " + realClass.getSimpleName() + " c  WHERE ";
+
+		for (final String pAttributeName : pAttributeNames) {
+		    // queryString += " c." + pAttributeNames[i] + " LIKE
+		    // %:parameter% OR ";
+		    queryString += " c." + pAttributeName + " LIKE concat('%',:parameter,'%') OR ";
+		    // LIKE lower(concat('%',:" + fieldLastToken + ",'%'))";
+		}
+
+		queryString = queryString.substring(0, queryString.lastIndexOf("OR"));
+		final Query query = getEntityManager().createQuery(queryString);
+		setQueryParameters(query, parameters);
+		result = query.getResultList();
+	    }
+	} catch (final Exception e) {
+	    log.error("Exception caught: " + e.toString());
+	    throw new DataAccessException("Error in  BaseJpaDAO.searchValueInFields(Class realClass, String[] pAttributeNames, Object value): " + e.toString(), e);
+	}
+
+	log.info("************Done ************");
+	return result;
+    }
+
+    /*
+     * TODO make it work with dot separated pAttributeName (non-Javadoc)
+     *
+     * @see
+     * it.aco.mandragora.dao.DAO#getCollectionOfStoredItemsNotInBean(java.lang.
+     * Object, java.lang.String)
+     */
+    public Collection getCollectionOfStoredItemsNotInBean(Object pInstance, String pAttributeName) throws DataAccessException {
+	log.info("************Entering **************");
+	Collection result = null;
+	try {
+
+	    result = getCollectionOfStoredItemsInOrNotInBean(pInstance, pAttributeName, true);
+	    // if(pAttributeName==null || pAttributeName.trim().equals("")){
+	    // log.error("Error in
+	    // BaseJpaDAO.getCollectionOfStoredItemsNotInBean(Object pInstance,
+	    // String pAttributeName) : pAttributeName can't be null or empty or
+	    // blank chacarcters string" );
+	    // throw new DataAccessException("Exception thrown in
+	    // BaseJpaDAO.getCollectionOfStoredItemsNotInBean(Object pInstance,
+	    // String pAttributeName) : pAttributeName can't be null or empty or
+	    // blank chacarcters string");
+	    // }
+	    //
+	    //
+	    // PropertyUtilsBean propertyUtilsBean =
+	    // BeanUtilsBean.getInstance().getPropertyUtils();
+	    // Class pInstanceClass = getEntityClass(pInstance);
+	    // Class pAttributeClass = getClassFromPath(pInstanceClass,
+	    // pAttributeName);
+	    // EntityInfo pAttributeEntityInfo = new
+	    // EntityInfo(pAttributeClass);
+	    //
+	    // Field pAttributeIdField = pAttributeEntityInfo.getIdField();
+	    // Collection pAttributeCollection =
+	    // (Collection)propertyUtilsBean.getProperty(pInstance,
+	    // pAttributeName);
+	    // Collection pAttributeIds = null;
+	    // if(pAttributeCollection!=null &&
+	    // !pAttributeCollection.isEmpty()){
+	    // pAttributeIds =
+	    // Utils.selectFieldFromCollection(pAttributeCollection,
+	    // pAttributeIdField.getName());
+	    // }
+	    //
+	    //
+	    // String pAttributeIdFieldName=pAttributeIdField.getName(); //
+	    // added alessandro on 05/08/2012
+	    //
+	    //
+	    //
+	    // Map parameters = new HashMap();
+	    // parameters.put("param0", pInstance);
+	    //
+	    // String queryString ="SELECT bbb FROM
+	    // "+pInstanceClass.getSimpleName()+" a join a."+pAttributeName+"
+	    // bbb WHERE a= :param0 " ;
+	    //
+	    //
+	    //
+	    // if(pAttributeIds!=null){
+	    // queryString += "AND NOT EXISTS (SELECT 1 FROM
+	    // "+pAttributeClass.getSimpleName()+" c WHERE ";
+	    // queryString+=" bbb."+pAttributeIdFieldName+" =
+	    // c."+pAttributeIdFieldName+ " AND ";
+	    // queryString +="(";
+	    // Iterator iterator = pAttributeIds.iterator();
+	    // int paramIndex=1;
+	    // while(iterator.hasNext()){
+	    // String param = "param"+paramIndex;
+	    // Object pAttributeId = iterator.next();
+	    // queryString+=" (c."+pAttributeIdFieldName+" = :"+param;
+	    // //queryString+=" AND bbb."+pAttributeIdFieldName+" =
+	    // c."+pAttributeIdFieldName;
+	    // queryString +=")";
+	    // parameters.put(param, pAttributeId);
+	    // if(iterator.hasNext()){
+	    // queryString+=" OR ";
+	    // }
+	    // paramIndex++;
+	    // }
+	    // queryString +=") )";
+	    // }
+	    //
+	    // result = findCollectionByQueryString(queryString, parameters);
+
+	} catch (final Exception e) {
+	    log.error("Exception caught: " + e.toString());
+	    throw new DataAccessException("Error in  BaseJpaDAO.getCollectionOfStoredItemsNotInBean(Object pInstance, String pAttributeName): " + e.toString(), e);
+	}
+	log.info("************Done **********");
+	return result;
+    }
+
+    /**
+     * TODO put in interface and bubble up; TODO make it work with dot separated
+     * pAttributeName
+     *
      * @param pInstance
      * @param pAttributeName
      * @return
      * @throws DataAccessException
      */
-	private boolean getNuevoStoreVOHasToBeStored(Object pInstance, String pAttributeName) throws DataAccessException{
-		boolean nuevoStoreVOHasToBeStored = true;
-		try {
-			boolean isCascadeAll = isCascade(pInstance, pAttributeName, CascadeType.ALL );
-			if(isCascadeAll){
-				nuevoStoreVOHasToBeStored = false;
-			}else{
-				PropertyUtilsBean propertyUtilsBean = BeanUtilsBean.getInstance().getPropertyUtils();
-				boolean isCascadePersist = isCascade(pInstance, pAttributeName, CascadeType.PERSIST );
-				boolean isCascadeMerge = isCascade(pInstance, pAttributeName, CascadeType.MERGE );
-				Object pReference = propertyUtilsBean.getProperty(pInstance, pAttributeName);
-				nuevoStoreVOHasToBeStored = getNuevoStoreVOHasToBeStored( pInstance,  pReference, isCascadeAll, isCascadePersist, isCascadeMerge);
+    public Collection getCollectionOfStoredItemsInBean(Object pInstance, String pAttributeName) throws DataAccessException {
+	log.info("************Entering **************");
+	Collection result = null;
+	try {
 
-			}
-		} catch (Exception e) {
-			log.error("Exception caught in BaseJpaDAO.getNuevoStoreVOHasToBeStored(Object pInstance, String pAttributeName): " + e.toString());
-            throw new DataAccessException("Error in BaseJpaDAO.getNuevoStoreVOHasToBeStored(Object pInstance, String pAttributeName): " + e.toString(),e);
-        
-		}
-    	return nuevoStoreVOHasToBeStored;
+	    result = getCollectionOfStoredItemsInOrNotInBean(pInstance, pAttributeName, false);
+
+	} catch (final Exception e) {
+	    log.error("Exception caught: " + e.toString());
+	    throw new DataAccessException("Error in  BaseJpaDAO.getCollectionOfStoredItemsInBean(Object pInstance, String pAttributeName): " + e.toString(), e);
 	}
-	
-	
-	private boolean getNuevoStoreVOHasToBeStored(Object pInstance, Object pReference,boolean isCascadeAll,boolean isCascadePersist,boolean isCascadeMerge) throws DataAccessException{
-		boolean nuevoStoreVOHasToBeStored = true;
-		try {
-			if(isCascadeAll){
-				nuevoStoreVOHasToBeStored = false;
-			}else{
-				Boolean isPersistedInstance = null;
-				Boolean isPersistedReference = null;
-				if(isCascadePersist){
-					isPersistedInstance = isPersisted(pInstance);
-					if(!isPersistedInstance ){
-						isPersistedReference = isPersisted(pReference);
-						if(!isPersistedReference){
-							nuevoStoreVOHasToBeStored=false;
-						}
-					}
-				}
-				if(nuevoStoreVOHasToBeStored && isCascadeMerge){
-					if(isPersistedInstance==null){
-						isPersistedInstance = isPersisted(pInstance);
-					}
-					if(isPersistedInstance){
-						if(isPersistedReference==null){
-							isPersistedReference = isPersisted(pReference);
-						}
-						if(isPersistedReference){
-							nuevoStoreVOHasToBeStored=false;
-						}
-					}
-				}
-			}
-		} catch (Exception e) {
-			log.error("Exception caught in BaseJpaDAO.getNuevoStoreVOHasToBeStored(Object pInstance, Object pReference,boolean isCascadeAll,boolean isCascadePersist,boolean isCascadeMerge): " + e.toString());
-            throw new DataAccessException("Error in BaseJpaDAO.getNuevoStoreVOHasToBeStored(Object pInstance, Object pReference,boolean isCascadeAll,boolean isCascadePersist,boolean isCascadeMerge): " + e.toString(),e);
-        
+	log.info("************Done **********");
+	return result;
+    }
+
+    private Collection getCollectionOfStoredItemsInOrNotInBean(Object pInstance, String pAttributeName, boolean notInBean) throws DataAccessException {
+	log.info("************Entering **************");
+	Collection result = null;
+	try {
+	    if (pAttributeName == null || pAttributeName.trim().equals("")) {
+		log.error(
+			"Error  in  BaseJpaDAO.getCollectionOfStoredItemsInOrNotInBean(Object pInstance, String pAttributeName, boolean notInBean) : pAttributeName can't be null or empty or blank chacarcters string");
+		throw new DataAccessException(
+			"Exception thrown in BaseJpaDAO.getCollectionOfStoredItemsInOrNotInBean(Object pInstance, String pAttributeName, boolean notInBean) : pAttributeName can't be null or empty or blank chacarcters string");
+	    }
+
+	    final PropertyUtilsBean propertyUtilsBean = BeanUtilsBean.getInstance().getPropertyUtils();
+	    final Class pInstanceClass = getEntityClass(pInstance);
+	    final Class pAttributeClass = getClassFromPath(pInstanceClass, pAttributeName);
+	    final EntityInfo pAttributeEntityInfo = new EntityInfo(pAttributeClass);
+
+	    final Field pAttributeIdField = pAttributeEntityInfo.getIdField();
+	    final Collection pAttributeCollection = (Collection) propertyUtilsBean.getProperty(pInstance, pAttributeName);
+	    Collection pAttributeIds = null;
+	    if (pAttributeCollection != null && !pAttributeCollection.isEmpty()) {
+		pAttributeIds = Utils.selectFieldFromCollection(pAttributeCollection, pAttributeIdField.getName());
+	    }
+
+	    final String pAttributeIdFieldName = pAttributeIdField.getName(); // added
+									      // alessandro
+									      // on
+									      // 05/08/2012
+
+	    final Map parameters = new HashMap();
+	    parameters.put("param0", pInstance);
+
+	    String queryString = "SELECT bbb FROM " + pInstanceClass.getSimpleName() + " a join a." + pAttributeName + " bbb  WHERE a= :param0 ";
+
+	    if (pAttributeIds != null) {
+		if (notInBean) {
+		    queryString += "AND NOT EXISTS ";
+		} else {
+		    queryString += "AND EXISTS ";
 		}
-    	return nuevoStoreVOHasToBeStored;
+
+		// queryString += "AND EXISTS (SELECT 1 FROM
+		// "+pAttributeClass.getSimpleName()+" c WHERE ";
+		queryString += "(SELECT 1 FROM " + pAttributeClass.getSimpleName() + " c WHERE ";
+		queryString += " bbb." + pAttributeIdFieldName + " = c." + pAttributeIdFieldName + " AND ";
+		queryString += "(";
+		final Iterator iterator = pAttributeIds.iterator();
+		int paramIndex = 1;
+		while (iterator.hasNext()) {
+		    final String param = "param" + paramIndex;
+		    final Object pAttributeId = iterator.next();
+		    queryString += " (c." + pAttributeIdFieldName + " = :" + param;
+		    // queryString+=" AND bbb."+pAttributeIdFieldName+" =
+		    // c."+pAttributeIdFieldName;
+		    queryString += ")";
+		    parameters.put(param, pAttributeId);
+		    if (iterator.hasNext()) {
+			queryString += " OR ";
+		    }
+		    paramIndex++;
+		}
+		queryString += ") )";
+	    }
+
+	    result = findCollectionByQueryString(queryString, parameters);
+
+	} catch (final IllegalAccessException e) {
+	    log.error("IllegalAccessException caught: " + e.toString());
+	    throw new DataAccessException("Error in  BaseJpaDAO.getCollectionOfStoredItemsInOrNotInBean(Object pInstance, String pAttributeName, boolean notInBean): " + e.toString(), e);
+	} catch (final InvocationTargetException e) {
+	    log.error("InvocationTargetException caught: " + e.toString());
+	    throw new DataAccessException("Error in  BaseJpaDAO.getCollectionOfStoredItemsInOrNotInBean(Object pInstance, String pAttributeName, boolean notInBean): " + e.toString(), e);
+	} catch (final NoSuchMethodException e) {
+	    log.error("NoSuchMethodException caught: " + e.toString());
+	    throw new DataAccessException("Error in  BaseJpaDAO.getCollectionOfStoredItemsInOrNotInBean(Object pInstance, String pAttributeName, boolean notInBean): " + e.toString(), e);
+	} catch (final Exception e) {
+	    log.error("Exception caught: " + e.toString());
+	    throw new DataAccessException("Error in  BaseJpaDAO.getCollectionOfStoredItemsInOrNotInBean(Object pInstance, String pAttributeName, boolean notInBean): " + e.toString(), e);
 	}
-	
-	
-    public Object updateCreateTrees(Object storeVO,Collection<String> trees, Boolean storeVOHasToBeUpdated, Boolean deleteChangedOneToOne, Boolean applyDeletePathCascade, Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) throws DataAccessException, DataOptimisticLockException{
-    	log.info("************Entering  **************");
-    	storeVO=updateCreateTreesCore( storeVO, trees,  storeVOHasToBeUpdated,  deleteChangedOneToOne,  applyDeletePathCascade, ifM2NDeleteOnlyRelationship,  deleteOneToOne);
-    	if (flush) flush();
-    	log.info("************Done ***************");
-    	return storeVO;
+	log.info("************Done **********");
+	return result;
     }
-    
-    public Object updateCreateTrees(Object storeVO,Collection trees, Boolean storeVOHasToBeUpdated) throws DataAccessException, DataOptimisticLockException{
-    	log.info("************Entering  **************"); 
-    	storeVO = updateCreateTreesCore(storeVO, trees, storeVOHasToBeUpdated, Boolean.FALSE, Boolean.TRUE, Boolean.TRUE, Boolean.FALSE);
-    	if (flush) flush();
-    	log.info("************Done ***************");
-    	return storeVO;
-    }
-   
-    public Object updateCreateTrees(Object storeVO,Collection trees) throws DataAccessException, DataOptimisticLockException{
-    	log.info("************Entering  **************"); 
-    	storeVO = updateCreateTreesCore(storeVO, trees, Boolean.TRUE, Boolean.FALSE, Boolean.TRUE, Boolean.TRUE, Boolean.FALSE);
-    	if (flush) flush();
-    	log.info("************Done ***************");
-    	return storeVO;
-    }
-    
-    private Object updateCreateTreesCore(Object storeVO,Collection<String> trees, Boolean storeVOHasToBeUpdated, Boolean deleteChangedOneToOne, Boolean applyDeletePathCascade, Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) throws DataAccessException{
-        log.info("************Entering  **************");
-
-        try{
-            if(storeVO != null){
-                if(storeVOHasToBeUpdated==null)storeVOHasToBeUpdated=Boolean.TRUE;
-                if(deleteChangedOneToOne==null)deleteChangedOneToOne=Boolean.FALSE;
-                if(applyDeletePathCascade==null)applyDeletePathCascade=Boolean.TRUE;
-                if(ifM2NDeleteOnlyRelationship==null)ifM2NDeleteOnlyRelationship=Boolean.TRUE;
-                if(deleteOneToOne==null)deleteOneToOne=Boolean.FALSE;
-                if(trees==null || trees.isEmpty()){
-                    if(storeVOHasToBeUpdated.booleanValue()){
-                    	storeVO = storeCore(storeVO);
-                    }
-                }else {
-                    Collection<EntityPaths> changedDirectReferencesInPaths = null;
-                    if(deleteChangedOneToOne.booleanValue()){
-                        changedDirectReferencesInPaths = getChangedDirectReferencesInPaths(storeVO,trees, Boolean.TRUE) ;
-                        if (log.isDebugEnabled())log.debug("updateCreateTrees: changedDirectReferencesInPaths.size() = "+changedDirectReferencesInPaths.size());
-                    }
-                    deleteItemsNotInCollectionsInPathsCore(storeVO,trees,Boolean.TRUE, applyDeletePathCascade, ifM2NDeleteOnlyRelationship, deleteOneToOne);
-                    storePathsCascadeCore(storeVO,trees,Boolean.TRUE,storeVOHasToBeUpdated);
-                    if(deleteChangedOneToOne.booleanValue() && changedDirectReferencesInPaths!=null){
-                        Iterator<EntityPaths> iterator =  changedDirectReferencesInPaths.iterator();
-                        if(applyDeletePathCascade.booleanValue()){
-                            while (iterator.hasNext()){
-                            	EntityPaths entityPaths =   iterator.next();
-                                //if(log.isDebugEnabled())
-                                if(log.isDebugEnabled()) {
-                                	log.debug("updateCreateTrees: identity =  "+entityPaths.getEntity().toString());
-                                    Iterator entityPathsIterator = entityPaths.getPaths().iterator();
-                                    while(entityPathsIterator.hasNext()){
-                                        log.debug("updateCreateTrees: entityPathsIterator.next() =  "+entityPathsIterator.next().toString());
-
-                                    }
-                                }
-                                deletePathsCascadeCore(entityPaths.getEntity(), entityPaths.getPaths(), Boolean.FALSE, ifM2NDeleteOnlyRelationship,deleteOneToOne);
-                            }
-                        } else{
-                            while (iterator.hasNext()){
-                                EntityPaths entityPaths =   iterator.next();
-                                getEntityManager().remove(getEntityManager().merge(entityPaths.getEntity()));
-                            }
-                        }
-                    }
-                }
-            }
-
-
-        } catch (Exception e) {
-            log.error("Exception thrown in BaseJpaDAO.updateCreateTreesCore(Object storeVO,Collection<String> trees, Boolean storeVOHasToBeUpdated, Boolean deleteChangedOneToOne, Boolean applyDeletePathCascade, Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne): " + e.toString());
-            throw new DataAccessException("Error in BaseJpaDAO.updateCreateTreesCore(Object storeVO,Collection<String> trees, Boolean storeVOHasToBeUpdated, Boolean deleteChangedOneToOne, Boolean applyDeletePathCascade, Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne): " + e.toString(),e);
-        }
-        log.info("************Done  ***************");
-        return storeVO;
-    }
-	
-
-
-    
-    private Collection<EntityPaths> getChangedDirectReferencesInPaths (Object rootVO, Collection<String> paths, Boolean pathsHasToBeSorted)  throws DataAccessException{
-        log.info("************Entering  **************");
-        ArrayList<EntityPaths> changedDirectReferencesInPaths = new ArrayList<EntityPaths>();
-        try{
-            PropertyUtilsBean propertyUtilsBean = BeanUtilsBean.getInstance().getPropertyUtils();
-            if(rootVO != null && paths!=null &&!paths.isEmpty() ){
-                //Class rootVOClass = rootVO.getClass();
-                String[] pathsArray = new String[paths.size()];
-                if(pathsHasToBeSorted.booleanValue()){
-                    ArrayList<String> pathsList = Collections.list(Collections.enumeration(paths));
-                    Collections.sort(pathsList);
-                    pathsArray = (String[])pathsList.toArray(pathsArray);
-                } else{
-                    pathsArray = (String[])paths.toArray(pathsArray);
-                }
-                int pathsArrayLenght = pathsArray.length;
-                int index = 0;
-                while (index<pathsArrayLenght){
-                    String path = pathsArray[index];
-                    if(path!=null && !path.trim().equals("")){
-                        String[] firstAttributeNameAndRemainingPath = Utils.getFirstAttributeNameAndRemainingPath(path);
-                        String firstAttributeName = firstAttributeNameAndRemainingPath[0];
-                        String remainingPath = firstAttributeNameAndRemainingPath[1];
-                        ArrayList<String> subPaths = new ArrayList<String>();
-                        if(!remainingPath.trim().equals(""))subPaths.add(remainingPath);
-                        index++;
-                        boolean matchingFirstAttributeName = true;
-                        while(index < pathsArrayLenght  && matchingFirstAttributeName){
-                            if(pathsArray[index]!=null && !pathsArray[index].trim().equals("")){
-                                String[] firstAttributeNameAndRemainingPath2 = Utils.getFirstAttributeNameAndRemainingPath(pathsArray[index]);
-                                String firstAttributeName2 = firstAttributeNameAndRemainingPath2[0];
-                                if(firstAttributeName2.equals(firstAttributeName)){
-                                    if(!firstAttributeNameAndRemainingPath2[1].trim().equals(""))subPaths.add(firstAttributeNameAndRemainingPath2[1]);
-                                    index++;
-                                }else{
-                                    matchingFirstAttributeName = false;
-                                }
-                            } else{
-                                index++;
-                            }
-                        }
-
-                        if(subPaths.size()<=1){
-                            Collection<EntityPath> changedDirectReferencesInPathEntityPathCollection = getChangedDirectReferencesInPath(rootVO, path);
-                            if (changedDirectReferencesInPathEntityPathCollection!=null){
-                                Iterator<EntityPath> iterator = changedDirectReferencesInPathEntityPathCollection.iterator();
-                                while(iterator.hasNext()){
-                                    changedDirectReferencesInPaths.add(new EntityPaths(iterator.next()));
-                                }
-                            }
-                        }else{// subPaths.size() >1
-
-                            Object firstAttributeValue = propertyUtilsBean.getProperty(rootVO,firstAttributeName);
-                            //if(isReferenceCollection(rootVO.getClass(), firstAttributeName)){
-                            if(isReferenceCollection(getEntityClass(rootVO), firstAttributeName)){
-                                if(firstAttributeValue!=null){
-                                    Iterator iterator = ((Collection)firstAttributeValue).iterator();
-                                    while (iterator.hasNext()){
-                                        Collection<EntityPaths>  partialChangedDirectReferencesInPaths = getChangedDirectReferencesInPaths(iterator.next(), subPaths, Boolean.FALSE);
-                                        if(partialChangedDirectReferencesInPaths!=null) changedDirectReferencesInPaths.addAll(partialChangedDirectReferencesInPaths);
-
-                                    }
-                                }
-                            } else {  // firstAttributeValue is not a collection
-                                Object changedChild = getChangedChild(rootVO, firstAttributeName);
-                                if(changedChild!=null)  {
-                                    EntityPaths entityPaths = new EntityPaths(changedChild,subPaths);
-                                    changedDirectReferencesInPaths.add(entityPaths);
-                                }
-                                Collection<EntityPaths> partialChangedDirectReferencesInPaths = getChangedDirectReferencesInPaths(firstAttributeValue, subPaths, Boolean.FALSE);
-                                if(partialChangedDirectReferencesInPaths!=null)  changedDirectReferencesInPaths.addAll(partialChangedDirectReferencesInPaths);
-                            }
-                        }
-                    } else{
-                        index++;
-                    }
-                }
-
-
-            }
-        } catch (Exception e) {
-            log.error("Exception caught in BaseJpaDAO.getChangedDirectReferencesInPaths (Object rootVO, Collection<String> paths, Boolean pathsHasToBeSorted): " + e.toString());
-            throw new DataAccessException("Error in BaseJpaDAO.getChangedDirectReferencesInPaths (Object rootVO, Collection<String> paths, Boolean pathsHasToBeSorted): " + e.toString(),e);
-        }
-        log.info("************Done  **************");
-        return changedDirectReferencesInPaths;
-    }
-    
-	
-    private Collection<EntityPath> getChangedDirectReferencesInPath(Object rootVO, String path)  throws DataAccessException{
-        log.info("************Entering   ***************");
-        ArrayList<EntityPath> changedDirectReferencesInPath = new ArrayList<EntityPath>();
-        try{
-            if (rootVO!=null&&path!=null && !path.trim().equals("")){
-                String[] firstAttributeNameAndRemainingPath = Utils.getFirstAttributeNameAndRemainingPath(path);
-                String firstAttributeName = firstAttributeNameAndRemainingPath[0];
-                String remainingPath = firstAttributeNameAndRemainingPath[1];
-
-                PropertyUtilsBean propertyUtilsBean = BeanUtilsBean.getInstance().getPropertyUtils();
-
-                Object firstAttributeValue = propertyUtilsBean.getProperty(rootVO,firstAttributeName);
-                
-
-            	//if (isReferenceCollection(rootVO.getClass(), firstAttributeName)){
-                if (isReferenceCollection(getEntityClass(rootVO), firstAttributeName)){
-                    if(firstAttributeValue!=null){ // only condition added by ale 19-nov 2008 todo syncornize design
-                        Iterator iterator =  ((Collection)firstAttributeValue).iterator();
-                        while (iterator.hasNext()){
-                            Collection<EntityPath> partialChangedDirectReferencesInPath = getChangedDirectReferencesInPath(iterator.next(), remainingPath);
-                            if(partialChangedDirectReferencesInPath!=null ) changedDirectReferencesInPath.addAll(partialChangedDirectReferencesInPath);
-                        }
-                    }
-                } else{ // direct relationship 1:1
-                    Object changedChild = getChangedChild(rootVO,firstAttributeName);
-                    if(changedChild!=null){
-                        EntityPath entityPath = new EntityPath(changedChild,remainingPath);
-                        changedDirectReferencesInPath.add(entityPath);
-                    }
-                    if(firstAttributeValue!=null){ 
-                        Collection<EntityPath> partialChangedDirectReferencesInPath = getChangedDirectReferencesInPath(firstAttributeValue, remainingPath);
-                        if(partialChangedDirectReferencesInPath!=null ) changedDirectReferencesInPath.addAll(partialChangedDirectReferencesInPath);
-                    }
-
-                }
-               
-            }
-        } catch (Exception e) {
-            log.error("Exception caught in BaseJpaDAO.getChangedDirectReferencesInPath(Object rootVO, String path): " + e.toString());
-            throw new DataAccessException("Error in BaseJpaDAO.getChangedDirectReferencesInPath(Object rootVO, String path): " + e.toString(),e);
-        }
-        log.info("************Done  **************");
-        return changedDirectReferencesInPath;
-
-    }
-	
-    
-    
-    
-    
-    
-    //private Identity getChangedChildIdentity(Object parentVO , ObjectReferenceDescriptor objectReferenceDescriptor, PersistenceBroker broker) throws OjbPbCoreException{
-    private Object getChangedChild(Object parentVO , String pAttributeName) throws DataAccessException{
-        log.info("************Entering  ***************");
-        Object changedChild = null;
-        try{
-            if(pAttributeName  == null || pAttributeName.trim().equals("") ) throw new DataAccessException("Error in BaseJpaDAO.getChangedChild(Object parentVO , String pAttributeName)  :: pAttributeName can't be null or empty string. ");
-            //if(isReferenceCollection(parentVO.getClass(), pAttributeName))throw new OjbPbCoreException("Error in BaseJpaDAO.getChangedChild(Object parentVO ,String pAttributeName) : pAttributeName can't represent a collection. ");
-            if(isReferenceCollection(getEntityClass(parentVO), pAttributeName))throw new DataAccessException("Error in BaseJpaDAO.getChangedChild(Object parentVO ,String pAttributeName) : pAttributeName can't represent a collection. ");
-            if(parentVO!=null){
-            	PropertyUtilsBean propertyUtilsBean = BeanUtilsBean.getInstance().getPropertyUtils();
-    			
-            	
-            	//String[] pkNames = getPkNames(parentVO.getClass());
-            	String[] pkNames = getPkNames(getEntityClass(parentVO));
-            	Object[] keyValues=getKeyValues(parentVO);
-            	//Object storedChild = findObjectByLogicCondition(new String[]{pAttributeName}, parentVO.getClass(), new LogicSqlCondition(pkNames,keyValues));
-            	Object storedChild = findObjectByLogicCondition(new String[]{pAttributeName}, getEntityClass(parentVO), new LogicSqlCondition(pkNames,keyValues));
-            	
-            	
-               
-                if(storedChild!=null){
-                    log.debug("storedChild: referencedIdentity = "+storedChild.toString());
-                    Object childVO = propertyUtilsBean.getProperty(parentVO, pAttributeName);
-                    if (childVO!=null){
-                    	FieldComparator fieldComparator = new FieldComparator(pkNames);
-                        if(fieldComparator.compare(childVO,storedChild)!=0){
-                        	changedChild=storedChild;
-                        }
-                        
-                        
-                    }else{ 
-                        log.debug("childVO: is null = ");
-                        changedChild=storedChild;
-                    }
-                }
-
-            }
-        } catch (Exception e) {
-            log.error("Exception thrown in BaseJpaDAO.getChangedChild(Object parentVO , String pAttributeName) : " + e.toString());
-            throw new DataAccessException("Error in BaseJpaDAO.getChangedChild(Object parentVO , String pAttributeName): " + e.toString(),e);
-        }
-
-        log.info("************Done  **************");
-        return changedChild;
-    }
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	/****************************************/
-	
-	
-	
-	
-	
-	
-	public Class getClassFromPath(Class realClass, String path) throws DataAccessException{
-        log.info("************Entering ***************");
-        Class classFromPath = null;
-        try {
-			if (path!=null){
-			    if (path.trim().equals("")) {
-			    	classFromPath =  realClass;
-			    }else{
-			        String[] pathArray = path.split("\\.");
-			        Class currentClass = realClass;
-			        for (int i=0; i<pathArray.length;i++){
-			        	
-			        	Field field= currentClass.getDeclaredField(pathArray[i]);
-			        	//if(Collection.class.isAssignableFrom(field.getClass()) || List.class.isAssignableFrom(field.getClass()) || Set.class.isAssignableFrom(field.getClass())){
-			        	if(Collection.class.isAssignableFrom(field.getType()) || List.class.isAssignableFrom(field.getType()) || Set.class.isAssignableFrom(field.getType())){
-			        		
-			        		Class targetEntityClass = Utils.getGenericClass(field.getGenericType());
-			        		log.debug("targetEntityClass is "+targetEntityClass.toString());
-			        		if(targetEntityClass==null){//Generics are not used, we look for mappedBy attribute of annotation
-			        			OneToMany oneToMany = field.getAnnotation(OneToMany.class);
-			        			if (oneToMany==null){ // we look for ManytoMany
-			        				ManyToMany manyToMany= field.getAnnotation(ManyToMany.class);
-			        				if(manyToMany == null){ // we look for OneToMany in the getter
-			        					Method getter = getGetter(currentClass, field.getName());
-			        					oneToMany = getter.getAnnotation(OneToMany.class);
-			        					if(oneToMany==null){// we look for ManyToMany in the getter
-			        						manyToMany= getter.getAnnotation(ManyToMany.class);
-			        						if(manyToMany==null){
-			        							throw new DataAccessException("Error in  BaseJpaDAO.getClassFromPath(Class realClass, String path): In the class "+currentClass.getName()+" the property "+pathArray[i] +" is not a List, Collection or Set of Generics, and there is no annotation OneToMany or ManyToMany nor in the field and the getter");
-			        						}else{
-			        							targetEntityClass= manyToMany.targetEntity();
-			        						}
-			        					}else{
-			        						targetEntityClass= oneToMany.targetEntity();
-			        					}
-			        				}else{
-			        					targetEntityClass= manyToMany.targetEntity();
-			        				}
-			        			}else{
-			        				targetEntityClass= oneToMany.targetEntity();
-			        			}
-			        			if(targetEntityClass == null){
-			        				throw new DataAccessException("Error in  BaseJpaDAO.getClassFromPath(Class realClass, String path): In the class "+currentClass.getName()+" the property "+pathArray[i] +" is not a List, Collection or Set of Generics, and targetEntity not exists in the annotation");
-			        			}
-			        		}
-			        		currentClass = targetEntityClass;
-			        		
-			        		
-			        	}else{ // oneToOne or ManyToOne
-			        		//currentClass=field.getClass();
-			        		currentClass=field.getType();
-			        	}
-			        }
-			        classFromPath = currentClass;
-			    }
-			}
-		} catch (SecurityException e) {
-            log.error("SecurityException caught: " + e.toString());
-            throw new DataAccessException("Error in  BaseJpaDAO.getClassFromPath(Class realClass, String path): " + e.toString(),e);
-		} catch (NoSuchFieldException e) {
-            log.error("NoSuchFieldException caught: " + e.toString());
-            throw new DataAccessException("Error in  BaseJpaDAO.getClassFromPath(Class realClass, String path): " + e.toString(),e);
-		} catch (NoSuchMethodException e) {
-            log.error("NoSuchMethodException caught: " + e.toString());
-            throw new DataAccessException("Error in  BaseJpaDAO.getClassFromPath(Class realClass, String path): " + e.toString(),e);
-		} catch (Exception e) {
-            log.error("Exception caught: " + e.toString());
-            throw new DataAccessException("Error in  BaseJpaDAO.getClassFromPath(Class realClass, String path): " + e.toString(),e);
-		}
-        
-        log.info("************Done **************");
-        return classFromPath;
-    }
-    
-	public Class getCollectionClassFromPath(Class realClass, String path) throws DataAccessException{
-        log.info("************Entering ***************");
-        Class collectionClassFromPath=null;
-        
-        
-        try {
-			String[] exceptLastTokenAndLastToken = Utils.getExceptLastTokenAndLastToken(path);
-			String exceptLastToken=exceptLastTokenAndLastToken[0];
-			String lastToken=exceptLastTokenAndLastToken[1];
-			
-			
-			Class penultimateClass = getClassFromPath(realClass, exceptLastToken);
-			
-			//Field lastField = penultimateClass.getField(lastToken);
-			Field lastField = penultimateClass.getDeclaredField(lastToken);
-//			collectionClassFromPath = lastField.getClass();
-			collectionClassFromPath = lastField.getType();
-			
-			
-			if(!Collection.class.isAssignableFrom(collectionClassFromPath) && !List.class.isAssignableFrom(collectionClassFromPath) && !Set.class.isAssignableFrom(collectionClassFromPath)){
-				collectionClassFromPath=null;
-			}else  {
-				if(collectionClassFromPath.isInterface()){
-					if(Collection.class.isAssignableFrom(collectionClassFromPath) || List.class.isAssignableFrom(collectionClassFromPath)){
-						ArrayList<?> a = new ArrayList();
-						collectionClassFromPath =a.getClass();
-					}else if(Set.class.isAssignableFrom(collectionClassFromPath)){
-						HashSet<?> a= new HashSet();
-						collectionClassFromPath =a.getClass();
-					}
-				}
-			}
-			
-		} catch (SecurityException e) {
-            log.error("SecurityException caught: " + e.toString());
-            throw new DataAccessException("Error in  BaseJpaDAO.getCollectionClassFromPath(Class realClass, String path): " + e.toString(),e);
-		} catch (NoSuchFieldException e) {
-            log.error("NoSuchFieldException caught: " + e.toString());
-            throw new DataAccessException("Error in  BaseJpaDAO.getCollectionClassFromPath(Class realClass, String path): " + e.toString(),e);
-		} catch (Exception e) {
-            log.error("Exception caught: " + e.toString());
-            throw new DataAccessException("Error in  BaseJpaDAO.getCollectionClassFromPath(Class realClass, String path): " + e.toString(),e);
-		}
-        log.info("************Done ***************");
-        return collectionClassFromPath;
-    }	
-	 
-	
-	
-	 
-	public Vector getFksToItemClassInDecomposedRelationship(Class realClass, String oneToN, String mToOne) throws DataAccessException{
-        log.info("************Entering ***************");
-        Vector flds=  new Vector();
-        try {
-			/**implemented o n 15/08/2012*/
-			Class relatedObjectClass = getClassFromPath(realClass,oneToN+"."+mToOne);
-			List<String> pkNames = new EntityInfo(relatedObjectClass).getListPkNames();
-			if(pkNames!=null){
-				for(String pkName :pkNames){
-					flds.add(mToOne+"."+pkName);
-				}
-			}
-		} catch (Exception e) {
-			log.error("Exception caught: " + e.toString());
-            throw new DataAccessException("Error in  BaseJpaDAO.getFksToItemClassInDecomposedRelationship(Class realClass, String oneToN, String mToOne): " + e.toString(),e);
-		}
-        
-        log.info("************Done ***************");
-        return flds;
-    }
-	
-	
-	
-	
-	 
-	public Object[] getKeyValues(Object pInstance) throws DataAccessException{
-        log.info("************Entering ***************");
-        Object[] keyValues = null;
-        try {
-			PropertyUtilsBean propertyUtilsBean = BeanUtilsBean.getInstance().getPropertyUtils();
-			//EntityInfo info = new EntityInfo(pInstance.getClass());
-			EntityInfo info = new EntityInfo(getEntityClass(pInstance));
-			String[] pkNames = info.getPkNames();
-			keyValues = new Object[pkNames.length];
-			for(int i=0; i<pkNames.length;i++){
-				keyValues[i] = propertyUtilsBean.getProperty(pInstance,pkNames[i]);
-			}
-		} catch (IllegalAccessException e) {
-            log.error("IllegalAccessException caught: " + e.toString());
-            throw new DataAccessException("Error in  BaseJpaDAO.getKeyValues(Object pInstance): " + e.toString(),e);
-		} catch (InvocationTargetException e) {
-            log.error("InvocationTargetException caught: " + e.toString());
-            throw new DataAccessException("Error in  BaseJpaDAO.getKeyValues(Object pInstance): " + e.toString(),e);
-		} catch (NoSuchMethodException e) {
-            log.error("NoSuchMethodException caught: " + e.toString());
-            throw new DataAccessException("Error in  BaseJpaDAO.getKeyValues(Object pInstance): " + e.toString(),e);
-		} catch (Exception e) {
-            log.error("Exception caught: " + e.toString());
-            throw new DataAccessException("Error in  BaseJpaDAO.getKeyValues(Object pInstance): " + e.toString(),e);
-		}
-        log.info("************Done **************");
-        return keyValues;
-    }
-	
-	private boolean isPersisted(Object pInstance) throws DataAccessException{
-		boolean isPersisted=true;
-		try {
-			PropertyUtilsBean propertyUtilsBean = BeanUtilsBean.getInstance().getPropertyUtils();
-			//EntityInfo info = new EntityInfo(pInstance.getClass());
-			EntityInfo info = new EntityInfo(getEntityClass(pInstance));
-			String idName = info.getIdField().getName();
-			Object idValue =  propertyUtilsBean.getProperty(pInstance, idName);
-			if(idValue==null){
-				isPersisted=false;
-			}else{
-			
-				String[] pkNames = info.getPkNames();
-				for(int i=0; i<pkNames.length && isPersisted;i++){
-					try {
-						Object key = propertyUtilsBean.getProperty(pInstance,pkNames[i]);
-						if(key==null){
-							isPersisted=false;
-							break;
-						}
-					} catch (NestedNullException e) {
-						isPersisted=false;
-						break;
-					} 
-				}
-				if(isPersisted){
-					Object persistedObject = findObjectByLogicCondition(new String[]{idName},getEntityClass(pInstance), new LogicSqlCondition(idName,"==",idValue));
-					isPersisted = persistedObject!=null;
-				}
-			}
-		} catch (IllegalAccessException e) {
-            log.error("IllegalAccessException caught: " + e.toString()); 
-            throw new DataAccessException("Error in  BaseJpaDAO.isPersisted(Object pInstance): " + e.toString(),e);
-		} catch (InvocationTargetException e) {
-            log.error("InvocationTargetException caught: " + e.toString()); 
-            throw new DataAccessException("Error in  BaseJpaDAO.isPersisted(Object pInstance): " + e.toString(),e);
-		} catch (NoSuchMethodException e) {
-            log.error("NoSuchMethodException caught: " + e.toString()); 
-            throw new DataAccessException("Error in  BaseJpaDAO.isPersisted(Object pInstance): " + e.toString(),e);
-		} catch (Exception e) {
-            log.error("Exception caught: " + e.toString()); 
-            throw new DataAccessException("Error in  BaseJpaDAO.isPersisted(Object pInstance): " + e.toString(),e);
-		}
-		return isPersisted;
-	}
-	
-	
-	
-	
-	
-	public String[] getPkNames(Class realClass) throws DataAccessException{
-        log.info("************Entering ***************");
-        String[] pkNames = null;
-        
-        try {
-			EntityInfo info = new EntityInfo(realClass);
-			pkNames = info.getPkNames();
-		} catch (Exception e) {
-            log.error("Exception caught: " + e.toString());
-            throw new DataAccessException("Error in  BaseJpaDAO.getPkNames(Class realClass): " + e.toString(),e);
-		}
-        
-        
-        log.info("************Done ***************");
-        return pkNames;
-    }
-	
-	
-
-
-
-    public String[] getFksToThisClass(Class realClass, String oneToN) throws DataAccessException{
-        log.info("************Entering***************");
-        String[] flds= new String[]{getMappedBy(realClass, oneToN)};
-        log.info("************Done **************");
-        return flds;
-    }
-
-
-    public Vector getForeignKeyFields(Class realClass, String pAttributeName) throws DataAccessException{
-        log.info("************Entering ***************");
-        
-        Vector flds = new Vector();
-        
-        try {
-			/*implemented 14/08/2008*/
-			String[] exceptLastTokenAndLastToken =Utils.getExceptLastTokenAndLastToken(pAttributeName);
-			String exceptLastToken = exceptLastTokenAndLastToken[0];
-			String lastToken = exceptLastTokenAndLastToken[1];
-			Class penutlClass = getClassFromPath(realClass, exceptLastToken);
-			EntityInfo penutlClassEntityInfo = new EntityInfo(penutlClass);
-			
-			
-			Class pAttributeClass= getClassFromPath(realClass, pAttributeName);
-			EntityInfo pAttributeClassEntityInfo = new EntityInfo(pAttributeClass);
-			ArrayList<String> listPkNames = null;
-			if(penutlClassEntityInfo.isEmbeddable()){ // 
-				listPkNames = pAttributeClassEntityInfo.getListPkNames();
-			}else if(pAttributeClassEntityInfo.isEmbeddable()){
-				listPkNames = penutlClassEntityInfo.getListPkNames();
-			}
-			
-			if(listPkNames!=null){
-				for(String pkName : listPkNames){
-					flds.add(lastToken+"."+pkName);
-				}
-			}
-		} catch (Exception e) {
-			 log.error("Exception caught: " + e.toString());
-	         throw new DataAccessException("Error in  BaseJpaDAO.getForeignKeyFields(Class realClass, String pAttributeName): " + e.toString(),e);
-		}
-    	
-    	
-        
-        
-        log.info("************Done **************");
-        return flds;
-    }
-
 
     /*
-     * Only the one to many case is of interest
-     * Int his case in there is a mapped by on the relation the real classe primary keys are returned
-     * Actually this could not seem conceptually correct, but with this mapping, the inverse foreing key is represented by the mappedBy, the referes to the realClass.
-     * (non-Javadoc)
-     * @see it.aco.mandragora.dao.DAO#getInverseForeignKeyFields(java.lang.Class, java.lang.String)
+     * TODO make it works with path of dot (non-Javadoc)
+     *
+     * @see it.aco.mandragora.dao.DAO#getStoredCollection(java.lang.Object,
+     * java.lang.String)
      */
-    public Vector getInverseForeignKeyFields(Class realClass, String pAttributeName) throws DataAccessException{
-        log.info("************Entering ***************");
-        
-        Vector flds = new Vector();
-        /*implemented 14/08/2008*/
-        
-       try {
-			String[] exceptLastTokenAndLastToken =Utils.getExceptLastTokenAndLastToken(pAttributeName);
-			String exceptLastToken = exceptLastTokenAndLastToken[0];
-			String lastToken = exceptLastTokenAndLastToken[1];
-			Class penutlClass = getClassFromPath(realClass, exceptLastToken);
-			if(isOneToMany(penutlClass, lastToken)){
-				String mappedBy = getMappedBy(penutlClass, lastToken);
-				if(!StringUtils.isEmpty(mappedBy)){
-					EntityInfo penutlClassEntityInfo = new EntityInfo(penutlClass);
-					List<String> penutlClassPkNames =penutlClassEntityInfo.getListPkNames();
-					if(penutlClassPkNames!=null){
-						for(String pkName :penutlClassPkNames){
-							flds.add(mappedBy+"."+pkName);
-						}
-					}
-					
-				}
-			}
-		} catch (Exception e) {
-			log.error("Exception caught: " + e.toString());
-	        throw new DataAccessException("Error in  BaseJpaDAO.getInverseForeignKeyFields(Class realClass, String pAttributeName): " + e.toString(),e);
-		}
-        log.info("************Done **************");
-        return flds;
+    public Collection getStoredCollection(Object pInstance, String pAttributeName) throws DataAccessException {
+	log.info("************Entering **************");
+	Collection result = null;
+
+	try {
+	    if (pAttributeName == null || pAttributeName.trim().equals("")) {
+		log.error(
+			"Error  in  BaseOjbPbCore.getStoredCollection(Object pInstance, String pAttributeName, PersistenceBroker broker) : pAttributeName can't be null or empty or blank chacarcters string");
+		throw new DataAccessException(
+			"Exception thrown in BaseJpaDAO.getStoredCollection(Object pInstance, String pAttributeName) : pAttributeName can't be null or empty or blank chacarcters string");
+	    }
+
+	    final Class pInstanceClass = getEntityClass(pInstance);
+	    log.debug("pInstanceClass is " + pInstanceClass.toString());
+	    final Class pAttributeClass = getClassFromPath(pInstanceClass, pAttributeName);
+	    log.debug("pAttributeClass is " + pAttributeClass.toString());
+
+	    String mappedBy = null;
+	    final OneToMany oneToMany = (OneToMany) getAnnotation(pInstanceClass, pAttributeName, OneToMany.class);
+	    if (oneToMany != null) {
+		mappedBy = oneToMany.mappedBy();
+	    }
+
+	    if (mappedBy == null || mappedBy.trim().equals("")) {// is
+								 // manytomany
+								 // or onetomany
+								 // with no
+								 // mappedby
+		final String queryString = "SELECT bbb FROM " + pInstanceClass.getSimpleName() + " a join a." + pAttributeName + " bbb  WHERE a= :param ";
+		final Query query = getEntityManager().createQuery(queryString);
+		query.setParameter("param", pInstance);
+		result = query.getResultList();
+		// JoinTable joinTable = (JoinTable)
+		// getAnnotation(pInstanceClass, pAttributeName,
+		// JoinTable.class);
+		// String joinTableName = joinTable.name();
+		// String queryString ="SELECT a FROM
+		// "+pAttributeClass.getSimpleName()+" a, "+joinTableName+" j
+		// WHERE " ;
+		//
+		// String[] pkColumnNames = getPkColumnNames(pAttributeClass);
+		// String[] inverseJoinColumnNames =
+		// getJoinTableInverseColumnName(joinTable);
+		// if(pkColumnNames!=null && inverseJoinColumnNames!=null &&
+		// pkColumnNames.length==inverseJoinColumnNames.length &&
+		// pkColumnNames.length>0){
+		// for (int i=0; i<pkColumnNames.length;i++){
+		// queryString+="
+		// a."+pkColumnNames[i]+"="+"j."+inverseJoinColumnNames[i]+" AND
+		// ";
+		// }
+		// queryString = queryString.substring(0,
+		// queryString.lastIndexOf("AND"));
+		// Query query = getEntityManager().createQuery(queryString);
+		// result = query.getResultList();
+		// }else{
+		// throw new DataAccessException("Exception thrown in
+		// BaseJpaDAO.getStoredCollection(Object pInstance, String
+		// pAttributeName) : pkColumnNames and inverseJoinColumnNames
+		// can't be null or empty or have different length");
+		// }
+
+	    } else { // is onetomany with mappedBy
+		final LogicCondition logicCondition = new LogicSqlCondition(mappedBy, "==", pInstance);
+
+		result = findCollectionByLogicCondition(pAttributeClass, logicCondition);
+	    }
+
+	    // String mappedBy = getMappedBy(pInstance, pAttributeName);
+	    // if (mappedBy==null) throw new
+	    // DataAccessException("DataAccessException thrown in
+	    // BaseJpaDAO.getStoredCollection(Object pInstance, String
+	    // pAttributeName) : OneToMany or ManyToMany annotation must have a
+	    // mappedBy attribute");
+
+	    // LogicCondition logicCondition = new
+	    // LogicSqlCondition(mappedBy,"==",pInstance);
+	    // result = findCollectionByLogicCondition(pAttributeClass,
+	    // logicCondition);
+	} catch (final Exception e) {
+	    log.error("Exception caught: " + e.toString());
+	    throw new DataAccessException("Error in  BaseJpaDAO.getStoredCollection(Object pInstance, String pAttributeName): " + e.toString(), e);
+	}
+
+	log.info("************Done **********");
+	return result;
     }
 
-    
-    
-    public void setInverseForeignKeyFields(Collection valueObjects, String pAttributeName) throws DataAccessException{
-    	log.info("************Entering **************");
-    	if(valueObjects!=null){
-    		Iterator iterator=valueObjects.iterator();
-    		while (iterator.hasNext()){
-    			setInverseForeignKeyFields(iterator.next(),  pAttributeName);
-    		}
-    	}
-		log.info("************Done **************");
+    public Iterator getReportQueryIterator(Class realClass, LogicCondition logicCondition, String[] pAttributeNames, String[] groupBy) throws DataAccessException {
+	log.info("************Entering ***************");
+	Iterator iterator = null;
+
+	try {
+	    if (pAttributeNames == null || pAttributeNames.length == 0) {
+		log.error(
+			"DataAccessException thrown in  BaseJpaDAO.getReportQueryIterator(Class realClass,LogicCondition logicCondition, String[] pAttributeNames, String[] groupBy): attributes can't be null nor empty");
+		throw new DataAccessException(
+			"Error in  BaseJpaDAO.getReportQueryIterator(Class realClass,LogicCondition logicCondition, String[] pAttributeNames, String[] groupBy): attributes can't be null nor empty");
+	    }
+	    if (logicCondition == null) {
+		log.error(
+			"DataAccessException thrown in  BaseJpaDAO.getReportQueryIterator(Class realClass,LogicCondition logicCondition, String[] pAttributeNames, String[] groupBy): logicCondition can't be null ");
+		throw new DataAccessException(
+			"Error in  BaseJpaDAO.getReportQueryIterator(Class realClass,LogicCondition logicCondition, String[] pAttributeNames, String[] groupBy): logicCondition can't be null");
+	    }
+
+	    final Collection result = findCollectionByLogicCondition(null, pAttributeNames, realClass, logicCondition, null, groupBy, null, null);
+	    if (result != null) {
+		iterator = result.iterator();
+	    }
+	} catch (final Exception e) {
+	    log.error("Exception caught: " + e.toString());
+	    throw new DataAccessException("Error in  BaseJpaDAO.getReportQueryIterator(Class realClass, LogicCondition logicCondition, String[] pAttributeNames, String[] groupBy): " + e.toString(),
+		    e);
+	}
+	log.info("************Done *************");
+	return iterator;
     }
-    
-    
-    public void setInverseForeignKeyFields(Object pInstance, String pAttributeName) throws DataAccessException{
-        log.info("************Entering **************");
-        
-        try {
-        	
-        	Class pInstanceClass=getEntityClass(pInstance);
-			PropertyUtilsBean propertyUtilsBean = BeanUtilsBean.getInstance().getPropertyUtils();
 
-			if(isOneToMany(pInstanceClass, pAttributeName)){
-				String mappedBy = getMappedBy(pInstanceClass, pAttributeName);
-				if(mappedBy!=null && !mappedBy.trim().equals("") ){
-					Collection pAttributeCollection = (Collection) propertyUtilsBean.getProperty(pInstance, pAttributeName);
-					if(pAttributeCollection!=null){
-						for (Object pAttributeCollectionElement:pAttributeCollection){
-							propertyUtilsBean.setProperty(pAttributeCollectionElement, mappedBy, pInstance);
-						}
+    public void retrieveReference(Object pInstance, String pAttributeName) throws DataAccessException {
+	log.info("************Entering ***************");
 
-					}
-				}
-			}else if(isManyToMany(pInstanceClass, pAttributeName)){
-				
-				Collection pAttributeCollection = (Collection) propertyUtilsBean.getProperty(pInstance, pAttributeName);
-				if(pAttributeCollection!=null){
-					String inverseManyToManyField = getInverseManyToManyField(pInstance, pAttributeName);
-					if(inverseManyToManyField!=null && !inverseManyToManyField.equals("") ){
-						for (Object pAttributeCollectionElement:pAttributeCollection){
-							Collection inverseCollection = (Collection) propertyUtilsBean.getProperty(pAttributeCollectionElement, inverseManyToManyField);
-							if(!inverseCollection.contains(pInstance)){
-								inverseCollection.add(pInstance);
-							}
-						}
-					}
-				}
-			}
-		} catch (IllegalAccessException e) {
-            log.error("IllegalAccessException caught: " + e.toString());
-            throw new DataAccessException("Error in  BaseJpaDAO.setInverseForeignKeyFields(Object pInstance, String pAttributeName): " + e.toString(),e);
-		} catch (InvocationTargetException e) {
-            log.error("InvocationTargetException caught: " + e.toString());
-            throw new DataAccessException("Error in  BaseJpaDAO.setInverseForeignKeyFields(Object pInstance, String pAttributeName): " + e.toString(),e);
-		} catch (NoSuchMethodException e) {
-            log.error("NoSuchMethodException caught: " + e.toString());
-            throw new DataAccessException("Error in  BaseJpaDAO.setInverseForeignKeyFields(Object pInstance, String pAttributeName): " + e.toString(),e);
-		}catch (Exception e) {
-            log.error("Exception caught: " + e.toString());
-            throw new DataAccessException("Error in  BaseJpaDAO.setInverseForeignKeyFields(Object pInstance, String pAttributeName): " + e.toString(),e);
+	try {
+
+	    // Class pInstanceClass=pInstance.getClass();
+	    final Class pInstanceClass = getEntityClass(pInstance);
+	    log.info("pInstanceClass is " + pInstanceClass.toString());
+	    log.info("pAttributeName is " + pAttributeName);
+	    final EntityInfo entityInfo = new EntityInfo(pInstanceClass);
+
+	    final PropertyUtilsBean propertyUtilsBean = BeanUtilsBean.getInstance().getPropertyUtils();
+
+	    // if(getAnnotation(pInstanceClass,pAttributeName,
+	    // OneToOne.class)!=null ||
+	    // getAnnotation(pInstanceClass,pAttributeName,
+	    // ManyToOne.class)!=null){
+	    if (getAnnotation(pInstanceClass, pAttributeName, OneToOne.class) != null || getAnnotation(pInstanceClass, pAttributeName, ManyToOne.class) != null
+		    || getAnnotation(pInstanceClass, pAttributeName, EmbeddedId.class) != null) {
+		// The reference is an object and not a collection
+
+		final String pInstancePrimaryKey = entityInfo.getIdField().getName();
+		final Object pInstancePrimaryKeyValue = propertyUtilsBean.getProperty(pInstance, pInstancePrimaryKey);
+
+		final Object retrievedReference = findObjectByLogicCondition(new String[] { pAttributeName }, pInstanceClass,
+			new LogicSqlCondition(pInstancePrimaryKey, "==", pInstancePrimaryKeyValue));
+		propertyUtilsBean.setProperty(pInstance, pAttributeName, retrievedReference);
+		if (getAnnotation(pInstanceClass, pAttributeName, EmbeddedId.class) == null) {
+		    refresh(retrievedReference);
 		}
-        log.info("************Done *************");
+
+	    } else if (getAnnotation(pInstanceClass, pAttributeName, OneToMany.class) != null || getAnnotation(pInstanceClass, pAttributeName, ManyToMany.class) != null) {
+		// The reference is a collection
+		// Collection retrievedReference =
+		// getStoredCollection(pInstanceClass, pAttributeName);
+		final Collection retrievedReference = getStoredCollection(pInstance, pAttributeName);
+		propertyUtilsBean.setProperty(pInstance, pAttributeName, retrievedReference);
+
+	    } else {
+		throw new DataAccessException("Error in  BaseJpaDAO.retrieveReference(Object pInstance, String pAttributeName): no annotation found");
+	    }
+	} catch (final IllegalAccessException e) {
+	    log.error("IllegalAccessException caught: " + e.toString());
+	    throw new DataAccessException("Error in  BaseJpaDAO.retrieveReference(Object pInstance, String pAttributeName): " + e.toString(), e);
+	} catch (final InvocationTargetException e) {
+	    log.error("InvocationTargetException caught: " + e.toString());
+	    throw new DataAccessException("Error in  BaseJpaDAO.retrieveReference(Object pInstance, String pAttributeName): " + e.toString(), e);
+	} catch (final NoSuchMethodException e) {
+	    log.error("NoSuchMethodException caught: " + e.toString());
+	    throw new DataAccessException("Error in  BaseJpaDAO.retrieveReference(Object pInstance, String pAttributeName): " + e.toString(), e);
+	} catch (final Exception e) {
+	    log.error("Exception caught: " + e.toString());
+	    throw new DataAccessException("Error in  BaseJpaDAO.retrieveReference(Object pInstance, String pAttributeName): " + e.toString(), e);
+	}
+
+	log.info("************Done***************");
     }
-    
-    private String getInverseManyToManyField(Object pInstance, String pAttributeName) throws DataAccessException{
-    	String inverseManyToManyField=null;
-    	try {
-			Class pInstanceClass=getEntityClass(pInstance);
-			ManyToMany manyToMany = (ManyToMany) getAnnotation(pInstanceClass,pAttributeName, ManyToMany.class);
-			if(manyToMany!=null){
-				if(!StringUtils.isEmpty(manyToMany.mappedBy())){
-					inverseManyToManyField = manyToMany.mappedBy();
-				}else{
-					Class targetEntityClass = manyToMany.targetEntity();
-					if(targetEntityClass==null){
-						targetEntityClass = Utils.getGenericClass(pInstanceClass.getDeclaredField(pAttributeName).getGenericType());
-					}
-					Field[] declaredFields = targetEntityClass.getDeclaredFields();
-					if(declaredFields!=null){
-						for(int i=0;i<declaredFields.length &&inverseManyToManyField ==null;i++){
-							
-							ManyToMany inverseManyToMany =declaredFields[i].getAnnotation(ManyToMany.class);
-							if(inverseManyToMany!=null && pAttributeName.equals(inverseManyToMany.mappedBy())){
-								inverseManyToManyField =declaredFields[i].getName();
-							}
-						}
-					}
-				}
-			}
-		} catch (SecurityException e) {
-            log.error("SecurityException caught: " + e.toString());
-            throw new DataAccessException("Error in  BaseJpaDAO.getInverseManyToManyField(Object pInstance, String pAttributeName): " + e.toString(),e);
-		} catch (NoSuchFieldException e) {
-            log.error("NoSuchFieldException caught: " + e.toString());
-            throw new DataAccessException("Error in  BaseJpaDAO.getInverseManyToManyField(Object pInstance, String pAttributeName): " + e.toString(),e);
-		} catch (Exception e) {
-            log.error("Exception caught: " + e.toString());
-            throw new DataAccessException("Error in  BaseJpaDAO.getInverseManyToManyField(Object pInstance, String pAttributeName): " + e.toString(),e);
+
+    public void retrieveAllReferences(Object pInstance) throws DataAccessException {
+	log.info("************Entering***************");
+
+	try {
+	    final PropertyUtilsBean propertyUtilsBean = BeanUtilsBean.getInstance().getPropertyUtils();
+
+	    // Class pInstanceClass=pInstance.getClass();
+	    final Class pInstanceClass = getEntityClass(pInstance);
+
+	    final Map describe = propertyUtilsBean.describe(pInstance);
+	    final Iterator iterator = describe.keySet().iterator();
+	    while (iterator.hasNext()) {
+		final String pAttributeName = (String) iterator.next();
+		log.debug("pAttributeName is " + pAttributeName);
+
+		if (getAnnotation(pInstanceClass, pAttributeName, OneToMany.class) != null || getAnnotation(pInstanceClass, pAttributeName, ManyToMany.class) != null
+			|| getAnnotation(pInstanceClass, pAttributeName, OneToOne.class) != null || getAnnotation(pInstanceClass, pAttributeName, ManyToOne.class) != null) {
+
+		    retrieveReference(pInstance, pAttributeName);
 		}
-    	return inverseManyToManyField;
+
+	    }
+	} catch (final IllegalAccessException e) {
+	    log.error("IllegalAccessException caught: " + e.toString());
+	    throw new DataAccessException("Error in  BaseJpaDAO.retrieveAllReferences(Object pInstance): " + e.toString(), e);
+	} catch (final InvocationTargetException e) {
+	    log.error("InvocationTargetException caught: " + e.toString());
+	    throw new DataAccessException("Error in  BaseJpaDAO.retrieveAllReferences(Object pInstance): " + e.toString(), e);
+	} catch (final NoSuchMethodException e) {
+	    log.error("NoSuchMethodException caught: " + e.toString());
+	    throw new DataAccessException("Error in  BaseJpaDAO.retrieveAllReferences(Object pInstance): " + e.toString(), e);
+	}
+
+	log.info("************Done**********");
     }
-    
-    
-    private Collection<String> getAssociationOverridesColumnNames(AssociationOverrides associationOverrides) throws DataAccessException{
-    	ArrayList<String> columnNames= new ArrayList<String>();
-    	try {
-			if(associationOverrides!=null){
-				AssociationOverride[] associationOverrideArray = associationOverrides.value();
-				for(AssociationOverride associationOverride: associationOverrideArray){
-					JoinColumn[] joinColumns = associationOverride.joinColumns();
-					
-					for(JoinColumn joinColumn:joinColumns){
-						columnNames.add(joinColumn.name());
-					}
-				}
-			}
-		} catch (Exception e) {
-            log.error("Exception caught: " + e.toString());
-            throw new DataAccessException("Error in  BaseJpaDAO.getAssociationOverridesColumnNames(AssociationOverrides associationOverrides): " + e.toString(),e);
+
+    public void retrieveAllReferencesInCollection(Collection valueObjectsCollection) throws DataAccessException {
+	log.info("************Entering ***************");
+	try {
+	    if (valueObjectsCollection != null) {
+		final Iterator iterator = valueObjectsCollection.iterator();
+		while (iterator.hasNext()) {
+		    retrieveAllReferences(iterator.next());
 		}
-    	return columnNames;
+	    }
+	} catch (final Exception e) {
+	    log.error("Exception caught: " + e.toString());
+	    throw new DataAccessException("Error in  BaseJpaDAO.retrieveAllReferencesInCollection(Collection valueObjectsCollection): " + e.toString(), e);
+	}
+	log.info("************Done ***************");
     }
-    
-    private Collection<String> getAttributeOverridesColumnNames(AttributeOverrides attributeOverrides) throws DataAccessException{
-    	ArrayList<String> columnNames= new ArrayList<String>();
-    	try {
-			if(attributeOverrides!=null){
-				AttributeOverride[] attributeOverrideArray = attributeOverrides.value();
-				for(AttributeOverride attributeOverride: attributeOverrideArray){
-					columnNames.add(attributeOverride.column().name());
-				}
-			}
-		} catch (Exception e) {
-            log.error("Exception caught: " + e.toString());
-            throw new DataAccessException("Error in  BaseJpaDAO.getAttributeOverridesColumnNames(AttributeOverrides attributeOverrides): " + e.toString(),e);
+
+    public void retrieveReferenceInCollection(Collection valueObjectsCollection, String pAttributeName) throws DataAccessException {
+	log.info("************Entering***************");
+	try {
+	    if (valueObjectsCollection != null) {
+		final Iterator iterator = valueObjectsCollection.iterator();
+		while (iterator.hasNext()) {
+		    retrieveReference(iterator.next(), pAttributeName);
 		}
-    	return columnNames;
+	    }
+	} catch (final Exception e) {
+	    log.error("Exception caught: " + e.toString());
+	    throw new DataAccessException("Error in  BaseJpaDAO.retrieveReferenceInCollection(Collection valueObjectsCollection, String pAttributeName): " + e.toString(), e);
+	}
+	log.info("************Done ***************");
     }
-    
-    
-    public String[] getPkColumnNames(Class realClass) throws DataAccessException{
-    	
-    	
-    	String[] pkColumnNames=null;
-    	
-    	try {
-			ArrayList<String> pkColumnNamesList= new ArrayList<String>();
-			EntityInfo entityInfo = new EntityInfo(realClass);
-			Field pkField = entityInfo.getIdField();
-			if(entityInfo.isEmbeddedIdAnnotated()){
-				Annotation[] pkFieldAnnotations=pkField.getAnnotations();
-				for(Annotation pkFieldAnnotation: pkFieldAnnotations){
-					if(pkFieldAnnotation.annotationType().equals(AssociationOverrides.class)){
-						pkColumnNamesList.addAll(getAssociationOverridesColumnNames( (AssociationOverrides) pkFieldAnnotation));
-					}else if(pkFieldAnnotation.annotationType().equals(AttributeOverrides.class)){
-						pkColumnNamesList.addAll(getAttributeOverridesColumnNames((AttributeOverrides) pkFieldAnnotation));
-					}
-				}
-				pkColumnNames=pkColumnNamesList.toArray(new String[0]);
-				
-				
-			}else{
-				String columnName = ((Column)getAnnotation(realClass, pkField.getName(), Column.class)).name();
-				pkColumnNames=new String[]{columnName};
-			}
-		} catch (Exception e) {
-            log.error("Exception caught: " + e.toString());
-            throw new DataAccessException("Error in  BaseJpaDAO.getPkColumnNames(Class realClass): " + e.toString(),e);
-		}
-    	
-    	return pkColumnNames;
-    	
+
+    public void retrieveNullReference(Object pInstance, String pAttributeName) throws DataAccessException {
+	log.info("************Entering***************");
+	try {
+	    final PropertyUtilsBean propertyUtilsBean = BeanUtilsBean.getInstance().getPropertyUtils();
+	    if (propertyUtilsBean.getProperty(pInstance, pAttributeName) == null) {
+		retrieveReference(pInstance, pAttributeName);
+	    }
+	} catch (final IllegalAccessException e) {
+	    log.error("IllegalAccessException caught: " + e.toString());
+	    throw new DataAccessException("Error in  BaseJpaDAO.retrieveNullReference(Object pInstance, String pAttributeName): " + e.toString(), e);
+	} catch (final InvocationTargetException e) {
+	    log.error("InvocationTargetException caught: " + e.toString());
+	    throw new DataAccessException("Error in  BaseJpaDAO.retrieveNullReference(Object pInstance, String pAttributeName): " + e.toString(), e);
+	} catch (final NoSuchMethodException e) {
+	    log.error("NoSuchMethodException caught: " + e.toString());
+	    throw new DataAccessException("Error in  BaseJpaDAO.retrieveNullReference(Object pInstance, String pAttributeName): " + e.toString(), e);
+	}
+	log.info("************Done **************");
     }
-    
-    private String[] getJoinTableInverseColumnName(JoinTable joinTable) throws DataAccessException{
-     	String[] columnName=null;
-    	try {
-			if(joinTable!=null){
-				JoinColumn[] joinColumns = joinTable.inverseJoinColumns();
-				columnName=new String[joinColumns.length];
-				for(int i=0; i<joinColumns.length;i++){
-					columnName[i] = joinColumns[i].name();
-				}
-			}
-		} catch (Exception e) {
-            log.error("Exception caught: " + e.toString());
-            throw new DataAccessException("Error in  BaseJpaDAO.getJoinTableInverseColumnName(JoinTable joinTable): " + e.toString(),e);
+
+    public void retrieveAllNullReferences(Object pInstance) throws DataAccessException {
+	log.info("************Entering ***************");
+
+	try {
+	    final PropertyUtilsBean propertyUtilsBean = BeanUtilsBean.getInstance().getPropertyUtils();
+
+	    // Class pInstanceClass=pInstance.getClass();
+	    final Class pInstanceClass = getEntityClass(pInstance);
+
+	    final Map describe = propertyUtilsBean.describe(pInstance);
+	    final Iterator iterator = describe.keySet().iterator();
+	    while (iterator.hasNext()) {
+		final String pAttributeName = (String) iterator.next();
+		if (getAnnotation(pInstanceClass, pAttributeName, OneToMany.class) != null || getAnnotation(pInstanceClass, pAttributeName, ManyToMany.class) != null
+			|| getAnnotation(pInstanceClass, pAttributeName, OneToOne.class) != null || getAnnotation(pInstanceClass, pAttributeName, ManyToOne.class) != null) {
+
+		    retrieveNullReference(pInstance, pAttributeName);
 		}
-    	return columnName;
+
+	    }
+	} catch (final IllegalAccessException e) {
+	    log.error("IllegalAccessException caught: " + e.toString());
+	    throw new DataAccessException("Error in  BaseJpaDAO.retrieveAllNullReferences(Object pInstance): " + e.toString(), e);
+	} catch (final InvocationTargetException e) {
+	    log.error("InvocationTargetException caught: " + e.toString());
+	    throw new DataAccessException("Error in  BaseJpaDAO.retrieveAllNullReferences(Object pInstance): " + e.toString(), e);
+	} catch (final NoSuchMethodException e) {
+	    log.error("NoSuchMethodException caught: " + e.toString());
+	    throw new DataAccessException("Error in  BaseJpaDAO.retrieveAllNullReferences(Object pInstance): " + e.toString(), e);
+	}
+	log.info("************Done ***************");
     }
-    
-    private String[] getJoinTableColumnName(JoinTable joinTable) throws DataAccessException{
-     	String[] columnName=null;
-    	try {
-			if(joinTable!=null){
-				JoinColumn[] joinColumns = joinTable.joinColumns();
-				columnName=new String[joinColumns.length];
-				for(int i=0; i<joinColumns.length;i++){
-					columnName[i] = joinColumns[i].name();
-				}
-			}
-		} catch (Exception e) {
-            log.error("Exception caught: " + e.toString());
-            throw new DataAccessException("Error in  BaseJpaDAO.getJoinTableColumnName(JoinTable joinTable): " + e.toString(),e);
-		}
-    	return columnName;
+
+    /**
+     * convenience method to use when the first attribute is an embeddedId
+     *
+     * @param valueobjectOrCollection
+     * @param path
+     * @throws DataAccessException
+     */
+    private void retrievePKPathReference(Object valueobject, String firstAttributeName, String remainingPath) throws DataAccessException {
+	log.info("************Entering **************");
+	try {
+	    final PropertyUtilsBean propertyUtilsBean = BeanUtilsBean.getInstance().getPropertyUtils();
+	    // Object valueobjectPrimaryKeyValue =
+	    // propertyUtilsBean.getProperty(valueobject,firstAttributeName);
+	    final String[] firstAttributeNameAndRemainingPath2 = Utils.getFirstAttributeNameAndRemainingPath(remainingPath);
+	    final String secondAttributeName = firstAttributeNameAndRemainingPath2[0];
+	    final String remainingPath2 = firstAttributeNameAndRemainingPath2[1];
+
+	    // Object retrievedReference = findObjectByLogicCondition(new
+	    // String[]{firstAttributeName+"."+secondAttributeName},
+	    // valueobject.getClass(), new
+	    // LogicSqlCondition(firstAttributeName,"==",
+	    // valueobjectPrimaryKeyValue));
+	    // propertyUtilsBean.setProperty(valueobjectPrimaryKeyValue,
+	    // secondAttributeName,retrievedReference);
+	    // if(remainingPath2!=null &&
+	    // !remainingPath2.trim().equals(""))retrievePathReference(retrievedReference,remainingPath2);
+	    //
+
+	    final Object pkAttribute = propertyUtilsBean.getProperty(valueobject, firstAttributeName);
+	    // retrieveReference(pkAttribute,secondAttributeName);
+	    final Object secondAttribute = propertyUtilsBean.getProperty(pkAttribute, secondAttributeName);
+	    refresh(secondAttribute);
+	    if (remainingPath2 != null && !remainingPath2.trim().equals("")) {
+		retrievePathReference(secondAttribute, remainingPath2);
+	    }
+	} catch (final IllegalAccessException e) {
+	    log.error("IllegalAccessException caught: " + e.toString());
+	    throw new DataAccessException("Error in  BaseJpaDAO.retrievePKPathReference(Object valueobject, String firstAttributeName, String remainingPath): " + e.toString(), e);
+	} catch (final InvocationTargetException e) {
+	    log.error("InvocationTargetException caught: " + e.toString());
+	    throw new DataAccessException("Error in  BaseJpaDAO.retrievePKPathReference(Object valueobject, String firstAttributeName, String remainingPath): " + e.toString(), e);
+	} catch (final NoSuchMethodException e) {
+	    log.error("NoSuchMethodException caught: " + e.toString());
+	    throw new DataAccessException("Error in  BaseJpaDAO.retrievePKPathReference(Object valueobject, String firstAttributeName, String remainingPath): " + e.toString(), e);
+	} catch (final Exception e) {
+	    log.error("Exception caught: " + e.toString());
+	    throw new DataAccessException("Error in  BaseJpaDAO.retrievePKPathReference(Object valueobject, String firstAttributeName, String remainingPath): " + e.toString(), e);
+	}
+
+	log.info("************Done ************");
     }
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	private void setQueryParameters(Query query, Map parameters) throws DataAccessException{
-        log.debug("************Entering ***************");
-        try{
-        	
-        	Iterator iterator = parameters.keySet().iterator();
-        	while(iterator.hasNext()){
-        		Object key = iterator.next();
-        		//log.debug("executing query.setParameter( #0,#1",key,parameters.get(key));
-        		
-        		if(Integer.class.isInstance(key)){
-        			query.setParameter(((Integer)key).intValue(), parameters.get(key));
-        		}else{
-        			query.setParameter((String) key, parameters.get(key));
-        		}
-        	}
-        } catch (Exception e) {
-            log.error("Exception caught  : " + e.toString());
-            throw new DataAccessException("Error in  BaseOjbPbCore.setQueryParameters(Query query, Map parameters) : " + e.toString(),e);
-        }
-        log.info("************Done **************");
+
+    public void retrievePathReference(Object valueobjectOrCollection, String path) throws DataAccessException {
+	log.info("************Entering **************");
+	String firstAttributeName = "";
+	String remainingPath = "";
+
+	try {
+	    if (path != null && !path.trim().equals("") && valueobjectOrCollection != null) {
+
+		final PropertyUtilsBean propertyUtilsBean = BeanUtilsBean.getInstance().getPropertyUtils();
+		log.debug("retrievePathReference:path=" + path);
+		final String[] firstAttributeNameAndRemainingPath = Utils.getFirstAttributeNameAndRemainingPath(path);
+
+		firstAttributeName = firstAttributeNameAndRemainingPath[0];
+		remainingPath = firstAttributeNameAndRemainingPath[1];
+
+		log.debug("retrievePathReference:firstAttributeName=" + firstAttributeName);
+
+		if (Collection.class.isInstance(valueobjectOrCollection)) { // is
+									    // a
+									    // collection
+		    log.debug("retrievePathReference: valueobjectOrCollection is a collection");
+
+		    final Iterator iterator = ((Collection) valueobjectOrCollection).iterator();
+		    while (iterator.hasNext()) {
+			final Object valueobjectOrCollectionItem = iterator.next();
+			retrieveReference(valueobjectOrCollectionItem, firstAttributeName);
+			if (remainingPath != null && !remainingPath.trim().equals("")) {
+			    // if(getAnnotation(valueobjectOrCollectionItem.getClass(),
+			    // firstAttributeName, EmbeddedId.class)!=null){
+			    if (getAnnotation(getEntityClass(valueobjectOrCollectionItem), firstAttributeName, EmbeddedId.class) != null) {
+				// String[] firstAttributeNameAndRemainingPath2
+				// =
+				// Utils.getFirstAttributeNameAndRemainingPath(remainingPath);
+				// String
+				// secondAttributeName=firstAttributeNameAndRemainingPath2[0];
+				// String
+				// remainingPath2=firstAttributeNameAndRemainingPath2[1];
+				// Object
+				// pkAttribute=propertyUtilsBean.getProperty(valueobjectOrCollectionItem,firstAttributeName);
+				// retrieveReference(pkAttribute,secondAttributeName);
+				// if(remainingPath2!=null &&
+				// !remainingPath2.trim().equals("")){
+				// retrievePathReference(propertyUtilsBean.getProperty(pkAttribute,secondAttributeName),remainingPath2);
+				// }
+				retrievePKPathReference(valueobjectOrCollectionItem, firstAttributeName, remainingPath);
+			    } else {
+				retrievePathReference(propertyUtilsBean.getProperty(valueobjectOrCollectionItem, firstAttributeName), remainingPath);
+			    }
+			}
+
+			// if(getAnnotation(valueobjectOrCollectionItem.getClass(),
+			// firstAttributeName, EmbeddedId.class)!=null){
+			// retrievePKPathReference(valueobjectOrCollectionItem,
+			// firstAttributeName, remainingPath);
+			// }else{
+			// retrieveReference(valueobjectOrCollectionItem,firstAttributeName);
+			// if(remainingPath!=null &&
+			// !remainingPath.trim().equals("")){
+			// retrievePathReference(propertyUtilsBean.getProperty(valueobjectOrCollectionItem,firstAttributeName),remainingPath);
+			// }
+			// }
+
+		    }
+
+		} // else
+		  // if(valueobjectOrCollection.getClass().isAnnotationPresent(Entity.class)){
+		else {
+		    retrieveReference(valueobjectOrCollection, firstAttributeName);
+		    // if(getAnnotation(valueobjectOrCollection.getClass(),
+		    // firstAttributeName, EmbeddedId.class)!=null){
+		    if (getAnnotation(getEntityClass(valueobjectOrCollection), firstAttributeName, EmbeddedId.class) != null) {
+
+			retrievePKPathReference(valueobjectOrCollection, firstAttributeName, remainingPath);
+			// Object valueobjectOrCollectionPrimaryKeyValue =
+			// propertyUtilsBean.getProperty(valueobjectOrCollection,firstAttributeName);
+			// String[] firstAttributeNameAndRemainingPath2 =
+			// Utils.getFirstAttributeNameAndRemainingPath(remainingPath);
+			// String
+			// secondAttributeName=firstAttributeNameAndRemainingPath2[0];
+			// String
+			// remainingPath2=firstAttributeNameAndRemainingPath2[1];
+			// Object retrievedReference =
+			// findObjectByLogicCondition(new
+			// String[]{firstAttributeName+"."+secondAttributeName},
+			// valueobjectOrCollection.getClass(), new
+			// LogicSqlCondition(firstAttributeName,"==",
+			// valueobjectOrCollectionPrimaryKeyValue));
+			// propertyUtilsBean.setProperty(valueobjectOrCollectionPrimaryKeyValue,
+			// secondAttributeName,retrievedReference);
+			// if(remainingPath2!=null &&
+			// !remainingPath2.trim().equals(""))retrievePathReference(retrievedReference,remainingPath2);
+			//
+		    } else {
+			log.debug("retrievePathReference: valueobjectOrCollection is a valueobject");
+
+			// retrieveReference(valueobjectOrCollection,firstAttributeName);
+			if (remainingPath != null && !remainingPath.trim().equals("")) {
+			    retrievePathReference(propertyUtilsBean.getProperty(valueobjectOrCollection, firstAttributeName), remainingPath);
+			}
+		    }
+		}
+		// else {
+		// throw new DataAccessException("Error in
+		// BaseJpaDAO.retrievePathReference(Object
+		// valueobjectOrCollection, String path): "
+		// +valueobjectOrCollection.getClass().toString()+" is not a
+		// collection and not an Entity");
+		// }
+	    }
+	} catch (final IllegalAccessException e) {
+	    log.error("IllegalAccessException caught: " + e.toString());
+	    throw new DataAccessException("Error in  BaseJpaDAO.retrievePathReference(Object valueobjectOrCollection, String path): " + e.toString(), e);
+	} catch (final InvocationTargetException e) {
+	    log.error("InvocationTargetException caught: " + e.toString());
+	    throw new DataAccessException("Error in  BaseJpaDAO.retrievePathReference(Object valueobjectOrCollection, String path): " + e.toString(), e);
+	} catch (final NoSuchMethodException e) {
+	    log.error("NoSuchMethodException caught: " + e.toString());
+	    throw new DataAccessException("Error in  BaseJpaDAO.retrievePathReference(Object valueobjectOrCollection, String path): " + e.toString(), e);
+	} catch (final Exception e) {
+	    log.error("Exception caught: " + e.toString());
+	    throw new DataAccessException("Error in  BaseJpaDAO.retrievePathReference(Object valueobjectOrCollection, String path): " + e.toString(), e);
+	}
+	log.info("************Done ************");
+
     }
-	
-	private String translateInAll(String queryString, Map parameters) throws DataAccessException {
-		log.debug("************Entering ***************");
-		String result=null;
-		try {
-			
-			result = translateIn(queryString,parameters);
-			result = translateIn(result);
-			
-		} catch (DataAccessException e) {
-            log.error("DataAccessException caught  : " + e.toString());
-            throw new DataAccessException("Error in  BaseJpaDAO.translateInAll(String queryString, Map parameter): " + e.toString(),e);
-		} catch (Exception e) {
-            log.error("Exception caught  : " + e.toString());
-            throw new DataAccessException("Error in  BaseJpaDAO.translateInAll(String queryString, Map parameter): " + e.toString(),e);
-		}
-		
-		log.debug("************Done ***************");
-		return result;
-	}
-	
-	private String translateIn(String queryString, Map parameters) throws DataAccessException {
-		log.debug("************Entering ***************");
-		try {
-			if(parameters!=null){
-				Map parametersToSplit = new HashMap();
-				Set keySet =parameters.keySet();
-				Iterator iterator = keySet.iterator();
-				
-				while(iterator.hasNext()){
-					String key = (String) iterator.next();
-					Object value = parameters.get(key);
-					if(Collection.class.isInstance(value) && ((Collection)value).size()>inLimit){
-						parametersToSplit.put(key, value);
-					}
-				}
-				if(!parametersToSplit.isEmpty()){
-					iterator=parametersToSplit.keySet().iterator();
-					while(iterator.hasNext()){
-						Object key =  iterator.next();
-						Object value = parameters.get(key);
-						
-						//final String regex = "(\\S+)\\s+(not\\s+)?in\\s*\\((\\s*\\S+(\\s*,\\s*\\S+)*)\\s*\\)";
-						//String regex = "(\\w\\.+)\\s+(not\\s+)?in\\s*\\(s*:s*" + key+ "\\s*\\)";
-						String regex = "(\\S+)\\s+(not\\s+)?in\\s*\\(\\s*:\\s*" + key+ "\\s*\\)";
-						Pattern pattern = Pattern.compile(regex, Pattern.CASE_INSENSITIVE);
-						Matcher matcher = pattern.matcher(queryString); 
-						if(matcher.find()){
-							String replacement ="(";
-							String entityIdentifier = matcher.group(1);
-							String not = matcher.group(2);
-							if (not!=null){
-								//replacement = replacement + " NOT ("+entityIdentifier+orOfInsCollection(key,splitIn((Collection)value),parameters)+" ) ";
-								replacement = replacement + " NOT ("+orOfInsCollection(entityIdentifier,key,splitIn((Collection)value),parameters)+" ) ";
-							}else{
-								//replacement = replacement + entityIdentifier+orOfInsCollection(key,splitIn((Collection)value),parameters);
-								replacement = replacement + " "+orOfInsCollection(entityIdentifier,key,splitIn((Collection)value),parameters);
-							}
-							replacement = replacement + " ) ";
-							queryString = matcher.replaceAll(replacement);
-						}
-					}
-				}
-			}
-			
-		} catch (DataAccessException e) {
-            log.error("DataAccessException caught  : " + e.toString());
-            throw new DataAccessException("Error in  BaseJpaDAO.translateIn(String queryString, Map parameter): " + e.toString(),e);
-		}
-		
-		
-		log.debug("************Done ***************");
-		return queryString;
-	}
-	
-	
-	/**
-	 * Este metodo quita del parameters el elemento con key parameter, y a�ade uno para cada lista en splitIn.
-	 * Devuelve la string IN (:split_0_paramemeter) OR IN (:split_1_paramemeter)...OR IN (:split_N_paramemeter)
-	 * @param parameter
-	 * @param splitIn
-	 * @param parameters
-	 * @return
-	 * @throws DataAccessException
-	 */
-	private String orOfInsCollection(String entityIdentifier,Object parameter, ArrayList<List> splitIn, Map parameters) throws DataAccessException{
-		log.debug("************Entering ***************");
-		String orOfIns= "";
-		try {
-			if(splitIn!=null){
-				parameters.remove(parameter);
-				Iterator<List> iterator = splitIn.iterator();
-				int count=0;
-				if (iterator.hasNext()){
-					List in = iterator.next();
-					String splitParameter= "split_"+count+"_"+parameter.toString();
-					//orOfIns = " IN (:"+splitParameter+" ) ";
-					orOfIns = " "+entityIdentifier+" IN (:"+splitParameter+" ) ";
-					parameters.put(splitParameter, in);
-				}
-				while (iterator.hasNext()){
-					count++;
-					List in = iterator.next();
-					String splitParameter= "split_"+count+"_"+parameter.toString();
-					//orOfIns = orOfIns +" OR IN (:"+splitParameter+" ) ";
-					orOfIns = orOfIns +" OR "+entityIdentifier+" IN (:"+splitParameter+" ) ";
-					parameters.put(splitParameter, in);
-				}
-			}
-		} catch (Exception e) {
-            log.error("Exception caught  : " + e.toString());
-            throw new DataAccessException("Error in  BaseJpaDAO.orOfInsCollection(String entityIdentifier,Object parameter, ArrayList<List> splitIn, Map parameters): " + e.toString(),e);
-		}
-		log.debug("************Done ***************");
-		return orOfIns;
-		
-	}
-	
-	
-	/**
-	 * este metodo devuelve una lista de listas, que son la particion de la lista data en ingreso por inLimit
-	 * @param in
-	 * @return
-	 * @throws DataAccessException
-	 */
-	private ArrayList<List> splitIn(Collection in) throws DataAccessException{
-		log.debug("************Entering ***************");
-		ArrayList<List> limitedIns = new ArrayList<List>();
-		try {
-			if(in !=null && ! in.isEmpty()){
-				
-				List toSplitList = null;
-				if(List.class.isInstance(in)){
-					toSplitList=(List) in;
-				}else{
-					toSplitList= new ArrayList();
-					toSplitList.addAll(in);
-				}
-				
-				
-				int size=toSplitList.size();
-				
-				// mod to know how much elements are inputted in last clause IN
-				final int mod = (size % this.inLimit);
-				// calculate how much INs are injected
-				final int numberOfIn = (size / this.inLimit) + (mod == 0 ? 0 : 1);
-					
-				for (int i = 0; i < numberOfIn-1; i++) {
-					List limitedIn = toSplitList.subList(i*this.inLimit, (i+1)*this.inLimit);
-					limitedIns.add(limitedIn);
-				}
-				List limitedIn = toSplitList.subList((numberOfIn-1)*this.inLimit, size);
-				limitedIns.add(limitedIn);
-			}
-		} catch (Exception e) {
-            log.error("Exception caught  : " + e.toString());
-            throw new DataAccessException("Error in  BaseJpaDAO.splitIn(Collection in): " + e.toString(),e);
- 		}
-		log.debug("************Done ***************");
-		return limitedIns;
-	}
-	
-	
-	@SuppressWarnings("unused")
-	private String orOfInsfromList(ArrayList<List> splitIn) throws DataAccessException{
-		log.debug("************Entering ***************");
-		String orOfIns= "";
-		try {
-			if(splitIn!=null){
-				Iterator<List> iterator = splitIn.iterator();
-				if (iterator.hasNext()){
-					List in = iterator.next();
-					orOfIns = " IN "+Utils.buildInString(in);
-				}
-				while (iterator.hasNext()){
-					List in = iterator.next();
-					orOfIns = orOfIns +" OR IN "+Utils.buildInString(in);
-				}
-			}
-		} catch (Exception e) {
-            log.error("Exception caught  : " + e.toString());
-            throw new DataAccessException("Error in  BaseJpaDAO.orOfIns(ArrayList<Collection> splitIn): " + e.toString(),e);
-		}
-		log.debug("************Done ***************");
-		return orOfIns;
-		
-	}
-	
-	private String translateIn(String queryString) throws DataAccessException {
-		log.debug("************Entering ***************");
-		String result = null;
-		try {
-			//final String regex = "(\\w\\.+)\\s+(not\\s+)?in\\s*\\(s*:" + param+ "\\s*)";
-			//final String regex = "(\\w\\.+)\\s+(not\\s+)?in\\s*\\((s*.*(s*,s*.*)*)s*\\)";
-			//final String regex = "(\\S+)\\s+(not\\s+)?in\\s*\\((\\s*\\S+(\\s*,\\s*\\S+)*)\\s*\\)";
-			//final String regex = "(\\S+)\\s+(not\\s+)?in\\s*\\((\\s*\\S+(\\s*,\\s*\\S+){"+(this.inLimit-1)+",})\\s*\\)";
-			final String regex = "(\\S+)\\s+(not\\s+)?in\\s*\\((\\s*\\S+(\\s*,\\s*\\S+)+)\\s*\\)";
-			
-			Pattern pattern = Pattern.compile(regex, Pattern.CASE_INSENSITIVE);
-			Matcher matcher = pattern.matcher(queryString); 
-			StringBuffer sb = new StringBuffer();
 
-			while(matcher.find()){
-				String replacement ="(";
-				String entityIdentifier = matcher.group(1);
-				String not = matcher.group(2);
-				String in = matcher.group(3);
-				if (not!=null){
-					//replacement = replacement + " NOT ("+entityIdentifier+orOfIns(splitIn(in))+" ) ";
-					replacement = replacement + " NOT ("+orOfIns(entityIdentifier,splitIn(in))+" ) ";
-				}else{
-					//replacement = replacement + entityIdentifier+orOfIns(splitIn(in));
-					replacement = replacement + orOfIns(entityIdentifier,splitIn(in));
-				}
-				replacement = replacement + " ) ";
-				matcher.appendReplacement(sb, replacement);
+    public void retrieveNullPathReference(Object valueobjectOrCollection, String path) throws DataAccessException {
+	log.info("************Entering **************");
+
+	try {
+	    if (path != null && !path.trim().equals("") && valueobjectOrCollection != null) {
+
+		final PropertyUtilsBean propertyUtilsBean = BeanUtilsBean.getInstance().getPropertyUtils();
+		log.debug("retrieveNullPathReference:path=" + path);
+		final String[] firstAttributeNameAndRemainingPath = Utils.getFirstAttributeNameAndRemainingPath(path);
+		final String firstAttributeName = firstAttributeNameAndRemainingPath[0];
+		final String remainingPath = firstAttributeNameAndRemainingPath[1];
+
+		log.debug("retrieveNullPathReference:firstAttributeName=" + firstAttributeName);
+
+		if (Collection.class.isInstance(valueobjectOrCollection)) { // is
+									    // a
+									    // collection
+		    log.debug("retrieveNullPathReference: valueobjectOrCollection is a collection");
+
+		    if (valueobjectOrCollection != null) {
+			final Iterator iterator = ((Collection) valueobjectOrCollection).iterator();
+			while (iterator.hasNext()) {
+			    final Object valueobjectOrCollectionItem = iterator.next();
+			    if (propertyUtilsBean.getProperty(valueobjectOrCollectionItem, firstAttributeName) == null) {
+				retrieveReference(valueobjectOrCollectionItem, firstAttributeName);
+			    }
+			    if (!remainingPath.equals("")) {
+				retrieveNullPathReference(propertyUtilsBean.getProperty(valueobjectOrCollectionItem, firstAttributeName), remainingPath);
+			    }
 			}
-			matcher.appendTail(sb);
-			//queryString = sb.toString();
-			result = sb.toString();
-			
-		} catch (DataAccessException e) {
-            log.error("DataAccessException caught  : " + e.toString());
-            throw new DataAccessException("Error in  BaseJpaDAO.translateIn(String queryString): " + e.toString(),e);
-		}
-		
-		
-		log.debug("************Done ***************");
-		return result;
-	}
-	
-	private String orOfIns(String entityIdentifier,ArrayList<String> toLimitedIns) throws DataAccessException{
-		log.debug("************Entering ***************");
-		String orOfIns= "";
-		try {
-			if(toLimitedIns!=null){
-				Iterator<String> iterator = toLimitedIns.iterator();
-				if (iterator.hasNext()){
-					//orOfIns = " IN ("+iterator.next()+" ) ";
-					orOfIns = " "+entityIdentifier+" IN ("+iterator.next()+" ) ";
-				}
-				while (iterator.hasNext()){
-					//orOfIns = orOfIns +" OR IN ("+iterator.next()+" ) ";
-					orOfIns = orOfIns +" OR "+ entityIdentifier +" IN ("+iterator.next()+" ) ";
-				}
-			}
-		} catch (Exception e) {
-            log.error("Exception caught  : " + e.toString());
-            throw new DataAccessException("Error in  BaseJpaDAO.orOfIns(String entityIdentifier,ArrayList<String> toLimitedIns): " + e.toString(),e);
-		}
-		log.debug("************Done ***************");
-		return orOfIns;
-		
-	}
-	
-	private ArrayList<String> splitIn(String in ) throws DataAccessException{
-		log.debug("************Entering ***************");
-		ArrayList<String> splitIn = new ArrayList<String>();
-		try {
-			if(in !=null && ! in.trim().equals("")){
-				String[] limitedInsArray = in.split(",");
-				// mod to know how much elements are inputted in last clause IN
-				final int mod = (limitedInsArray.length % this.inLimit);
-				// calculate how much INs are injected
-				final int numberOfIn = (limitedInsArray.length / this.inLimit) + (mod == 0 ? 0 : 1);
-				for (int i = 0; i < numberOfIn; i++) {
-					String limitedIn =limitedInsArray[i*this.inLimit];
-					for (int k=(i*this.inLimit)+1; k<(i+1)*this.inLimit && k<limitedInsArray.length; k++){
-						limitedIn = limitedIn+","+limitedInsArray[k];
-					}
-					splitIn.add(limitedIn);
-				}
-			}
-		} catch (Exception e) {
-            log.error("Exception caught  : " + e.toString());
-            throw new DataAccessException("Error in  BaseJpaDAO.splitIn(String in ): " + e.toString(),e);
- 		}
-		log.debug("************Done ***************");
-		return splitIn;
-	}
-	
-	
-	private Query createQuery(Class realClass, LogicCondition logicCondition) throws DataAccessException{
-		log.debug("Entering");
-		Query query = null;
-		try {
-			//query = createQuery(null, realClass,  logicCondition,null);
-			query = createQuery(null, null, realClass,  logicCondition,null);
-		} catch (Exception e) {
-			log.error("Exception caught: " + e.toString());
-            throw new DataAccessException("Error in  BaseJpaDAO.createQuery(Class realClass, LogicCondition logicCondition): " + e.toString(),e);
-		}
-		log.debug("Done");
-		return query;
-	}
-	
-	private Query createQuery(String[] selectFields, Class realClass,  LogicCondition logicCondition) throws DataAccessException{
-		log.debug("Entering");
-		Query query = null;
-		try {
-			//query = createQuery(selectFields, realClass,  logicCondition, null); 
-			query = createQuery(null, selectFields, realClass,  logicCondition, null);
-		} catch (Exception e) {
-			log.error("Exception caught: " + e.toString());
-            throw new DataAccessException("Error in  BaseJpaDAO.createQuery(String[] selectFields, Class realClass,  LogicCondition logicCondition): " + e.toString(),e);
+		    }
+		} else {// is a valueobject
+		    log.debug(".retrieveNullPathReference: valueobjectOrCollection is a valueobject");
 
+		    if (propertyUtilsBean.getProperty(valueobjectOrCollection, firstAttributeName) == null) {
+			log.debug("retrieveNullPathReference: propertyUtilsBean.getProperty(valueobjectOrCollection,firstAttributeName)==null");
+			log.debug("retrieveNullPathReference: valueobjectOrCollection = " + valueobjectOrCollection.toString());
+			log.debug("retrieveNullPathReference: firstAttributeName = " + firstAttributeName);
+			retrieveReference(valueobjectOrCollection, firstAttributeName);
+			log.debug("retrieveNullPathReference: retrieved null reference");
+		    }
+		    if (!remainingPath.equals("")) {
+			log.debug("retrieveNullPathReference: before recursion");
+			retrieveNullPathReference(propertyUtilsBean.getProperty(valueobjectOrCollection, firstAttributeName), remainingPath);
+			log.debug("retrieveNullPathReference: after recursion");
+		    }
 		}
-		log.debug("Done");
-		return query;
+	    }
+	} catch (final IllegalAccessException e) {
+	    log.error("IllegalAccessException caught: " + e.toString());
+	    throw new DataAccessException("Error in  BaseJpaDAO.retrieveNullPathReference(Object valueobjectOrCollection, String path): " + e.toString(), e);
+	} catch (final InvocationTargetException e) {
+	    log.error("InvocationTargetException caught: " + e.toString());
+	    throw new DataAccessException("Error in  BaseJpaDAO.retrieveNullPathReference(Object valueobjectOrCollection, String path): " + e.toString(), e);
+	} catch (final NoSuchMethodException e) {
+	    log.error("NoSuchMethodException caught: " + e.toString());
+	    throw new DataAccessException("Error in  BaseJpaDAO.retrieveNullPathReference(Object valueobjectOrCollection, String path): " + e.toString(), e);
+	} catch (final Exception e) {
+	    log.error("Exception caught: " + e.toString());
+	    throw new DataAccessException("Error in  BaseJpaDAO.retrieveNullPathReference(Object valueobjectOrCollection, String path): " + e.toString(), e);
 	}
-	
-	
-	private Query createQuery(Boolean distinct, String[] selectFields, Class realClass,  LogicCondition logicCondition, String orderBy) throws DataAccessException{
-		log.debug("Entering");
-		Query query = null;
-		try {
-			query = createQuery(distinct, selectFields, realClass,  logicCondition, orderBy,  null);
-		} catch (Exception e) {
-			log.error("Exception caught: " + e.toString());
-            throw new DataAccessException("Error in  BaseJpaDAO.createQuery(Boolean distinct,String[] selectFields, Class realClass,  LogicCondition logicCondition, String orderBy): " + e.toString(),e);
-		}
-		log.debug("Done");
-		return query;
-	}
-	
-	
-	private Query createQuery(Boolean distinct, String[] selectFields, Class realClass,  LogicCondition logicCondition, String orderBy, String[] groupBy) throws DataAccessException{
-		log.debug("Entering");
-		Query query = null;
-		try {
-			
-			Map<String,Object> parametersMap = new HashMap<String,Object>();
-			String queryString = createQueryString ( distinct,  selectFields,  realClass,   logicCondition,  orderBy, groupBy,parametersMap);
-			//log.debug("queryString is #0", queryString);
-			query = getEntityManager().createQuery(queryString);
-			
-			setQueryParameters(query, parametersMap);
-		} catch (Exception e) {
-			log.error("Exception caught: " + e.toString());
-            throw new DataAccessException("Error in  BaseJpaDAO.createQuery(Boolean distinct,String[] selectFields, Class realClass,  LogicCondition logicCondition, String orderBy, String[] groupBy): " + e.toString(),e);
 
-		}
-		log.debug("Done");
-		return query;
-	}
-	
-	private boolean isFunction(String fieldName) throws DataAccessException{
-		boolean isFuntion=false;
-		try {
-			if(fieldName!=null){
-				isFuntion=fieldName.contains("(");
-			}
-		} catch (Exception e) {
-			log.error("Exception caught: " + e.toString());
-            throw new DataAccessException("Error in  BaseJpaDAO.isFunction(String fieldName): " + e.toString(),e);
-		}
-		return isFuntion;
-	}
-	
-	private HashMap<String,String> createJoinMap(Class realClass,String fieldName, Cursor joinIndex) throws DataAccessException{
-		HashMap<String,String> joinMap = new HashMap<String, String>();
-		try {
-			if(fieldName!=null  && !isFunction(fieldName)){
-				fieldName=fieldName.split(" ")[0];
-				String[] firstAttributeNameAndRemainingPath = Utils.getFirstAttributeNameAndRemainingPath(fieldName);
-				String firstAttributeName=firstAttributeNameAndRemainingPath[0];
-				String remainingPath=firstAttributeNameAndRemainingPath[1];
-				//StringBuffer currentPath=new   StringBuffer("a.");
-				StringBuffer currentPath=new   StringBuffer("");
-				//int joinIndex=0;
-				//String  joinPrefix ="bbb";
-				Class currentClass=realClass;
-				while (!firstAttributeName.trim().equals("")){
-					
-					if (isReferenceCollection(currentClass, firstAttributeName)){
-						currentPath.append(firstAttributeName);
-						String joinAlias =joinMap.get(currentPath.toString());
-						if(joinAlias==null){
-							joinAlias = joinPrefix+joinIndex.getValue();
-							joinMap.put(currentPath.toString(), joinAlias);
-							joinIndex.increment();
-						}
-						currentClass = Utils.getGenericClass(currentClass.getDeclaredField(firstAttributeName).getGenericType());
-						
-						//currentPath=new   StringBuffer(firstAttributeName+".");
-						currentPath=new   StringBuffer(joinAlias+".");
-						
-					}else{
-						currentPath.append(firstAttributeName+".");
-						currentClass=currentClass.getDeclaredField(firstAttributeName).getType();
-					}
-					firstAttributeNameAndRemainingPath = Utils.getFirstAttributeNameAndRemainingPath(remainingPath);
-					firstAttributeName=firstAttributeNameAndRemainingPath[0];
-					remainingPath=firstAttributeNameAndRemainingPath[1];
-				}
-			}
-		} catch (SecurityException e) {
-			log.error("SecurityException caught: " + e.toString());
-            throw new DataAccessException("Error in  BaseJpaDAO.createJoinMap(Class realClass,String fieldName, Cursor joinIndex): " + e.toString(),e);
-		} catch (NoSuchFieldException e) {
-			log.error("NoSuchFieldException caught: " + e.toString());
-            throw new DataAccessException("Error in  BaseJpaDAO.createJoinMap(Class realClass,String fieldName, Cursor joinIndex): " + e.toString(),e);
-		} catch (Exception e) {
-			log.error("Exception caught: " + e.toString());
-            throw new DataAccessException("Error in  BaseJpaDAO.createJoinMap(Class realClass,String fieldName, Cursor joinIndex): " + e.toString(),e);
-		}
-			
-		
-		
-		return joinMap;
-	}
-	
-	private HashMap<String,String> createJoinMap(Class realClass,String[] selectFields, Cursor joinIndex) throws DataAccessException{
-		HashMap<String,String> joinMap = new HashMap<String, String>();
-		
-		try {
-			if(selectFields!=null){
-				for(String selectField:selectFields){
-					joinMap.putAll(createJoinMap(realClass,selectField,joinIndex));
-				}
-			}
-		} catch (Exception e) {
-			log.error("Exception caught: " + e.toString());
-            throw new DataAccessException("Error in  BaseJpaDAO.createJoinMap(Class realClass,String[] selectFields): " + e.toString(),e);
-		}
-		
-		return joinMap;
-	}
-	
-	private HashMap<String,String> createJoinMap(Class realClass,LogicCondition logicCondition, Cursor joinIndex) throws DataAccessException{
-		HashMap<String,String> joinMap = new HashMap<String, String>();
-		try {
-			while(logicCondition!=null){
-				SimpleCondition simpleCondition = logicCondition.getSimpleCondition();
-				String fieldName= (String) simpleCondition.getParameter().iterator().next();
-				joinMap.putAll(createJoinMap(realClass,fieldName, joinIndex));
-				logicCondition = logicCondition.getLogicCondition();
-			}
-		} catch (Exception e) {
-			log.error("Exception caught: " + e.toString());
-            throw new DataAccessException("Error in  BaseJpaDAO.createJoinMap(Class realClass,LogicCondition logicCondition, Cursor joinIndex): " + e.toString(),e);
-		}
-		
-		return joinMap;
-		
-	}
-	
-	private void replanceLogicConditionFieldsWithJoinMap(LogicCondition logicCondition, Map<String,String> joinMap) throws DataAccessException{
-		try {
-			if(joinMap!=null){
-				while(logicCondition!=null){
-					SimpleCondition simpleCondition = logicCondition.getSimpleCondition();
-					Collection replacedParameters = new ArrayList();
-					Iterator iterator= simpleCondition.getParameter().iterator();
-					String fieldName= (String) iterator.next();
-					fieldName=replanceFieldWithJoinMap(fieldName, joinMap);
-					replacedParameters.add(fieldName);
-					while(iterator.hasNext()){
-						replacedParameters.add(iterator.next());
-					}
-					simpleCondition.setParameter(replacedParameters);
-					logicCondition = logicCondition.getLogicCondition();
-				}
-			}
-		} catch (Exception e) {
-			log.error("Exception caught: " + e.toString());
-            throw new DataAccessException("Error in  BaseJpaDAO.replanceLogicConditionFieldsWithJoinMap(LogicCondition logicCondition, Map<String,String> joinMap): " + e.toString(),e);
-		}
-	}
-	
-	private void replanceFieldsWithJoinMap(String[] fields, Map<String,String> joinMap) throws DataAccessException{
-		if(fields!=null){
-			for(int i=0;i<fields.length;i++){
-				fields[i]=replanceFieldWithJoinMap(fields[i], joinMap);
-			}
-		}
-	}
-	
-	private String replanceFieldWithJoinMap(String field, Map<String,String> joinMap) throws DataAccessException{
-		String replacedField=field;
-		
-		try {
-			if(joinMap!=null &&replacedField!=null){
-				boolean fullReplaced=false;
-				while(!fullReplaced){
-				Iterator<String> iterator = joinMap.keySet().iterator();
-					boolean replaced=false;
-					while(iterator.hasNext() && !replaced){
-						String join =iterator.next();
-						if(replacedField.contains(join)){
-							replacedField=replacedField.replace(join, joinMap.get(join));
-							replaced=true;
-						}
-					}
-					if(!replaced)fullReplaced=true;
-				}
-			}
-		} catch (Exception e) {
-			log.error("Exception caught: " + e.toString());
-            throw new DataAccessException("Error in  BaseJpaDAO.replanceFieldWithJoinMap(String field, Map<String,String> joinMap): " + e.toString(),e);
-		}
-		return replacedField;
-	}
-	
-//	private String createSelectString(Boolean distinct, String[] selectFields, boolean isCount, Map<String,String> joinMap){
-//		String selectString="";
-//		selectString = createSelectString(distinct,  selectFields,  isCount);
-//		
-//		if(joinMap!=null){
-//			Iterator<String> iterator = joinMap.keySet().iterator();
-//			while(iterator.hasNext()){
-//				String join =iterator.next();
-//				selectString=selectString.replace(join, joinMap.get(join));
-//			}
-//		}
-//		return selectString;
-//	}
-	
-	
-	private String prefixNotJoinFieldName(String fieldName) throws DataAccessException{
-		String prefixedFieldName=fieldName;
-		try {
-			if(prefixedFieldName!=null && !prefixedFieldName.startsWith(joinPrefix) && !isFunction(prefixedFieldName)){
-				prefixedFieldName=" a."+prefixedFieldName;
-			}
-		} catch (Exception e) {
-			log.error("Exception caught: " + e.toString());
-            throw new DataAccessException("Error in  BaseJpaDAO.prefixNotJoinFieldName(String fieldName): " + e.toString(),e);
-		}
-		return prefixedFieldName;
-		
-	}
-	
-	private String createSelectString(Boolean distinct, String[] selectFields, boolean isCount) throws DataAccessException{
-		log.debug("Entering");
-		String selectString = "";
-		try {
-			//String selectString ="";
-			if(selectFields!=null && selectFields.length>0){
-				for(int i=0;i<selectFields.length;i++){
-					//selectString=selectString+"a."+selectFields[i];
-					selectString=selectString+prefixNotJoinFieldName(selectFields[i]);
-					if(i<selectFields.length-1)selectString=selectString+",";
-				}
-			}else{
-				selectString ="a";
-			}
-			
-			if(distinct!=null && distinct.booleanValue()) {
-				if(!isCount){
-					selectString = "SELECT DISTINCT " + selectString+" ";
-				}else{
-					selectString = "SELECT COUNT (DISTINCT " + selectString+") ";
-				}
-			}else{
-				if(!isCount){
-					selectString = "SELECT " + selectString+" ";
-				}else{
-					selectString = "SELECT COUNT (" + selectString+") ";
-				}
-			}
-			
-			
-		} catch (Exception e) {
-			log.error("Exception caught: " + e.toString());
-            throw new DataAccessException("Error in  BaseJpaDAO.createSelectString(Boolean distinct, String[] selectFields,boolean isCount): " + e.toString(),e);
-		}
-		log.debug("Done");
-		return selectString;
-		
-		
-	}
-	
-	private String createSelectString(Boolean distinct, String[] selectFields) throws DataAccessException{
-		log.debug("Entering");
-		String selectString = "";
-		try {
+	log.info("************Done ***********");
 
-			selectString =createSelectString( distinct,  selectFields,false); 
-			
-			
-		} catch (Exception e) {
-			log.error("Exception caught: " + e.toString());
-            throw new DataAccessException("Error in  BaseJpaDAO.createSelectString(Boolean distinct, String[] selectFields): " + e.toString(),e);
-		}
-		log.debug("Done");
-		return selectString;
-		
-		
-	}
-	
-	private String createWhereString(Class realClass,  LogicCondition logicCondition,  Map<String,Object> parametersMap) throws DataAccessException{
-		log.debug("Entering");
-		String whereString = "";
-		try {
-			if(logicCondition!=null){
-				
-			
-				//String whereCondition = " WHERE "+ translateLogicCondition(realClass, logicCondition, parametersMap);
-				whereString = " WHERE "+ translateLogicCondition(realClass, logicCondition, parametersMap);
-				//log.debug("whereCondition is #0", whereCondition);
-				//whereString = " WHERE "+whereCondition;
-			}
-			log.debug("whereString is "+ whereString);
-			
-		} catch (Exception e) {
-			log.error("Exception caught: " + e.toString());
-            throw new DataAccessException("Error in  BaseJpaDAO.createWhereString(Class realClass,  LogicCondition logicCondition,  Map<String,Object> parametersMap): " + e.toString(),e);
-
-		}
-		log.debug("Done");
-		return whereString;
-		
-		
-	}
-	
-	private String createGroupByString(String[] groupBy) throws DataAccessException{
-		log.debug("Entering");
-		String groupByString;
-		try {
-			groupByString = "";
-			
-			if(groupBy!=null && groupBy.length>0){
-				groupByString = " GROUP BY ";
-				for(int i=0; i<groupBy.length; i++){
-					groupByString += prefixNotJoinFieldName(groupBy[i])+", ";
-				}
-				groupByString = groupByString.substring(0, groupByString.lastIndexOf(","));
-			}
-		} catch (Exception e) {
-			log.error("Exception caught: " + e.toString());
-            throw new DataAccessException("Error in  BaseJpaDAO.createGroupByString(String[] groupBy): " + e.toString(),e);
-		}
-		log.debug("Done");
-		return groupByString;
-	}
-	
-	private String[] buildOrderByArray(String orderBy){
-		String[] orderByArray=null;
-		if(orderBy!=null && !orderBy.trim().equals("")){
-			orderByArray= orderBy.split(",");
-			
-		}
-		return orderByArray;
-	}
-	
-	private String createOrderByString(String[] orderByArray, Map<String,String> joinMap) throws DataAccessException{
-		log.debug("Entering");
-		String orderByString = "";
-		
-		try {
-			if(orderByArray!=null){
-				String finalOrderBy="";
-				for (int k=0; k<orderByArray.length;k++){
-					String[] splitOrderBy=orderByArray[k].split(" ");
-					//finalOrderBy=finalOrderBy+prefixNotJoinFieldName(replanceFieldWithJoinMap(splitOrderBy[0],joinMap))+" "+splitOrderBy[1];
-					/**
-					 * TODO verificar bien este cambio
-					 */
-					finalOrderBy=finalOrderBy+prefixNotJoinFieldName(replanceFieldWithJoinMap(splitOrderBy[0],joinMap))+" "+(splitOrderBy.length>1 ? splitOrderBy[1] : "");
-					if(k<orderByArray.length-1)finalOrderBy=finalOrderBy+",";
-				}
-				orderByString = orderByString+" ORDER BY " +finalOrderBy;
-			}
-		} catch (Exception e) {
-			log.error("Exception caught: " + e.toString());
-            throw new DataAccessException("Error in  BaseJpaDAO.createOrderByString(String[] orderByArray, Map<String,String> joinMap): " + e.toString(),e);
-		}
-		
-		log.debug("Done");
-		return orderByString;
-	}
-	
-	private String createOrderByString(String orderBy) throws DataAccessException{
-		log.debug("Entering");
-		String orderByString = "";
-		try {
-//			
-			if(orderBy!=null && !orderBy.trim().equals("")){
-				String[] orderBySplit = orderBy.split(",");
-				String finalOrderBy="";
-				for (int k=0; k<orderBySplit.length;k++){
-					//finalOrderBy=finalOrderBy+" a."+orderBySplit[k];
-					finalOrderBy=finalOrderBy+prefixNotJoinFieldName(orderBySplit[k]);
-					if(k<orderBySplit.length-1)finalOrderBy=finalOrderBy+",";
-				}
-				orderByString = orderByString+" ORDER BY " +finalOrderBy;
-				
-				//orderByString = createOrderByString(orderBySplit);
-			}
-			
-			
-			
-			
-			//log.debug("orderByString is #0", orderByString);
-			log.debug("orderByString is "+ orderByString);
-			
-		} catch (Exception e) {
-			log.error("Exception caught: " + e.toString());
-            throw new DataAccessException("Error in  BaseJpaDAO.createOrderByString(String orderBy): " + e.toString(),e);
-
-		}
-		log.debug("Done");
-		return orderByString;
-		
-		
-	}
-	
-	@SuppressWarnings("unused")
-	private String createQueryString(Boolean distinct, String[] selectFields, Class realClass,  LogicCondition logicCondition, String orderBy, Map<String,Object> parametersMap) throws DataAccessException{
-		log.debug("Entering");
-		String queryString = null;
-		try {
-
-			
-			queryString = createQueryString(distinct, selectFields,  realClass,  logicCondition, orderBy, null,  parametersMap);
-			
-		} catch (Exception e) {
-			log.error("Exception caught: " + e.toString());
-            throw new DataAccessException("Error in  BaseJpaDAO.createQueryString(Boolean distinct,String[] selectFields, Class realClass,  LogicCondition logicCondition, String orderBy, Map<String,Object> parametersMap): " + e.toString(),e);
-		}
-		log.debug("Done");
-		return queryString;
-	}
-	
-	private String createFromString(Class realClass, Map<String,String> joinMap) throws DataAccessException{
-		String fromString=null;
-		try {
-			fromString=" FROM "+realClass.getSimpleName() +" a ";
-			if(joinMap!=null && !joinMap.isEmpty()){
-				Iterator<String> iterator = joinMap.keySet().iterator();
-				while(iterator.hasNext()){
-					String join=iterator.next();
-					String joinAlias= joinMap.get(join);
-					//fromString+=" JOIN "+join+" "+joinAlias+" ";
-					fromString+=" JOIN "+prefixNotJoinFieldName(join)+" "+joinAlias+" ";
-				}
-			}
-		} catch (Exception e) {
-			log.error("Exception caught: " + e.toString());
-            throw new DataAccessException("Error in  BaseJpaDAO.createFromString(Class realClass, Map<String,String> joinMap): " + e.toString(),e);
-		}
-		return fromString;
-	}
-	
-	private String createQueryString(Boolean distinct, String[] selectFields, Class realClass,  LogicCondition logicCondition, String orderBy, String[] groupBy, Map<String,Object> parametersMap) throws DataAccessException{
-		log.debug("Entering");
-		String queryString = null;
-		try {
-
-			
-			//String unqualifiedClassName = realClass.getSimpleName();
-			//Integer joinIndex=0;
-			Cursor joinIndex = new Cursor();
-			HashMap<String,String> joinMap = createJoinMap(realClass, selectFields, joinIndex);
-			log.info("joinIndex = "+joinIndex);
-			joinMap.putAll(createJoinMap(realClass,logicCondition,joinIndex));
-			log.info("joinIndex = "+joinIndex);
-			joinMap.putAll(createJoinMap(realClass,groupBy,joinIndex));
-			log.info("joinIndex = "+joinIndex);
-			
-			String[] orderByArray=buildOrderByArray(orderBy);
-			joinMap.putAll(createJoinMap(realClass,orderByArray,joinIndex));
-			log.info("joinIndex = "+joinIndex);
-			
-			
-			
-			replanceFieldsWithJoinMap( selectFields, joinMap);
-			
-			
-			String selectString = createSelectString(distinct, selectFields);
-			
-			String fromString= createFromString(realClass, joinMap);
-			//queryString =selectString +" FROM "+unqualifiedClassName +" a ";
-
-			queryString=selectString+" "+fromString+" ";
-			
-			replanceLogicConditionFieldsWithJoinMap(logicCondition, joinMap);
-			
-			queryString = queryString + createWhereString( realClass,   logicCondition,   parametersMap);
-
-			replanceFieldsWithJoinMap( groupBy, joinMap);
-			
-			queryString = queryString + createGroupByString(groupBy);
-			
-			//queryString = queryString + createOrderByString(orderBy);
-			queryString = queryString + createOrderByString(orderByArray,joinMap);
-			//log.debug("queryString is #0", queryString);
-			log.debug("queryString is "+ queryString);
-		} catch (Exception e) {
-			log.error("Exception caught: " + e.toString());
-            throw new DataAccessException("Error in  BaseJpaDAO.createQueryString(Boolean distinct,String[] selectFields, Class realClass,  LogicCondition logicCondition, String orderBy, String[] groupBy, Map<String,Object> parametersMap): " + e.toString(),e);
-		}
-		log.debug("Done");
-		return queryString;
-	}
-	
-	
-	
-
-	@SuppressWarnings("unused")
-	private Query createCountQuery(Boolean distinct, String[] selectFields,Class realClass, LogicCondition logicCondition) throws DataAccessException {
-		log.debug("Entering");
-		Query query = null;
-		try {
-			
-			if(distinct!=null && distinct.booleanValue() &&  (selectFields==null || selectFields.length==0)){
-				log.error("distinct can't be true without selectFields");
-	            throw new DataAccessException("Error in  BaseJpaDAO.createCountQuery(String[] selectFields,Class realClass, LogicCondition logicCondition): distinct can't be true without selectFields" );
-
-			}
-			//String unqualifiedClassName = Utils.getExceptLastTokenAndLastToken(realClass.getName())[1];
-			String unqualifiedClassName = realClass.getSimpleName();
-
-			
-			
-			
-			
-			
-			String queryString ="";
-			String selectString ="";
-			if(selectFields==null ||selectFields.length==0){
-				selectString = "SELECT COUNT(*) ";
-			}else{
-				//selectString = "SELECT COUNT("+createSelectString(distinct, selectFields)+") ";
-				selectString = createSelectString(distinct, selectFields, true);
-			}
-			Map<String,Object> parametersMap = new HashMap<String,Object>();
-			String whereString = createWhereString(realClass, logicCondition, parametersMap);
-			queryString = queryString + selectString +" FROM "+unqualifiedClassName + " a ";
-			queryString = queryString + whereString;
-			
-			
-			//log.debug("queryString is #0", queryString);
-			log.debug("queryString is "+ queryString);
-
-			query = getEntityManager().createQuery(queryString);
-
-			setQueryParameters(query, parametersMap);
-		} catch (Exception e) {
-			log.error("Exception caught: " + e.toString());
-            throw new DataAccessException("Error in  BaseJpaDAO.createCountQuery(Boolean distinct,String[] selectFields,Class realClass, LogicCondition logicCondition): " + e.toString(),e);
-
-		}
-		log.debug("Done");
-		return query;
-		
-		
-	}
-	
-	@SuppressWarnings("unused")
-	private Query createCountQuery(Class realClass, LogicCondition logicCondition) throws DataAccessException {
-		log.debug("Entering");
-		Query query = null;
-		try {
-			//String unqualifiedClassName = Utils.getExceptLastTokenAndLastToken(realClass.getName())[1];
-			String unqualifiedClassName = realClass.getSimpleName();
-
-			String queryString = "SELECT count(*) FROM " + unqualifiedClassName + " a ";
-
-			Map<String,Object> parametersMap = new HashMap<String,Object>();
-
-			if( logicCondition != null ) {
-				String whereCondition = translateLogicCondition(realClass, logicCondition, parametersMap);
-				queryString = queryString + " WHERE " + whereCondition;
-			}
-			
-			//log.debug("queryString is #0", queryString);
-			log.debug("queryString is "+ queryString);
-
-			query = getEntityManager().createQuery(queryString);
-
-			setQueryParameters(query, parametersMap);
-		} catch (Exception e) {
-			log.error("Exception caught: " + e.toString());
-            throw new DataAccessException("Error in  BaseJpaDAO.createCountQuery(Class realClass, LogicCondition logicCondition): " + e.toString(),e);
-
-		}
-		log.debug("Done");
-		return query;
-		
-		
-	}
-	
-	private String translateLogicCondition(Class realClass,LogicCondition logicCondition,Map<String,Object> parametersMap) throws DataAccessException{
-		return translateLogicCondition(0, realClass, logicCondition, parametersMap);
-	}
-	
-	private String translateLogicCondition(int progr, Class realClass,LogicCondition logicCondition,Map<String,Object> parametersMap) throws DataAccessException{
-		log.debug("Entering");
-		String condition="";
-        try{
-        	int newProgr = progr+1;
-            condition = translateSimpleCondition(progr,realClass,logicCondition.getSimpleCondition(),parametersMap);
-        	//criteria = translateSimpleCondition(broker,realClass,logicCondition.getSimpleCondition());
-            if (logicCondition.getLogicCondition()!=null){
-                if (logicCondition.getAndOr().equalsIgnoreCase("AND")){
-                	condition = condition +" AND (" +translateLogicCondition(newProgr,realClass,logicCondition.getLogicCondition(),parametersMap) +" )";
-                    //criteria.addAndCriteria(translateLogicCondition(broker,realClass,logicCondition.getLogicCondition()));
-                }else if (logicCondition.getAndOr().equalsIgnoreCase("OR")){
-                	condition = condition +" OR (" +translateLogicCondition(newProgr,realClass,logicCondition.getLogicCondition(),parametersMap) +" )";
-                	//criteria.addOrCriteria(translateLogicCondition(broker,realClass,logicCondition.getLogicCondition()));
-                } else throw new Exception("Error in  BaseJpaDAO.translateLogicCondition(int progr,Class realClass,LogicCondition logicCondition,Map<String,Object> parametersMap): AND/OR missing");
-            }
-        }
-        catch (Exception e){
-            log.error("Exception caught: " + e.toString());
-            throw new DataAccessException("Error in  BaseJpaDAO.translateLogicCondition(int progr,Class realClass,LogicCondition logicCondition,Map<String,Object> parametersMap): " + e.toString(),e);
-
-        }
-        log.debug("Done");
-        return condition;
     }
-	
-	private String translateSimpleCondition(int progr, Class realClass,
-			SimpleCondition simpleCondition, Map<String, Object> parametersMap)
-			throws DataAccessException {
-		log.debug("Entering");
-		String condition = "";
-		String field = null;
-		Object value = null;
-		try {
-			Operator operator = simpleCondition.getOperator();
-			Collection parameters = simpleCondition.getParameter();
-			Iterator iterator = parameters.iterator();
-			if (iterator.hasNext()) {
-				field = (String) iterator.next();
-			}
-			if (iterator.hasNext()) {
-				value = iterator.next();
-			}
-			String fieldLastToken = null;
-			if (field != null) {
-				fieldLastToken = Utils.getExceptLastTokenAndLastToken(field)[1];
-				// fieldLastToken = fieldLastToken+"A"+progr;
-				fieldLastToken = fieldLastToken.replaceAll("(|)", "a") + "A"
-						+ progr;
 
+    private void deleteCore(Object deleteVO) throws DataAccessException, DataOptimisticLockException {
+	log.debug("************Entering ***************");
+	try {
+	    if (getEntityManager().contains(deleteVO)) {
+		getEntityManager().remove(deleteVO);
+	    } else {
+		getEntityManager().remove(getEntityManager().merge(deleteVO));
+	    }
+	} catch (final OptimisticLockException e) {
+	    log.error("OptimisticLockException  caught: " + e.toString());
+	    throw new DataOptimisticLockException("Error in BaseJpaDAO.deleteCore(Object deleteVO): " + e.toString(), e);
+	} catch (final Exception e) {
+	    log.error("Exception caught: " + e.toString());
+	    throw new DataAccessException("Error in  BaseJpaDAO.deleteCore(Object deleteVO) : " + e.toString(), e);
+	}
+	log.info("************Done **************");
+    }
+
+    public void delete(Object deleteVO) throws DataAccessException, DataOptimisticLockException {
+	log.debug("************Entering ***************");
+	try {
+	    // if (deleteVO!=null){
+	    // getEntityManager().remove(getEntityManager().merge(deleteVO));
+	    // }
+	    deleteCore(deleteVO);
+	    if (flush) {
+		flush();
+	    }
+	} catch (final OptimisticLockException e) {
+	    log.error("OptimisticLockException  caught: " + e.toString());
+	    throw new DataOptimisticLockException("Error in BaseJpaDAO.delete(Object deleteVO): " + e.toString(), e);
+	} catch (final Exception e) {
+	    log.error("Exception caught: " + e.toString());
+	    throw new DataAccessException("Error in  BaseJpaDAO.delete(Object deleteVO) : " + e.toString(), e);
+	}
+	log.info("************Done **************");
+    }
+
+    public void deleteCollection(Collection deleteVOs) throws DataAccessException, DataOptimisticLockException {
+	log.info("************Entering ***************");
+	try {
+
+	    deleteCollectionCore(deleteVOs);
+	    if (flush) {
+		flush();
+	    }
+	} catch (final Exception e) {
+	    log.error("Exception caught: " + e.toString());
+	    throw new DataAccessException("Error in  BaseJpaDAO.deleteCollectionCore(Collection deleteVOs) : " + e.toString(), e);
+	}
+	log.info("************Done **************");
+
+    }
+
+    private void deleteCollectionCore(Collection deleteVOs) throws DataAccessException {
+	log.info("************Entering ***************");
+	try {
+	    if (deleteVOs == null) {
+		return;
+	    }
+	    final Iterator iterator = deleteVOs.iterator();
+	    while (iterator.hasNext()) {
+		final Object deleteVO = iterator.next();
+		// getEntityManager().remove(getEntityManager().merge(deleteVO));
+		deleteCore(deleteVO);
+	    }
+
+	} catch (final Exception e) {
+	    log.error("Exception caught: " + e.toString());
+	    throw new DataAccessException("Error in  BaseJpaDAO.deleteCollectionCore(Collection deleteVOs) : " + e.toString(), e);
+	}
+	log.info("************Done **************");
+
+    }
+
+    public void deleteMToNRelationshipCollection(Object left, String leftFieldName, Collection rightCollection) throws DataAccessException {
+	log.info("************Entering***************");
+	try {
+	    // Object cloneLeft = BeanUtilsBean.getInstance().cloneBean(left);
+
+	    deleteMToNRelationshipCollectionCore(left, leftFieldName, rightCollection);
+	    if (flush) {
+		flush();
+	    }
+	} catch (final Exception e) {
+	    log.error("Exception caught: " + e.toString());
+	    throw new DataAccessException("Error in  BaseJpaDAO.deleteMToNRelationshipCollection(Object left, String leftFieldName, Collection rightCollection) : " + e.toString(), e);
+	}
+	log.info("************Done  ***************");
+
+    }
+
+    private void deleteMToNRelationshipCollectionCore(Object left, String leftFieldName, Collection rightCollection) throws DataAccessException {
+	log.info("************Entering***************");
+	// JoinTable joinTable =
+	// getAnnotation(getEntityClass(left),leftFieldName,JoinTable.class);
+	// String[] columnNames = getJoinTableColumnName(joinTable);
+	// String[] inverseColumnNames
+	// =getJoinTableInverseColumnName(joinTable);
+	//
+	// String queryString =" DELETE FROM "+joinTable.name();
+
+	try {
+	    final Object managedLeft = getEntityManager().merge(left);
+	    final PropertyUtilsBean propertyUtilsBean = BeanUtilsBean.getInstance().getPropertyUtils();
+	    // EntityInfo entityInfo = new
+	    // EntityInfo(getClassFromPath(left.getClass(), leftFieldName));
+	    final EntityInfo entityInfo = new EntityInfo(getClassFromPath(getEntityClass(left), leftFieldName));
+	    // retrieveReference(managedLeft, leftFieldName);
+	    final Collection leftFieldCollection = (Collection) propertyUtilsBean.getProperty(managedLeft, leftFieldName);
+	    BeanCollectionUtils.removeAllFromCollection(leftFieldCollection, rightCollection, entityInfo.getPkNames());
+	    // leftFieldCollection.retainAll(rightCollection);
+	} catch (final IllegalAccessException e) {
+	    log.error("IllegalAccessException caught: " + e.toString());
+	    throw new DataAccessException("Error in  BaseJpaDAO.deleteMToNRelationshipCollectionCore(Object left, String leftFieldName, Collection rightCollection) : " + e.toString(), e);
+	} catch (final InvocationTargetException e) {
+	    log.error("InvocationTargetException caught: " + e.toString());
+	    throw new DataAccessException("Error in  BaseJpaDAO.deleteMToNRelationshipCollectionCore(Object left, String leftFieldName, Collection rightCollection) : " + e.toString(), e);
+	} catch (final NoSuchMethodException e) {
+	    log.error("NoSuchMethodException caught: " + e.toString());
+	    throw new DataAccessException("Error in  BaseJpaDAO.deleteMToNRelationshipCollectionCore(Object left, String leftFieldName, Collection rightCollection) : " + e.toString(), e);
+	} catch (final Exception e) {
+	    log.error("Exception caught: " + e.toString());
+	    throw new DataAccessException("Error in  BaseJpaDAO.deleteMToNRelationshipCollectionCore(Object left, String leftFieldName, Collection rightCollection) : " + e.toString(), e);
+	}
+	log.info("************Done  ***************");
+
+    }
+
+    public void deleteItemsNotInCollectionsInPath(Object rootVO, String path, Boolean applyDeletePathCascade, Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) throws DataAccessException {
+	log.info("************Entering  ***************");
+	try {
+	    deleteItemsNotInCollectionsInPathCore(rootVO, path, applyDeletePathCascade, ifM2NDeleteOnlyRelationship, deleteOneToOne);
+	    if (flush) {
+		flush();
+	    }
+	} catch (final DataOptimisticLockException e) {
+	    log.error("DataOptimisticLockException caught: " + e.toString());
+	    throw new DataAccessException(
+		    "Error in  BaseJpaDAO.deleteItemsNotInCollectionsInPath(Object rootVO, String path, Boolean applyDeletePathCascade, Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne): "
+			    + e.toString(),
+		    e);
+	}
+	log.info("************Done  ***************");
+    }
+
+    public void deleteItemsNotInCollectionsInPath(Object rootVO, String path) throws DataAccessException {
+	log.info("************Entering ***************");
+	try {
+	    deleteItemsNotInCollectionsInPathCore(rootVO, path, null, null, null);
+	    if (flush) {
+		flush();
+	    }
+	} catch (final DataOptimisticLockException e) {
+	    log.error("DataOptimisticLockException caught: " + e.toString());
+	    throw new DataAccessException("Error in  BaseJpaDAO.deleteItemsNotInCollectionsInPath(Object rootVO, String path): " + e.toString(), e);
+	}
+	log.info("************Done  ***************");
+    }
+
+    public void deleteItemsNotInCollectionsInPath(Object rootVO, String path, Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) throws DataAccessException {
+	log.info("************Entering the BaseOjbPbDAO.deleteItemsNotInCollectionsInPath(Object rootVO, String path,Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) ***************");
+	try {
+	    deleteItemsNotInCollectionsInPathCore(rootVO, path, null, ifM2NDeleteOnlyRelationship, deleteOneToOne);
+	    if (flush) {
+		flush();
+	    }
+	} catch (final DataOptimisticLockException e) {
+	    log.error("DataOptimisticLockException caught: " + e.toString());
+	    throw new DataAccessException(
+		    "Error in  BaseJpaDAO.deleteItemsNotInCollectionsInPath(Object rootVO, String path,Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne): " + e.toString(), e);
+	}
+	log.info("************Done with the BaseOjbPbDAO.deleteItemsNotInCollectionsInPath(Object rootVO, String path,Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) ***************");
+    }
+
+    /**
+     *
+     * @param rootVO
+     * @param path
+     * @param applyDeletePathCascade
+     * @param ifM2NDeleteOnlyRelationship
+     * @param deleteOneToOne
+     * @throws DataAccessException
+     */
+    private void deleteItemsNotInCollectionsInPathCore_old(Object rootVO, String path, Boolean applyDeletePathCascade, Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne)
+	    throws DataAccessException, DataOptimisticLockException {
+	log.info("************Entering  ***************");
+	try {
+	    if (path != null && !path.trim().equals("") && rootVO != null) {
+
+		if (applyDeletePathCascade == null) {
+		    applyDeletePathCascade = Boolean.TRUE;
+		}
+		if (ifM2NDeleteOnlyRelationship == null) {
+		    ifM2NDeleteOnlyRelationship = Boolean.TRUE;
+		}
+		if (deleteOneToOne == null) {
+		    deleteOneToOne = Boolean.FALSE;
+		}
+
+		final Class rootVOClass = getEntityClass(rootVO);
+
+		final String[] firstAttributeNameAndRemainingPath = Utils.getFirstAttributeNameAndRemainingPath(path);
+		final String firstAttributeName = firstAttributeNameAndRemainingPath[0];
+		final String remainingPath = firstAttributeNameAndRemainingPath[1];
+
+		final PropertyUtilsBean propertyUtilsBean = BeanUtilsBean.getInstance().getPropertyUtils();
+
+		final Integer relationType = getRelationType(rootVOClass, firstAttributeName);
+		if (M_TO_N == relationType || M_TO_N_INVERSE == relationType || ONE_TO_N == relationType) {
+		    final Collection notInBeanReferencedEntities = getCollectionOfStoredItemsNotInBean(rootVO, firstAttributeName);
+		    if (notInBeanReferencedEntities != null) {
+			if (M_TO_N == relationType || M_TO_N_INVERSE == relationType) {
+			    final String inverseManyToManyField = getInverseManyToManyField(rootVO, firstAttributeName);
+			    for (final Object notInBeanReferencedEntity : notInBeanReferencedEntities) {
+				if (!StringUtils.isEmpty(inverseManyToManyField)) { // m2n
+										    // (direct
+										    // or
+										    // inverse)
+				    final Collection inverseCollection = (Collection) propertyUtilsBean.getProperty(notInBeanReferencedEntity, inverseManyToManyField);
+				    inverseCollection.remove(rootVO);
+				}
+				if (applyDeletePathCascade.booleanValue() && !ifM2NDeleteOnlyRelationship) {
+				    deletePathCascadeCore(notInBeanReferencedEntity, remainingPath, ifM2NDeleteOnlyRelationship, deleteOneToOne);
+				}
+			    }
+			    if (!applyDeletePathCascade || ifM2NDeleteOnlyRelationship) {
+				deleteCollectionCore(notInBeanReferencedEntities);
+			    }
+			} else {// ONE_TO_N
+			    if (applyDeletePathCascade) {
+				for (final Object notInBeanReferencedEntity : notInBeanReferencedEntities) {
+				    deletePathCascadeCore(notInBeanReferencedEntity, remainingPath, ifM2NDeleteOnlyRelationship, deleteOneToOne);
+				}
+			    } else {
+				deleteCollectionCore(notInBeanReferencedEntities);
+			    }
 			}
 
-			/********************** operators mapping ********************************************/
-			boolean staticCondition = false;
-			if (operator.getName().equalsIgnoreCase("==")
-					|| operator.getName().equalsIgnoreCase("=")) {
-				// condition ="a."+field+"= :"+field;
-				// condition =field+"= :"+field;
-				condition = field + "= :" + fieldLastToken;
-				// parametersMap.put(field, value);
-				parametersMap.put(fieldLastToken, value);
-			} else if (operator.getName().equalsIgnoreCase("isNull")) {
-				// condition ="a."+field+" IS NULL";
-				condition = field + " IS NULL";
-				// TODO add the OR empty string
-			} else if (operator.getName().equalsIgnoreCase("isNotNull")) {
-				// condition ="a."+field+" IS NOT NULL";
-				condition = field + " IS NOT NULL";
-			} else if (operator.getName().equalsIgnoreCase("IN")) { // added
-																	// 29/08/2005
-				// if(value!=null&&!((Collection)value).isEmpty())
-				// criteria.addIn(field,(Collection)value);
-				// condition ="a."+field+" IN :"+field;
-				// condition =field+" IN :"+field;
-				//if (value == null || ((List) value).isEmpty()) {
-				if (value == null || ((Collection) value).isEmpty()) {
-					condition = " 1 = 2"; // false condition
-					staticCondition = true;
-				} else if (((Collection) value).size() > this.inLimit) {
-					ArrayList<List> splitIn = splitIn((Collection) value);
-					// condition =field + orOfInsCollection(fieldLastToken,
-					// splitIn, parametersMap);
-					condition = orOfInsCollection(prefixNotJoinFieldName(field),fieldLastToken, splitIn, parametersMap);
-					staticCondition = true;
+		    }
+
+		} else if (relationType != null) {// MANY_TO_ONE or ONE_TO_ONE
+		    final Object firstAttributeValue = propertyUtilsBean.getProperty(rootVO, firstAttributeName);
+		    if (firstAttributeValue != null) {
+			deleteItemsNotInCollectionsInPathCore(firstAttributeValue, remainingPath, applyDeletePathCascade, ifM2NDeleteOnlyRelationship, deleteOneToOne);
+			if (deleteOneToOne) {
+			    getEntityManager().remove(firstAttributeValue);
+			    propertyUtilsBean.setProperty(rootVO, firstAttributeName, null);
+			}
+		    }
+		}
+	    }
+	} catch (final IllegalAccessException e) {
+	    log.error("IllegalAccessException caught: " + e.toString());
+	    throw new DataAccessException(
+		    "Error in  BaseJpaDAO.deleteItemsNotInCollectionsInPathCore(Object rootVO, String path, Boolean applyDeletePathCascade, Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne): "
+			    + e.toString(),
+		    e);
+	} catch (final InvocationTargetException e) {
+	    log.error("InvocationTargetException caught: " + e.toString());
+	    throw new DataAccessException(
+		    "Error in  BaseJpaDAO.deleteItemsNotInCollectionsInPathCore(Object rootVO, String path, Boolean applyDeletePathCascade, Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne): "
+			    + e.toString(),
+		    e);
+	} catch (final NoSuchMethodException e) {
+	    log.error("NoSuchMethodException caught: " + e.toString());
+	    throw new DataAccessException(
+		    "Error in  BaseJpaDAO.deleteItemsNotInCollectionsInPathCore(Object rootVO, String path, Boolean applyDeletePathCascade, Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne): "
+			    + e.toString(),
+		    e);
+	} catch (final Exception e) {
+	    log.error("Exception caught: " + e.toString());
+	    throw new DataAccessException(
+		    "Error in  BaseJpaDAO.deleteItemsNotInCollectionsInPathCore(Object rootVO, String path, Boolean applyDeletePathCascade, Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne): "
+			    + e.toString(),
+		    e);
+	}
+	log.info("************Done ***************");
+
+    }
+
+    /**
+     *
+     * @param rootVO
+     * @param path
+     * @param applyDeletePathCascade
+     * @param ifM2NDeleteOnlyRelationship
+     * @param deleteOneToOne
+     * @throws DataAccessException
+     */
+    private void deleteItemsNotInCollectionsInPathCore(Object rootVO, String path, Boolean applyDeletePathCascade, Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne)
+	    throws DataAccessException, DataOptimisticLockException {
+	log.info("************Entering  ***************");
+	try {
+	    final Collection paths = new ArrayList();
+	    paths.add(path);
+	    deleteItemsNotInCollectionsInPathsCore(rootVO, paths, false, applyDeletePathCascade, ifM2NDeleteOnlyRelationship, deleteOneToOne);
+
+	} catch (final Exception e) {
+	    log.error("Exception caught: " + e.toString());
+	    throw new DataAccessException(
+		    "Error in  BaseJpaDAO.deleteItemsNotInCollectionsInPathCore(Object rootVO, String path, Boolean applyDeletePathCascade, Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne): "
+			    + e.toString(),
+		    e);
+	}
+	log.info("************Done ***************");
+
+    }
+
+    public void deleteItemsNotInCollectionsInPaths(Object rootVO, Collection paths, Boolean applyDeletePathCascade, Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne)
+	    throws DataAccessException {
+	log.info("************Entering ***************");
+	try {
+	    deleteItemsNotInCollectionsInPathsCore(rootVO, paths, Boolean.TRUE, applyDeletePathCascade, ifM2NDeleteOnlyRelationship, deleteOneToOne);
+	    if (flush) {
+		flush();
+	    }
+	} catch (final DataOptimisticLockException e) {
+	    log.error("DataOptimisticLockException caught: " + e.toString());
+	    throw new DataAccessException(
+		    "Error in  BaseJpaDAO.deleteItemsNotInCollectionsInPaths(Object rootVO, Collection paths,  Boolean applyDeletePathCascade, Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne): "
+			    + e.toString(),
+		    e);
+	}
+	log.info("************Done ***************");
+    }
+
+    private void deleteItemsNotInCollectionsInPathsCore(Object rootVO, Collection paths, Boolean pathsHasToBeSorted, Boolean applyDeletePathCascade, Boolean ifM2NDeleteOnlyRelationship,
+	    Boolean deleteOneToOne) throws DataAccessException {
+	log.info("************Entering ***************");
+
+	try {
+	    if (paths != null && !paths.isEmpty() && rootVO != null) {
+
+		if (pathsHasToBeSorted == null) {
+		    pathsHasToBeSorted = Boolean.TRUE;
+		}
+		if (applyDeletePathCascade == null) {
+		    applyDeletePathCascade = Boolean.TRUE;
+		}
+		if (ifM2NDeleteOnlyRelationship == null) {
+		    ifM2NDeleteOnlyRelationship = Boolean.TRUE;
+		}
+		if (deleteOneToOne == null) {
+		    deleteOneToOne = Boolean.FALSE;
+		}
+
+		final PropertyUtilsBean propertyUtilsBean = BeanUtilsBean.getInstance().getPropertyUtils();
+
+		// Class rootVOClass = rootVO.getClass();
+		final Class rootVOClass = getEntityClass(rootVO);
+
+		String[] pathsArray = new String[paths.size()];
+		if (pathsHasToBeSorted.booleanValue()) {
+		    final ArrayList<String> pathsList = Collections.list(Collections.enumeration(paths));
+		    Collections.sort(pathsList);
+		    pathsArray = pathsList.toArray(pathsArray);
+		} else {
+		    pathsArray = (String[]) paths.toArray(pathsArray);
+		}
+		int index = 0;
+		while (index < pathsArray.length) {
+		    final String path = pathsArray[index];
+		    if (path != null && !path.trim().equals("")) {
+			final String[] firstAttributeNameAndRemainingPath = Utils.getFirstAttributeNameAndRemainingPath(path);
+			final String firstAttributeName = firstAttributeNameAndRemainingPath[0];
+			final String remainingPath = firstAttributeNameAndRemainingPath[1];
+			final ArrayList<String> subPaths = new ArrayList<String>();
+			if (!remainingPath.trim().equals("")) {
+			    subPaths.add(remainingPath);
+			}
+			index++;
+			boolean matchingFirstAttributeName = true;
+			while (index < pathsArray.length && matchingFirstAttributeName) {
+			    final String path2 = pathsArray[index];
+			    if (path2 != null && !path2.trim().equals("")) {
+				final String[] firstAttributeNameAndRemainingPath2 = Utils.getFirstAttributeNameAndRemainingPath(path2);
+				final String firstAttributeName2 = firstAttributeNameAndRemainingPath2[0];
+				final String remainingPath2 = firstAttributeNameAndRemainingPath2[1];
+				if (firstAttributeName.equals(firstAttributeName2)) {
+				    if (!remainingPath2.trim().equals("")) {
+					subPaths.add(remainingPath2);
+				    }
+				    index++;
 				} else {
-					condition = field + " IN (:" + fieldLastToken + ")";
-					// parametersMap.put(field, value);
-					// parametersMap.put(fieldLastToken, value);
-					parametersMap.put(fieldLastToken, value);
+				    matchingFirstAttributeName = false;
 				}
+			    } else {
+				index++;
+			    }
 
-			} else if (operator.getName().equalsIgnoreCase("NOT IN")|| operator.getName().equalsIgnoreCase("NOTIN")) {
-				// if(value!=null&&!((Collection)value).isEmpty())
-				// criteria.addNotIn(field,(Collection)value);
-				// condition ="a."+field+" NOT IN :"+field;
-				// condition =field+" NOT IN :"+field;
-				if (value == null || ((Collection) value).isEmpty()) {
-					condition = " 1 = 1"; // true condition
-					staticCondition = true;
-				} else if (((Collection) value).size() > this.inLimit) {
-					ArrayList<List> splitIn = splitIn((Collection) value);
-
-					// condition =" NOT ("+ ((field!=null &&
-					// !field.trim().equals(""))?"a."+field:"a ") +
-					// orOfInsCollection(fieldLastToken, splitIn,
-					// parametersMap)+" ) ";
-					String nuevoField = ((field!=null && !field.trim().equals(""))?prefixNotJoinFieldName(field):"a ");
-					condition = " NOT ("+ orOfInsCollection(nuevoField, fieldLastToken, splitIn, parametersMap) + " ) ";
-					staticCondition = true;
-				} else {
-					condition = field + " NOT IN (:" + fieldLastToken + ")";
-					// parametersMap.put(field, value);
-					parametersMap.put(fieldLastToken, value);
-				}
-			} else if (operator.getName().equalsIgnoreCase("<=")) {
-				// condition ="a."+field+"<= :"+field;
-				// condition =field+"<= :"+field;
-				condition = field + "<= :" + fieldLastToken;
-				// parametersMap.put(field, value);
-				parametersMap.put(fieldLastToken, value);
-			} else if (operator.getName().equalsIgnoreCase(">=")) {
-				// condition ="a."+field+">= :"+field;
-				// condition =field+">= :"+field;
-				condition = field + ">= :" + fieldLastToken;
-				// parametersMap.put(field, value);
-				parametersMap.put(fieldLastToken, value);
-			} else if (operator.getName().equalsIgnoreCase("<")) {
-				// condition ="a."+field+"< :"+field;
-				// condition =field+"< :"+field;
-				condition = field + "< :" + fieldLastToken;
-				// parametersMap.put(field, value);
-				parametersMap.put(fieldLastToken, value);
-			} else if (operator.getName().equalsIgnoreCase(">")) {
-				// condition ="a."+field+"> :"+field;
-				// condition =field+"> :"+field;
-				condition = field + "> :" + fieldLastToken;
-				// parametersMap.put(field, value);
-				parametersMap.put(fieldLastToken, value);
-			} else if (operator.getName().equalsIgnoreCase("!=")
-					|| operator.getName().equalsIgnoreCase("<>")) {
-				// condition ="a."+field+"<> :"+field;
-				// condition =field+"<> :"+field;
-				condition = field + "<> :" + fieldLastToken;
-				// parametersMap.put(field, value);
-				parametersMap.put(fieldLastToken, value);
-			} else if (operator.getName().equalsIgnoreCase("LEFTLIKE")) {
-				// condition ="a."+field+"LIKE % :"+field;
-				// condition =field+"LIKE % :"+field;
-				//condition = field + " LIKE lower(concat('%',:" + fieldLastToken
-				condition = "lower(a."+field + ") LIKE lower(concat('%',:" + fieldLastToken
-						+ "))";
-				staticCondition = true;
-				parametersMap.put(field, value);
-				// criteria.addLike(field,"%"+value);
-			} else if (operator.getName().equalsIgnoreCase("RIGHTLIKE")) {
-				// condition ="a."+field+"LIKE :"+field+"%";
-				// condition =field+"LIKE :"+field+"%";
-				//condition = field + " LIKE lower(concat(:" + fieldLastToken
-				condition = "lower(a."+field + ") LIKE lower(concat(:" + fieldLastToken
-						+ ",'%'))";
-				staticCondition = true;
-				// parametersMap.put(field, value);
-				parametersMap.put(fieldLastToken, value);
-				// criteria.addLike(field,value+"%");
-			} else if (operator.getName().equalsIgnoreCase("LIKE")
-					|| operator.getName().equalsIgnoreCase("BOTHLIKE")) {
-				// condition ="a."+field+"LIKE % :"+field+"%";
-				// condition =field+"LIKE % :"+field+"%";
-				//condition = field + " LIKE lower(concat('%',:" + fieldLastToken
-				condition = "lower(a."+field + ") LIKE lower(concat('%',:" + fieldLastToken
-						+ ",'%'))";
-				staticCondition = true;
-				// parametersMap.put(field, value);
-				parametersMap.put(fieldLastToken, value);
-				// criteria.addLike(field,"%"+value+"%");
-			}
-			// condition = "a."+condition;//deleted by alessandro 14-enero -2010
-			if (!staticCondition) {
-				if (field != null && !field.trim().equals("")) { // added by
-																	// alessandro
-																	// 14-enero
-																	// -2010
-//					condition = "a." + condition;
-					condition = prefixNotJoinFieldName(condition);
-				} else {
-					condition = "a" + condition;
-				}
 			}
 
-			/********************** end operators mapping ********************************************/
-		} catch (Exception e) {
-			log.error("Exception caught : " + e.toString());
+			/*********************************************************************************************/
+			final Integer relationType = getRelationType(rootVOClass, firstAttributeName);
+			if (M_TO_N == relationType || M_TO_N_INVERSE == relationType || ONE_TO_N == relationType) {
+			    final Collection notInBeanReferencedEntities = getCollectionOfStoredItemsNotInBean(rootVO, firstAttributeName);
+			    if (notInBeanReferencedEntities != null) {
+				if (M_TO_N == relationType || M_TO_N_INVERSE == relationType) {
+				    final String inverseManyToManyField = getInverseManyToManyField(rootVO, firstAttributeName);
+				    for (final Object notInBeanReferencedEntity : notInBeanReferencedEntities) {
+					if (!StringUtils.isEmpty(inverseManyToManyField)) { // m2n
+											    // (direct
+											    // or
+											    // inverse)
+					    final Collection inverseCollection = (Collection) propertyUtilsBean.getProperty(notInBeanReferencedEntity, inverseManyToManyField);
+					    inverseCollection.remove(rootVO);
+					}
+					if (applyDeletePathCascade.booleanValue() && !ifM2NDeleteOnlyRelationship.booleanValue()) {
+					    deletePathsCascadeCore(notInBeanReferencedEntity, subPaths, Boolean.FALSE, ifM2NDeleteOnlyRelationship, deleteOneToOne);
+					} else if (!ifM2NDeleteOnlyRelationship) {// applyDeletePathCascade
+										  // is
+										  // false
+					    deleteCore(notInBeanReferencedEntity);
+					}
+				    }
+				    // if(!applyDeletePathCascade.booleanValue()
+				    // ||
+				    // ifM2NDeleteOnlyRelationship.booleanValue()){
+				    // deleteCollectionCore(notInBeanReferencedEntities);
+				    // }
+				} else {// ONE_TO_N
+				    if (applyDeletePathCascade) {
+					for (final Object notInBeanReferencedEntity : notInBeanReferencedEntities) {
+					    deletePathsCascadeCore(notInBeanReferencedEntity, subPaths, Boolean.FALSE, ifM2NDeleteOnlyRelationship, deleteOneToOne);
+					}
+				    } else {
+					deleteCollectionCore(notInBeanReferencedEntities);
+				    }
+				}
+
+			    }
+
+			} else if (relationType != null) {// MANY_TO_ONE or
+							  // ONE_TO_ONE OR
+							  // EMBEDDED_ID
+			    final Object firstAttributeValue = propertyUtilsBean.getProperty(rootVO, firstAttributeName);
+			    if (firstAttributeValue != null) {
+				deleteItemsNotInCollectionsInPathsCore(firstAttributeValue, subPaths, Boolean.FALSE, applyDeletePathCascade, ifM2NDeleteOnlyRelationship, deleteOneToOne);
+				if (deleteOneToOne.booleanValue()) {
+				    final EntityInfo entityInfo = new EntityInfo(rootVOClass);
+				    if (!entityInfo.isEmbeddable()) {
+					// getEntityManager().remove(firstAttributeValue);
+					deleteCore(firstAttributeValue);
+					propertyUtilsBean.setProperty(rootVO, firstAttributeName, null);
+				    }
+				}
+			    }
+			}
+
+			/*********************************************************************************************/
+			// if(subPaths.size()>1){
+			// ManyToMany manyToMany = (ManyToMany)
+			// getAnnotation(rootVOClass, firstAttributeName,
+			// ManyToMany.class);
+			// OneToMany oneToMany = null;
+			// OneToOne oneToOne = null;
+			// ManyToOne manyToOne = null ;
+			//
+			//
+			// if(manyToMany==null){
+			// oneToMany = (OneToMany) getAnnotation(rootVOClass,
+			// firstAttributeName, OneToMany.class);
+			// if(oneToMany==null){
+			// manyToOne = (ManyToOne) getAnnotation(rootVOClass,
+			// firstAttributeName, ManyToOne.class);
+			// if(manyToOne == null){
+			// oneToOne = (OneToOne) getAnnotation(rootVOClass,
+			// firstAttributeName, OneToOne.class);
+			// if(oneToOne == null)throw new
+			// DataAccessException("Error in
+			// BaseJpaDAO.deleteItemsNotInCollectionsInPathsCore(Object
+			// rootVO, Collection paths, Boolean pathsHasToBeSorted,
+			// Boolean applyDeletePathCascade, Boolean
+			// ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne):
+			// Error: firstAttributeName is no ManyToOne, no
+			// OneToMnay, no OneToOne, no ManyToMany " );
+			// }
+			// }
+			// }
+			//
+			//
+			//
+			//
+			//
+			//
+			//
+			// Object firstAttributeValue =
+			// propertyUtilsBean.getProperty(rootVO,firstAttributeName);
+			// if(oneToMany!=null || manyToMany!=null){
+			// Collection notInBeanReferencedEntities =
+			// getCollectionOfStoredItemsNotInBean(rootVO,
+			// firstAttributeName);
+			// if(oneToMany!=null ||
+			// !ifM2NDeleteOnlyRelationship.booleanValue()){
+			// if(applyDeletePathCascade.booleanValue()){
+			// if(notInBeanReferencedEntities != null){
+			// Iterator iterator =
+			// notInBeanReferencedEntities.iterator();
+			// while(iterator.hasNext()){
+			// deletePathsCascadeCore(iterator.next(),subPaths,Boolean.FALSE,ifM2NDeleteOnlyRelationship,deleteOneToOne);
+			// }
+			// }
+			// } else{
+			// deleteCollectionCore(notInBeanReferencedEntities);
+			// }
+			// }// If it is manyToMnay and
+			// ifM2NDeleteOnlyRelationship the relationship will be
+			// removed on flush
+			// if(firstAttributeValue!=null){
+			// Iterator iterator =
+			// ((Collection)firstAttributeValue).iterator();
+			// while(iterator.hasNext()){
+			// deleteItemsNotInCollectionsInPathsCore(iterator.next(),subPaths,
+			// Boolean.FALSE, applyDeletePathCascade,
+			// ifM2NDeleteOnlyRelationship, deleteOneToOne);
+			// }
+			// }
+			// }else{ // firstAttributeValue is not a collection
+			// deleteItemsNotInCollectionsInPathsCore(firstAttributeValue,subPaths,
+			// Boolean.FALSE, applyDeletePathCascade,
+			// ifM2NDeleteOnlyRelationship, deleteOneToOne);
+			// }
+			// }else { //subPaths.size()<=1
+			// deleteItemsNotInCollectionsInPathCore(rootVO, path,
+			// applyDeletePathCascade, ifM2NDeleteOnlyRelationship,
+			// deleteOneToOne);
+			// }
+
+		    } else {
+			index++;
+		    }
+		}
+	    }
+	} catch (final IllegalAccessException e) {
+	    log.error(
+		    "Exception caught in BaseJpaDAO.deleteItemsNotInCollectionsInPathsCore(Object rootVO, Collection paths,  Boolean pathsHasToBeSorted, Boolean applyDeletePathCascade, Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) : "
+			    + e.toString());
+	    throw new DataAccessException(
+		    "Error in BaseJpaDAO.deleteItemsNotInCollectionsInPathsCore(Object rootVO, Collection paths,  Boolean pathsHasToBeSorted, Boolean applyDeletePathCascade, Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) : "
+			    + e.toString(),
+		    e);
+	} catch (final InvocationTargetException e) {
+	    log.error(
+		    "InvocationTargetException caught in BaseJpaDAO.deleteItemsNotInCollectionsInPathsCore(Object rootVO, Collection paths,  Boolean pathsHasToBeSorted, Boolean applyDeletePathCascade, Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) : "
+			    + e.toString());
+	    throw new DataAccessException(
+		    "Error in BaseJpaDAO.deleteItemsNotInCollectionsInPathsCore(Object rootVO, Collection paths,  Boolean pathsHasToBeSorted, Boolean applyDeletePathCascade, Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) : "
+			    + e.toString(),
+		    e);
+	} catch (final NoSuchMethodException e) {
+	    log.error(
+		    "NoSuchMethodException caught in BaseJpaDAO.deleteItemsNotInCollectionsInPathsCore(Object rootVO, Collection paths,  Boolean pathsHasToBeSorted, Boolean applyDeletePathCascade, Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) : "
+			    + e.toString());
+	    throw new DataAccessException(
+		    "Error in BaseJpaDAO.deleteItemsNotInCollectionsInPathsCore(Object rootVO, Collection paths,  Boolean pathsHasToBeSorted, Boolean applyDeletePathCascade, Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) : "
+			    + e.toString(),
+		    e);
+	} catch (final Exception e) {
+	    log.error(
+		    "Exception caught in BaseJpaDAO.deleteItemsNotInCollectionsInPathsCore(Object rootVO, Collection paths,  Boolean pathsHasToBeSorted, Boolean applyDeletePathCascade, Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) : "
+			    + e.toString());
+	    throw new DataAccessException(
+		    "Error in BaseJpaDAO.deleteItemsNotInCollectionsInPathsCore(Object rootVO, Collection paths,  Boolean pathsHasToBeSorted, Boolean applyDeletePathCascade, Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) : "
+			    + e.toString(),
+		    e);
+	}
+
+	log.info("************Done   ***************");
+
+    }
+
+    public void deletePathCascade(Object parentVO, String path, Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) throws DataAccessException {
+	log.info("************Entering  ***************");
+	try {
+	    if (parentVO != null) {
+		if (ifM2NDeleteOnlyRelationship == null) {
+		    ifM2NDeleteOnlyRelationship = Boolean.TRUE;
+		}
+		if (deleteOneToOne == null) {
+		    deleteOneToOne = Boolean.FALSE;
+		}
+
+		deletePathCascadeCore(parentVO, path, ifM2NDeleteOnlyRelationship, deleteOneToOne);
+
+		if (flush) {
+		    flush();
+		}
+	    }
+	} catch (final Exception e) {
+	    log.error("Exception thrown in BaseJpaDAO.deletePathCascade(Object parentVO, String path, Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) : " + e.toString());
+	    throw new DataAccessException("Error in BaseJpaDAO.deletePathCascade(Object parentVO, String path, Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) : " + e.toString(), e);
+	}
+	log.info("************Done   ***************");
+
+    }
+
+    // private void deletePathsCascadeCore(Object parentVO,Collection
+    // paths,Boolean pathsHasToBeSorted,Boolean ifM2NDeleteOnlyRelationship,
+    // Boolean deleteOneToOne) throws DataAccessException{
+    private void deletePathCascadeCore(Object parentVO, String path, Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) throws DataAccessException, DataOptimisticLockException {
+	log.info("************Entering ***************");
+	try {
+	    final Collection paths = new ArrayList();
+	    paths.add(path);
+	    deletePathsCascadeCore(parentVO, paths, false, ifM2NDeleteOnlyRelationship, deleteOneToOne);
+
+	} catch (final Exception e) {
+	    log.error("Exception thrown in BaseJpaDAO.deletePathCascadeCore(Object parentVO, String path, Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) : " + e.toString());
+	    throw new DataAccessException("Error in BaseJpaDAO.deletePathCascadeCore(Object parentVO, String path, Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) : " + e.toString(), e);
+	}
+	log.info("************Done ***************");
+    }
+
+    private void deletePathCascadeCore_old(Object parentVO, String path, Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) throws DataAccessException, DataOptimisticLockException {
+	log.info("************Entering ***************");
+	try {
+	    if (parentVO != null) {
+		// Object mergedParentVO;
+		// if(getEntityManager().contains(parentVO)){
+		// mergedParentVO=parentVO;
+		// }else{
+		// mergedParentVO = getEntityManager().merge(parentVO);
+		// }
+		// Object mergedParentVO = getEntityManager().merge(parentVO);
+		if (path == null || path.trim().equals("")) {
+		    // getEntityManager().remove(mergedParentVO);
+		    deleteCore(parentVO);
+		} else {
+		    // Class parentVOClass = getEntityClass(parentVO);
+
+		    ArrayList lastLevelEntities = new ArrayList();
+		    final ArrayList toBeDeletedEntities = new ArrayList();
+		    // lastLevelEntities.add(mergedParentVO);
+		    // toBeDeletedEntities.add(mergedParentVO);
+
+		    lastLevelEntities.add(parentVO);
+		    toBeDeletedEntities.add(parentVO);
+
+		    final String[] splitPath = path.split("\\.");
+
+		    int endIndex = 0;
+		    final int pathSize = splitPath.length;
+		    boolean follow = true;
+		    String pathToken = null;
+		    while (endIndex < pathSize && !lastLevelEntities.isEmpty() && follow) {
+
+			final Class parentVOClass = getEntityClass(lastLevelEntities.iterator().next());
+			pathToken = splitPath[endIndex];
+
+			final ManyToMany manyToMany = (ManyToMany) getAnnotation(parentVOClass, pathToken, ManyToMany.class);
+			OneToMany oneToMany = null;
+			OneToOne oneToOne = null;
+			ManyToOne manyToOne = null;
+
+			if (manyToMany != null) {
+			    if (ifM2NDeleteOnlyRelationship.booleanValue()) {
+				follow = false;
+			    } else {
+				follow = true;
+			    }
+			} else {
+			    oneToMany = (OneToMany) getAnnotation(parentVOClass, pathToken, OneToMany.class);
+			    if (oneToMany != null) {
+				follow = true;
+			    } else { // not a collection
+				oneToOne = (OneToOne) getAnnotation(parentVOClass, pathToken, OneToOne.class);
+				if (oneToOne == null) {
+				    manyToOne = (ManyToOne) getAnnotation(parentVOClass, pathToken, ManyToOne.class);
+				    if (manyToOne == null) {
+					throw new DataAccessException(
+						"Error in BaseJpaDAO.deletePathCascadeCore(Object parentVO, String path, Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne): Error:splitPath("
+							+ endIndex + ")  is no ManyToOne, no OneToMnay, no OneToOne, no ManyToMany and no CollectionDescriptor");
+				    }
+				}
+				if (deleteOneToOne.booleanValue()) {
+				    follow = true;
+				} else {
+				    follow = false;
+				}
+			    }
+			}
+
+			if (manyToMany != null) {
+			    final ArrayList newLastLevelEntities = new ArrayList();
+			    if (!ifM2NDeleteOnlyRelationship.booleanValue()) {
+				log.debug("lastLevelEntities.size() = " + lastLevelEntities.size());
+				final Iterator iterator = lastLevelEntities.iterator();// lastLevelEntities
+										       // is
+										       // never
+										       // null
+				while (iterator.hasNext()) {
+				    final Object left = iterator.next();
+				    final Collection referencedEntities = getStoredCollection(left, pathToken);
+				    if (referencedEntities != null) {
+					log.debug("referencedEntities.size() = " + referencedEntities.size());
+					newLastLevelEntities.addAll(referencedEntities);
+				    }
+				}
+			    }
+			    Collections.reverse(toBeDeletedEntities);
+			    deleteCollectionCore(toBeDeletedEntities);
+			    lastLevelEntities = newLastLevelEntities;
+			    toBeDeletedEntities.clear();
+			    toBeDeletedEntities.addAll(lastLevelEntities);
+			} else if (oneToMany != null) {
+			    final ArrayList partialPathEntities = getPartialPathEntities(lastLevelEntities, splitPath, endIndex, endIndex);
+			    toBeDeletedEntities.addAll(partialPathEntities); // getPartialPathEntities
+									     // never
+									     // returns
+									     // null!!
+			    lastLevelEntities = partialPathEntities;
+			} else if (oneToOne != null || manyToOne != null) {
+			    ArrayList partialPathEntities = new ArrayList();
+			    if (deleteOneToOne.booleanValue()) {
+				partialPathEntities = getPartialPathEntities(lastLevelEntities, splitPath, endIndex, endIndex);
+			    }
+			    Collections.reverse(toBeDeletedEntities);
+			    deleteCollectionCore(toBeDeletedEntities);
+			    lastLevelEntities = partialPathEntities; // in the
+								     // case of
+								     // Not
+								     // deleteOneToOne
+								     // partialPathEntities
+								     // is empty
+			    toBeDeletedEntities.clear();
+			    toBeDeletedEntities.addAll(partialPathEntities);
+			} else {
+			    throw new DataAccessException(
+				    "Error in BaseJpaDAO.deletePathCascadeCore(Object parentVO, String path, Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne): Error:splitPath(" + endIndex
+					    + ")  is no ManyToOne, no OneToMnay, no OneToOne, no ManyToMany and no CollectionDescriptor");
+			}
+			endIndex++;
+		    }
+		    Collections.reverse(toBeDeletedEntities);
+		    deleteCollectionCore(toBeDeletedEntities);
+		}
+	    }
+	} catch (final Exception e) {
+	    log.error("Exception thrown in BaseJpaDAO.deletePathCascadeCore(Object parentVO, String path, Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) : " + e.toString());
+	    throw new DataAccessException("Error in BaseJpaDAO.deletePathCascadeCore(Object parentVO, String path, Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) : " + e.toString(), e);
+	}
+	log.info("************Done ***************");
+    }
+
+    public void deletePathsCascade(Object parentVO, Collection paths, Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) throws DataAccessException {
+	log.info("************Entering ***************");
+	try {
+	    if (parentVO != null) {
+		if (ifM2NDeleteOnlyRelationship == null) {
+		    ifM2NDeleteOnlyRelationship = Boolean.TRUE;
+		}
+		if (deleteOneToOne == null) {
+		    deleteOneToOne = Boolean.FALSE;
+		}
+		deletePathsCascadeCore(parentVO, paths, Boolean.TRUE, ifM2NDeleteOnlyRelationship, deleteOneToOne);
+		if (flush) {
+		    flush();
+		}
+	    }
+	} catch (final DataOptimisticLockException e) {
+	    log.error("DataOptimisticLockException thrown in BaseJpaDAO.deletePathsCascade(Object parentVO,Collection paths,Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) : "
+		    + e.toString());
+	    throw new DataAccessException("Error in BaseJpaDAO.deletePathsCascade(Object parentVO,Collection paths,Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne): " + e.toString(), e);
+	} catch (final Exception e) {
+	    log.error("Exception thrown in BaseJpaDAO.deletePathsCascade(Object parentVO,Collection paths,Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) : " + e.toString());
+	    throw new DataAccessException("Error in BaseJpaDAO.deletePathsCascade(Object parentVO,Collection paths,Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) : " + e.toString(), e);
+	}
+	log.info("************Done  ***************");
+    }
+
+    private void deletePathsCascadeCore(Object parentVO, Collection paths, Boolean pathsHasToBeSorted, Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) throws DataAccessException {
+	log.info("************Entering ***************");
+	// List<Graph> notDeletedGraphs = new ArrayList<Graph>();
+	try {
+	    if (parentVO != null) {
+		final PropertyUtilsBean propertyUtilsBean = BeanUtilsBean.getInstance().getPropertyUtils();
+
+		if (ifM2NDeleteOnlyRelationship == null) {
+		    ifM2NDeleteOnlyRelationship = Boolean.TRUE;
+		}
+		if (deleteOneToOne == null) {
+		    deleteOneToOne = Boolean.FALSE;
+		}
+		if (pathsHasToBeSorted == null) {
+		    pathsHasToBeSorted = Boolean.TRUE;
+		}
+
+		// Class parentVOClass = parentVO.getClass();
+		final Class parentVOClass = getEntityClass(parentVO);
+
+		if (paths == null || paths.isEmpty()) {
+		    getEntityManager().remove(getEntityManager().merge(parentVO));
+		} else {
+
+		    String[] pathsArray = new String[paths.size()];
+		    if (pathsHasToBeSorted.booleanValue()) {
+			final ArrayList<String> pathsList = Collections.list(Collections.enumeration(paths));
+			Collections.sort(pathsList);
+			pathsArray = pathsList.toArray(pathsArray);
+		    } else {
+			pathsArray = (String[]) paths.toArray(pathsArray);
+		    }
+		    int index = 0;
+
+		    final HashMap<String, ArrayList<String>> directReferenceMap = new HashMap<String, ArrayList<String>>(); // map
+															    // for
+															    // oneToOne
+															    // and
+															    // MToOne
+
+		    final HashMap<String, ArrayList<String>> oneToNReferenceMap = new HashMap<String, ArrayList<String>>();
+
+		    final HashMap<String, ArrayList<String>> mToNReferenceMap = new HashMap<String, ArrayList<String>>();
+
+		    final HashMap<String, ArrayList<String>> mToNInverseReferenceMap = new HashMap<String, ArrayList<String>>();
+
+		    while (index < pathsArray.length) {
+			final String path = pathsArray[index];
+			if (path != null && !path.trim().equals("")) {
+			    final String[] firstAttributeNameAndRemainingPath = Utils.getFirstAttributeNameAndRemainingPath(path);
+			    final String firstAttributeName = firstAttributeNameAndRemainingPath[0];
+			    final ArrayList<String> subPaths = new ArrayList<String>();
+
+			    final Integer relationType = getRelationType(parentVOClass, firstAttributeName);
+
+			    if (!firstAttributeNameAndRemainingPath[1].trim().equals("")) {
+				subPaths.add(firstAttributeNameAndRemainingPath[1]);
+			    }
+
+			    index++;
+			    boolean matchingFirstAttributeName = true;
+			    while (index < pathsArray.length && matchingFirstAttributeName) {
+				final String path2 = pathsArray[index];
+				if (path2 != null && !path2.trim().equals("")) {
+				    final String[] firstAttributeNameAndRemainingPath2 = Utils.getFirstAttributeNameAndRemainingPath(path2);
+				    final String firstAttributeName2 = firstAttributeNameAndRemainingPath2[0];
+				    if (firstAttributeName.equals(firstAttributeName2)) {
+					if (!firstAttributeNameAndRemainingPath2[1].trim().equals("")) {
+					    subPaths.add(firstAttributeNameAndRemainingPath2[1]);
+					}
+					index++;
+				    } else {
+					matchingFirstAttributeName = false;
+				    }
+				} else {
+				    index++;
+				}
+			    }
+
+			    switch (relationType) {
+			    case ONE_TO_ONE:
+				directReferenceMap.put(firstAttributeName, subPaths);
+				break;
+			    case M_TO_ONE:
+				directReferenceMap.put(firstAttributeName, subPaths);
+				break;
+			    case EMBEDDED_ID:
+				directReferenceMap.put(firstAttributeName, subPaths);
+				break;
+			    case ONE_TO_N:
+				oneToNReferenceMap.put(firstAttributeName, subPaths);
+				break;
+			    case M_TO_N:
+				mToNReferenceMap.put(firstAttributeName, subPaths);
+				break;
+			    case M_TO_N_INVERSE:
+				mToNInverseReferenceMap.put(firstAttributeName, subPaths);
+				break;
+			    }
+
+			} else {
+			    index++;
+			}
+		    }
+
+		    /*
+		     * ONE_TO_N
+		     */
+		    Iterator<String> iterator = oneToNReferenceMap.keySet().iterator();
+		    while (iterator.hasNext()) {
+			final String firstAttributeName = iterator.next();
+			log.debug("deletePathsCascadeCore in oneToNReferenceMap: firstAttributeName = " + firstAttributeName);
+
+			final Collection storedChildren = getStoredCollection(parentVO, firstAttributeName);
+			final ArrayList<String> subPaths = oneToNReferenceMap.get(firstAttributeName);
+			final Collection children = (Collection) propertyUtilsBean.getProperty(parentVO, firstAttributeName);
+			if (children != null) {
+			    children.clear();
+			}
+			if (storedChildren != null) {
+			    for (final Object child : storedChildren) {
+				deletePathsCascadeCore(child, subPaths, Boolean.FALSE, ifM2NDeleteOnlyRelationship, deleteOneToOne);
+			    }
+			}
+			//// boolean isCascadeRemove = isCascade(parentVO,
+			//// firstAttributeName, CascadeType.REMOVE);
+			//// ArrayList<String> subPaths =
+			//// oneToNReferenceMap.get(firstAttributeName);
+			// Collection storedChildren = null;
+			// if(isCascadeRemove){
+			// storedChildren =
+			//// getCollectionOfStoredItemsNotInBean(parentVO,
+			//// firstAttributeName);
+			// Collection storedItemsInBeanChildren =
+			//// getCollectionOfStoredItemsInBean(parentVO,
+			//// firstAttributeName);
+			// for(Object child:storedItemsInBeanChildren){
+			//// notDeletedGraphs.addAll(deletePathsCascadeCore(child,subPaths,Boolean.FALSE,ifM2NDeleteOnlyRelationship,deleteOneToOne));
+			// deletePathsCascadeCore(child,subPaths,Boolean.FALSE,ifM2NDeleteOnlyRelationship,deleteOneToOne);
+			// }
+			//
+			// }else{
+			//
+			// storedChildren = getStoredCollection(parentVO,
+			//// firstAttributeName);
+			//
+			// }
+			// if(storedChildren!=null &&
+			//// !storedChildren.isEmpty()){
+			//
+			// for(Object child:storedChildren){
+			//// notDeletedGraphs.addAll(deletePathsCascadeCore(child,subPaths,Boolean.FALSE,ifM2NDeleteOnlyRelationship,deleteOneToOne));
+			// deletePathsCascadeCore(child,subPaths,Boolean.FALSE,ifM2NDeleteOnlyRelationship,deleteOneToOne);
+			// }
+			//
+			// }
+		    }
+
+		    /*
+		     * M_TO_N_INVERSE
+		     */
+		    processM2NDeletePathsCascade(parentVO, mToNInverseReferenceMap, ifM2NDeleteOnlyRelationship, deleteOneToOne);
+		    // iterator = mToNInverseReferenceMap.keySet().iterator();
+		    // while(iterator.hasNext()){
+		    // String firstAttributeName = iterator.next();
+		    // log.debug("deletePathsCascadeCore in
+		    // mToNInverseReferenceMap: firstAttributeName =
+		    // "+firstAttributeName);
+		    // Collection storedChildren = getStoredCollection(parentVO,
+		    // firstAttributeName);
+		    // ArrayList<String> subPaths =
+		    // mToNInverseReferenceMap.get(firstAttributeName);
+		    //
+		    // if(storedChildren!=null){
+		    //
+		    //// String mappedBy = getMappedBy(parentVO,
+		    // firstAttributeName); // being an inverse m2m mappedyBY
+		    // surely exists
+		    // for(Object child:storedChildren){
+		    // /*
+		    // * remove parentVO from reverse collection
+		    // */
+		    //
+		    // String inverseManyToManyField =
+		    // getInverseManyToManyField(parentVO, firstAttributeName);
+		    // Collection inverseCollection = (Collection)
+		    // propertyUtilsBean.getProperty(child,
+		    // inverseManyToManyField);
+		    // inverseCollection.remove(parentVO);
+		    //
+		    // /*
+		    // * clear this collection
+		    // */
+		    // Collection children = (Collection)
+		    // propertyUtilsBean.getProperty(parentVO,
+		    // firstAttributeName);
+		    // children.clear();
+		    //
+		    // /*
+		    // * delete child
+		    // */
+		    // if(!ifM2NDeleteOnlyRelationship){
+		    //// notDeletedGraphs.addAll(deletePathsCascadeCore(child,subPaths,Boolean.FALSE,ifM2NDeleteOnlyRelationship,deleteOneToOne));
+		    // deletePathsCascadeCore(child,subPaths,Boolean.FALSE,ifM2NDeleteOnlyRelationship,deleteOneToOne);
+		    // }
+		    // }
+		    // }
+		    // }
+
+		    final EntityInfo entityInfo = new EntityInfo(parentVOClass);
+		    if (!entityInfo.isEmbeddable()) {
+			deleteCore(parentVO);
+
+		    }
+
+		    /*
+		     * M_TO_N
+		     */
+		    processM2NDeletePathsCascade(parentVO, mToNReferenceMap, ifM2NDeleteOnlyRelationship, deleteOneToOne);
+		    // iterator = mToNReferenceMap.keySet().iterator();
+		    // while(iterator.hasNext()) {
+		    // String firstAttributeName = iterator.next();
+		    // log.debug("deletePathsCascadeCore in mToNReferenceMap:
+		    // firstAttributeName = "+firstAttributeName);
+		    // Collection storedChildren = getStoredCollection(parentVO,
+		    // firstAttributeName);
+		    // ArrayList<String> subPaths =
+		    // mToNInverseReferenceMap.get(firstAttributeName);
+		    // if(storedChildren!=null){
+		    // for(Object child:storedChildren){
+		    // /*
+		    // * remove parentVO from reverse collection
+		    // */
+		    // String inverseManyToManyField =
+		    // getInverseManyToManyField(parentVO, firstAttributeName);
+		    // Collection inverseCollection = (Collection)
+		    // propertyUtilsBean.getProperty(child,
+		    // inverseManyToManyField);
+		    // inverseCollection.remove(parentVO);
+		    //
+		    // /*
+		    // * clear the inverse m2m collection
+		    // */
+		    // Collection children = (Collection)
+		    // propertyUtilsBean.getProperty(parentVO,
+		    // firstAttributeName);
+		    // children.clear();
+		    //
+		    // /*
+		    // * delete child
+		    // */
+		    // if(!ifM2NDeleteOnlyRelationship){
+		    // deletePathsCascadeCore(child,subPaths,Boolean.FALSE,ifM2NDeleteOnlyRelationship,deleteOneToOne);
+		    // }
+		    // }
+		    // }
+		    // }
+
+		    /*
+		     * ONE_TO_ONE and M_TO_ONE
+		     */
+		    // HashMap<String,Object> directReferencedObjectMap= new
+		    // HashMap<String, Object>();
+		    iterator = directReferenceMap.keySet().iterator();
+		    while (iterator.hasNext()) {
+			final String firstAttributeName = iterator.next();
+			if (deleteOneToOne.booleanValue()) {
+			    final ArrayList<String> subPaths = directReferenceMap.get(firstAttributeName);
+			    retrieveReference(parentVO, firstAttributeName);
+			    final Object referencedObject = propertyUtilsBean.getProperty(parentVO, firstAttributeName);
+			    propertyUtilsBean.setProperty(parentVO, firstAttributeName, null);
+			    deletePathsCascadeCore(referencedObject, subPaths, Boolean.FALSE, ifM2NDeleteOnlyRelationship, deleteOneToOne);
+			} else {
+			    propertyUtilsBean.setProperty(parentVO, firstAttributeName, null);
+			}
+
+		    }
+
+		    // if(deleteOneToOne){
+		    // iterator = directReferenceMap.keySet().iterator();
+		    // while(iterator.hasNext()) {
+		    // String firstAttributeName = iterator.next();
+		    // Object referencedObject =
+		    // propertyUtilsBean.getProperty(parentVO,
+		    // firstAttributeName);
+		    // log.debug("deletePathsCascadeCore in directReferenceMap:
+		    // firstAttributeName = "+firstAttributeName);
+		    // if(referencedObject!=null)
+		    // directReferencedObjectMap.put(firstAttributeName,
+		    // referencedObject);
+		    // }
+		    // }
+
+		    // getEntityManager().remove(getEntityManager().merge(parentVO));
+
+		    // if(!ifM2NDeleteOnlyRelationship) {
+		    // iterator =
+		    // mToNReferencedCollectionMap.keySet().iterator();
+		    // while(iterator.hasNext()) {
+		    // String firstAttributeName = iterator.next();
+		    // log.debug("deletePathsCascadeCore in
+		    // mToNReferencedCollectionMap iteration: firstAttributeName
+		    // = "+firstAttributeName);
+		    //
+		    // Collection children =
+		    // mToNReferencedCollectionMap.get(firstAttributeName);
+		    // if(children!=null ){
+		    // Iterator childrenIterator = children.iterator();
+		    // while(childrenIterator.hasNext()){
+		    // deletePathsCascadeCore(childrenIterator.next(),mToNReferenceMap.get(firstAttributeName),Boolean.FALSE,ifM2NDeleteOnlyRelationship,deleteOneToOne);
+		    // }
+		    // }
+		    // }
+		    // }
+
+		    // if(deleteOneToOne){
+		    // iterator = directReferencedObjectMap.keySet().iterator();
+		    // while(iterator.hasNext()) {
+		    // String firstAttributeName = iterator.next();
+		    // log.debug("deleteIdentityPathsCascade in
+		    // directReferencedObjectMap iteration: firstAttributeName =
+		    // "+firstAttributeName);
+		    //
+		    // Object child =
+		    // directReferencedObjectMap.get(firstAttributeName);
+		    // if(child==null){
+		    // log.debug("child is null");
+		    // }else {//(child==null!=null)
+		    // log.debug("child :"+child.toString());
+		    // deletePathsCascadeCore(child,directReferenceMap.get(firstAttributeName),Boolean.FALSE,ifM2NDeleteOnlyRelationship,deleteOneToOne);
+		    // }
+		    // }
+		    // }
+
+		}
+	    }
+	} catch (final IllegalAccessException e) {
+	    log.error(
+		    "IllegalAccessException thrown in BaseJpaDAO.deletePathsCascadeCore(Object parentVO,Collection paths,Boolean  pathsHasToBeSorted,Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) : "
+			    + e.toString());
+	    throw new DataAccessException(
+		    "Error in BaseJpaDAO.deletePathsCascadeCore(Object parentVO,Collection paths,Boolean  pathsHasToBeSorted,Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) : "
+			    + e.toString(),
+		    e);
+	} catch (final InvocationTargetException e) {
+	    log.error(
+		    "InvocationTargetException thrown in BaseJpaDAO.deletePathsCascadeCore(Object parentVO,Collection paths,Boolean  pathsHasToBeSorted,Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) : "
+			    + e.toString());
+	    throw new DataAccessException(
+		    "Error in BaseJpaDAO.deletePathsCascadeCore(Object parentVO,Collection paths,Boolean  pathsHasToBeSorted,Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) : "
+			    + e.toString(),
+		    e);
+	} catch (final NoSuchMethodException e) {
+	    log.error(
+		    "NoSuchMethodException thrown in BaseJpaDAO.deletePathsCascadeCore(Object parentVO,Collection paths,Boolean  pathsHasToBeSorted,Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) : "
+			    + e.toString());
+	    throw new DataAccessException(
+		    "Error in BaseJpaDAO.deletePathsCascadeCore(Object parentVO,Collection paths,Boolean  pathsHasToBeSorted,Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) : "
+			    + e.toString(),
+		    e);
+	} catch (final Exception e) {
+	    log.error(
+		    "Exception thrown in BaseJpaDAO.deletePathsCascadeCore(Object parentVO,Collection paths,Boolean  pathsHasToBeSorted,Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) : "
+			    + e.toString());
+	    throw new DataAccessException(
+		    "Error in BaseJpaDAO.deletePathsCascadeCore(Object parentVO,Collection paths,Boolean  pathsHasToBeSorted,Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) : "
+			    + e.toString(),
+		    e);
+	}
+
+	log.info("************Done  ***************");
+    }
+
+    private void processM2NDeletePathsCascade(Object parentVO, HashMap<String, ArrayList<String>> map, boolean ifM2NDeleteOnlyRelationship, boolean deleteOneToOne) throws DataAccessException {
+
+	try {
+	    final PropertyUtilsBean propertyUtilsBean = BeanUtilsBean.getInstance().getPropertyUtils();
+	    final Iterator<String> iterator = map.keySet().iterator();
+	    while (iterator.hasNext()) {
+		final String firstAttributeName = iterator.next();
+		final Collection storedChildren = getStoredCollection(parentVO, firstAttributeName);
+		final ArrayList<String> subPaths = map.get(firstAttributeName);
+		/*
+		 * clear the inverse m2m collection
+		 */
+		final Collection children = (Collection) propertyUtilsBean.getProperty(parentVO, firstAttributeName);
+		if (children != null) {
+		    children.clear();
+		}
+		if (storedChildren != null) {
+		    for (final Object child : storedChildren) {
+			/*
+			 * remove parentVO from reverse collection
+			 */
+			final String inverseManyToManyField = getInverseManyToManyField(parentVO, firstAttributeName);
+			if (!StringUtils.isEmpty(inverseManyToManyField)) {
+			    final Collection inverseCollection = (Collection) propertyUtilsBean.getProperty(child, inverseManyToManyField);
+			    inverseCollection.remove(parentVO);
+			}
+
+			/*
+			 * delete child
+			 */
+			if (!ifM2NDeleteOnlyRelationship) {
+			    // notDeletedGraphs.addAll(deletePathsCascadeCore(child,subPaths,Boolean.FALSE,ifM2NDeleteOnlyRelationship,deleteOneToOne));
+			    deletePathsCascadeCore(child, subPaths, Boolean.FALSE, ifM2NDeleteOnlyRelationship, deleteOneToOne);
+			}
+		    }
+		}
+	    }
+	} catch (final IllegalAccessException e) {
+	    log.error(
+		    "IllegalAccessException thrown in BaseJpaDAO.processDeletePathsCascade(Object parentVO, HashMap<String,ArrayList<String>> map, boolean ifM2NDeleteOnlyRelationship, boolean deleteOneToOne) : "
+			    + e.toString());
+	    throw new DataAccessException(
+		    "Error in BaseJpaDAO.processDeletePathsCascade(Object parentVO, HashMap<String,ArrayList<String>> map, boolean ifM2NDeleteOnlyRelationship, boolean deleteOneToOne): "
+			    + e.toString(),
+		    e);
+	} catch (final InvocationTargetException e) {
+	    log.error(
+		    "InvocationTargetException thrown in BaseJpaDAO.processDeletePathsCascade(Object parentVO, HashMap<String,ArrayList<String>> map, boolean ifM2NDeleteOnlyRelationship, boolean deleteOneToOne) : "
+			    + e.toString());
+	    throw new DataAccessException(
+		    "Error in BaseJpaDAO.processDeletePathsCascade(Object parentVO, HashMap<String,ArrayList<String>> map, boolean ifM2NDeleteOnlyRelationship, boolean deleteOneToOne): "
+			    + e.toString(),
+		    e);
+	} catch (final NoSuchMethodException e) {
+	    log.error(
+		    "NoSuchMethodException thrown in BaseJpaDAO.processDeletePathsCascade(Object parentVO, HashMap<String,ArrayList<String>> map, boolean ifM2NDeleteOnlyRelationship, boolean deleteOneToOne) : "
+			    + e.toString());
+	    throw new DataAccessException(
+		    "Error in BaseJpaDAO.processDeletePathsCascade(Object parentVO, HashMap<String,ArrayList<String>> map, boolean ifM2NDeleteOnlyRelationship, boolean deleteOneToOne): "
+			    + e.toString(),
+		    e);
+	} catch (final Exception e) {
+	    log.error("Exception thrown in BaseJpaDAO.processDeletePathsCascade(Object parentVO, HashMap<String,ArrayList<String>> map, boolean ifM2NDeleteOnlyRelationship, boolean deleteOneToOne) : "
+		    + e.toString());
+	    throw new DataAccessException(
+		    "Error in BaseJpaDAO.processDeletePathsCascade(Object parentVO, HashMap<String,ArrayList<String>> map, boolean ifM2NDeleteOnlyRelationship, boolean deleteOneToOne): "
+			    + e.toString(),
+		    e);
+	}
+    }
+
+    private boolean toBeRemoved(Object deleteVO) throws DataAccessException {
+	boolean toBeRemoved = false;
+	try {
+	    if (isPersisted(deleteVO)) {
+		if (!getEntityManager().contains(deleteVO)) {
+		    getEntityManager().merge(deleteVO);
+		}
+		toBeRemoved = true;
+	    }
+	} catch (final Exception e) {
+	    log.error("Exception thrown in BaseJpaDAO.toBeRemoved(Object deleteVO): " + e.toString());
+	    throw new DataAccessException("Error in BaseJpaDAO.toBeRemoved(Object deleteVO) : " + e.toString(), e);
+	}
+	return toBeRemoved;
+    }
+
+    private int getRelationType(Class realClass, String pAttributeName) throws DataAccessException {
+	log.info("************Entering **************");
+	int relationType;
+
+	try {
+	    final ManyToMany manyToMany = (ManyToMany) getAnnotation(realClass, pAttributeName, ManyToMany.class);
+	    OneToMany oneToMany = null;
+	    OneToOne oneToOne = null;
+	    ManyToOne manyToOne = null;
+	    EmbeddedId embeddedId = null;
+
+	    if (manyToMany == null) {
+		oneToMany = (OneToMany) getAnnotation(realClass, pAttributeName, OneToMany.class);
+		if (oneToMany == null) {
+		    manyToOne = (ManyToOne) getAnnotation(realClass, pAttributeName, ManyToOne.class);
+		    if (manyToOne == null) {
+			oneToOne = (OneToOne) getAnnotation(realClass, pAttributeName, OneToOne.class);
+			if (oneToOne == null) {
+			    embeddedId = (EmbeddedId) getAnnotation(realClass, pAttributeName, EmbeddedId.class);
+			    if (embeddedId == null) {
+				throw new DataAccessException(
+					"Error in BaseJpaDAO.getRelationType(Class realClass, String pAttributeName): Error: pAttributeName  is no ManyToOne, no OneToMnay, no OneToOne, no ManyToMany, no EmbeddedId ");
+			    } else {
+				relationType = EMBEDDED_ID;
+			    }
+			} else {
+			    relationType = ONE_TO_ONE;
+			}
+		    } else {
+			relationType = M_TO_ONE;
+		    }
+		} else {
+		    relationType = ONE_TO_N;
+		}
+	    } else {
+		if (StringUtils.isEmpty(manyToMany.mappedBy())) {
+		    relationType = M_TO_N;
+		} else {
+		    relationType = M_TO_N_INVERSE;
+		}
+	    }
+	} catch (final DataAccessException e) {
+	    log.error("Exception thrown in BaseJpaDAO.getRelationType(Class realClass, String pAttributeName): " + e.toString());
+	    throw new DataAccessException("Error in BaseJpaDAO.getRelationType(Class realClass, String pAttributeName): " + e.toString(), e);
+	}
+	log.info("************Done  ***************");
+	return relationType;
+    }
+
+    private ArrayList getPartialPathEntities(ArrayList startEntities, String[] splitPath, int startIndex, int endIndex) throws DataAccessException {
+	log.info("************Entering **************");
+	ArrayList partialPathEntities = new ArrayList();
+	try {
+	    if (splitPath == null) {
+		throw new DataAccessException("Error in BaseJpaDAO.getPartialPathIdentities(ArrayList startEntities, String[] splitPath, int startIndex, int endIndex):Error:splitPath can't be null ");
+	    }
+	    if (startEntities == null) {
+		throw new DataAccessException(
+			"Error in BaseJpaDAO.getPartialPathIdentities(ArrayList startEntities, String[] splitPath, int startIndex, int endIndex):Error:startEntities can't be null ");
+	    }
+	    if (startIndex > endIndex) {
+		throw new DataAccessException(
+			"Error in BaseJpaDAO.getPartialPathIdentities(ArrayList startEntities, String[] splitPath, int startIndex, int endIndex): Error:startIndex can't be higher than endIndex ");
+	    }
+	    if (endIndex >= splitPath.length) {
+		throw new DataAccessException(
+			"Error in BaseJpaDAO.getPartialPathIdentities(ArrayList startEntities, String[] splitPath, int startIndex, int endIndex): Error:endIndex must be less than splitPath size");
+	    }
+	    if (startIndex < 0) {
+		throw new DataAccessException(
+			"Error in BaseJpaDAO.getPartialPathIdentities(ArrayList startEntities, String[] splitPath, int startIndex, int endIndex): Error:startIndex can't be less than 0");
+	    }
+	    if (startEntities.isEmpty() || splitPath.length == 0) {
+		partialPathEntities = startEntities;
+	    } else {
+
+		/**
+		 * start checking all entities of startEntities have the same
+		 * objectsRealClass
+		 **/
+		final Iterator iterator = startEntities.iterator();
+		final Object firstStartEntity = iterator.next(); // at least one
+								 // identity is
+								 // in
+								 // startIdentities
+								 // as it is not
+								 // empty.
+		if (firstStartEntity == null) {
+		    throw new DataAccessException(
+			    "Error in BaseJpaDAO.getPartialPathIdentities(ArrayList startEntities, String[] splitPath, int startIndex, int endIndex): Error:startEntities(0) is null");
+		}
+		// Class realClass = firstStartEntity.getClass();
+		final Class realClass = getEntityClass(firstStartEntity);
+		while (iterator.hasNext()) {
+		    final Object entity = iterator.next();
+		    if (entity == null) {
 			throw new DataAccessException(
-					"Error in  ImplIrisDAO.translateSimpleCondition(int progr,Class realClass, SimpleCondition simpleCondition, Map<String,Object> parametersMap): "
-							+ e.toString(), e);
+				"Error in BaseJpaDAO.getPartialPathIdentities(ArrayList startEntities, String[] splitPath, int startIndex, int endIndex): Error:found one entity in startEntities that is  null");
+		    }
+		    // Class entityRealClass = entity.getClass();
+		    final Class entityRealClass = getEntityClass(entity);
+		    if (!entityRealClass.equals(realClass)) {
+			throw new DataAccessException(
+				"Error in BaseJpaDAO.getPartialPathIdentities(ArrayList startEntities, String[] splitPath, int startIndex, int endIndex): Error:found two entities in startIdentities with different realClass");
+		    }
+		}
+		/**
+		 * end checking all identities of startIdentities have the same
+		 * objectsRealClass
+		 **/
 
+		/******
+		 * start calculate path from startIndex to endindex
+		 *********/
+		String path = splitPath[startIndex];
+		int index = startIndex + 1;
+		while (index <= endIndex) {
+		    path = path + "." + splitPath[index];
+		    index++;
 		}
-		log.debug("Done");
-		return condition;
-	}
-	
-	
-//	private String translateSimpleCondition(int progr,Class realClass, SimpleCondition simpleCondition, Map<String,Object> parametersMap) throws DataAccessException{
-//        log.debug("Entering");
-//		String condition = "";
-//		String field = null;
-//        Object value = null;
-//        try {
-//            Operator operator=  simpleCondition.getOperator();
-//            Collection parameters =  simpleCondition.getParameter();
-//            Iterator iterator = parameters.iterator();
-//            if (iterator.hasNext()){
-//                field = (String)iterator.next();
-//            }
-//            if (iterator.hasNext()){
-//                value =  iterator.next();
-//            }
-//            String fieldLastToken=null;
-//            if(field!=null){
-//            	fieldLastToken = Utils.getExceptLastTokenAndLastToken(field)[1];
-//            	//fieldLastToken = fieldLastToken+"A"+progr;
-//            	fieldLastToken = fieldLastToken.replaceAll("(|)", "a")+"A"+progr;
-//            	
-//            }
-//
-//            /**********************  operators mapping ********************************************/
-//            boolean staticCondition = false;
-//            if (operator.getName().equalsIgnoreCase("==")||operator.getName().equalsIgnoreCase("=")){
-//                //condition ="a."+field+"= :"+field;
-//            	//condition =field+"= :"+field;
-//            	condition =field+"= :"+fieldLastToken;
-//                //parametersMap.put(field, value);
-//            	parametersMap.put(fieldLastToken, value);
-//            }else if(operator.getName().equalsIgnoreCase("isNull")) {
-//            	//condition ="a."+field+" IS NULL";
-//            	condition =field+" IS NULL";
-//            	//TODO add the OR empty string
-//            }else if(operator.getName().equalsIgnoreCase("isNotNull")) {
-//            	//condition ="a."+field+" IS NOT NULL";
-//            	condition =field+" IS NOT NULL";
-//            } else if(operator.getName().equalsIgnoreCase("IN")) { //added 29/08/2005
-//                //if(value!=null&&!((Collection)value).isEmpty())  criteria.addIn(field,(Collection)value);
-//            	//condition ="a."+field+" IN :"+field;
-//            	//condition =field+" IN :"+field;
-//            	if(value == null || ((List)value).isEmpty()){
-//            		condition= " 1 = 2"; // false condition
-//            		staticCondition=true;
-//            	}else if ( ((List)value).size()>this.inLimit){
-//            		ArrayList<List> splitIn = splitIn((Collection)value);
-//            		//condition =field + orOfInsCollection(fieldLastToken, splitIn, parametersMap);
-//            		//condition =orOfInsCollection("a."+field,fieldLastToken, splitIn, parametersMap);
-//            		condition =orOfInsCollection(prefixNotJoinFieldName(field),fieldLastToken, splitIn, parametersMap);
-//            		staticCondition=true;
-//            	}else{
-//            		condition =field+" IN (:"+fieldLastToken+")";
-//                    //parametersMap.put(field, value); 
-//                	//parametersMap.put(fieldLastToken, value);
-//                	parametersMap.put(fieldLastToken, value);
-//            	}
-//            	
-//            }  else if(operator.getName().equalsIgnoreCase("NOT IN")||operator.getName().equalsIgnoreCase("NOTIN")) {
-//                //if(value!=null&&!((Collection)value).isEmpty()) criteria.addNotIn(field,(Collection)value);
-//            	//condition ="a."+field+" NOT IN :"+field;
-//            	//condition =field+" NOT IN :"+field;
-//            	if(value == null || ((List)value).isEmpty()){
-//            		condition= " 1 = 1"; // true condition
-//            		staticCondition=true;
-//            	}else if ( ((List)value).size()>this.inLimit){
-//            		ArrayList<List> splitIn = splitIn((Collection)value);
-//            		
-//            		//condition =" NOT ("+ ((field!=null && !field.trim().equals(""))?"a."+field:"a ") + orOfInsCollection(fieldLastToken, splitIn, parametersMap)+" ) ";
-//            		//String nuevoField = ((field!=null && !field.trim().equals(""))?"a."+field:"a ");
-//            		String nuevoField = ((field!=null && !field.trim().equals(""))?prefixNotJoinFieldName(field):"a ");
-//            		condition =" NOT ("+ orOfInsCollection(nuevoField,fieldLastToken, splitIn, parametersMap)+" ) ";
-//            		staticCondition=true;
-//            	}else{
-//            		condition =field+" NOT IN (:"+fieldLastToken+")";
-//                	//parametersMap.put(field, value);
-//                	parametersMap.put(fieldLastToken, value);
-//            	}
-//            } else if(operator.getName().equalsIgnoreCase("<=")) {
-//            	//condition ="a."+field+"<= :"+field;
-//            	//condition =field+"<= :"+field;
-//            	condition =field+"<= :"+fieldLastToken;
-//            	//parametersMap.put(field, value);
-//            	parametersMap.put(fieldLastToken, value);
-//            } else if(operator.getName().equalsIgnoreCase(">=")) {
-//            	//condition ="a."+field+">= :"+field;
-//            	//condition =field+">= :"+field;
-//            	condition =field+">= :"+fieldLastToken;
-//            	//parametersMap.put(field, value);
-//            	parametersMap.put(fieldLastToken, value);
-//            }else if(operator.getName().equalsIgnoreCase("<")) {
-//            	//condition ="a."+field+"< :"+field;
-//            	//condition =field+"< :"+field;
-//            	condition =field+"< :"+fieldLastToken;
-//            	//parametersMap.put(field, value);
-//            	parametersMap.put(fieldLastToken, value);
-//            }else if(operator.getName().equalsIgnoreCase(">")) {
-//            	//condition ="a."+field+"> :"+field;
-//            	//condition =field+"> :"+field;
-//            	condition =field+"> :"+fieldLastToken;
-//            	//parametersMap.put(field, value);
-//            	parametersMap.put(fieldLastToken, value);
-//            }else if(operator.getName().equalsIgnoreCase("!=")||operator.getName().equalsIgnoreCase("<>")) {
-//            	//condition ="a."+field+"<> :"+field;
-//            	//condition =field+"<> :"+field;
-//            	condition =field+"<> :"+fieldLastToken;
-//            	//parametersMap.put(field, value);
-//            	parametersMap.put(fieldLastToken, value);
-//            }else if(operator.getName().equalsIgnoreCase("LEFTLIKE")) {
-//            	//condition ="a."+field+"LIKE % :"+field;
-//            	//condition =field+"LIKE % :"+field;
-//            	condition =field+" LIKE lower(concat('%',:" + fieldLastToken + "))";
-//            	//parametersMap.put(field, value);
-//            	parametersMap.put(fieldLastToken, value);
-//                //criteria.addLike(field,"%"+value);
-//            }else if(operator.getName().equalsIgnoreCase("RIGHTLIKE")) {
-//            	//condition ="a."+field+"LIKE :"+field+"%";
-//            	//condition =field+"LIKE :"+field+"%";
-//            	condition =field+" LIKE lower(concat(:" + fieldLastToken + ",'%'))";
-//            	//parametersMap.put(field, value);
-//            	parametersMap.put(fieldLastToken, value);
-//                //criteria.addLike(field,value+"%");
-//            }else if(operator.getName().equalsIgnoreCase("LIKE")||operator.getName().equalsIgnoreCase("BOTHLIKE")) {
-//            	//condition ="a."+field+"LIKE % :"+field+"%";
-//            	//condition =field+"LIKE % :"+field+"%";
-//            	condition =field+" LIKE lower(concat('%',:" + fieldLastToken + ",'%'))";
-//            	//parametersMap.put(field, value);
-//            	parametersMap.put(fieldLastToken, value);
-//            	//criteria.addLike(field,"%"+value+"%");
-//            }
-//            //condition = "a."+condition;//deleted by alessandro 14-enero -2010
-//            if(!staticCondition){
-//	            if(field!=null && !field.trim().equals("")){ //added by alessandro 14-enero -2010
-//	            	//condition = "a."+condition;
-//	            	condition = prefixNotJoinFieldName(condition);
-//	            }else{
-//	            	condition = "a "+condition;
-//	            }
-//            }
-//
-//
-//            /********************** end  operators mapping ********************************************/
-//        }
-//        catch (Exception e){
-//            log.error("Exception caught : " + e.toString());
-//            throw new DataAccessException("Error in  BaseJpaDAO.translateSimpleCondition(int progr,Class realClass, SimpleCondition simpleCondition, Map<String,Object> parametersMap): " + e.toString(),e);
-//
-//        }
-//        log.debug("Done");
-//        return condition;
-//    }
-	
-	private Annotation getAnnotation(Class realClass, String pAttributeName, Class annotationClass) throws DataAccessException{
-		log.debug("Entering");
-		Annotation annotation =null;
-		
-		try {
-			
-			Field field=null;
-			try {
-				field = realClass.getDeclaredField(pAttributeName);
-			} catch (NoSuchFieldException e) {
-				log.warn(pAttributeName + "is not a field of "+realClass.toString());
-			}
-			
-			
-			if(field!=null){
-				annotation = field.getAnnotation(annotationClass);
-				if(annotation ==null){
-					Method getter = getGetter(realClass,pAttributeName);
-					annotation = getter.getAnnotation(annotationClass);
-				}
-			}
-			
-		} catch (SecurityException e) {
-            log.error("SecurityException caught : " + e.toString());
-            throw new DataAccessException("Error in  BaseJpaDAO.getAnnotation(Class realClass, String pAttributeName, Class annotationClass): " + e.toString(),e);
-		}/* catch (NoSuchFieldException e) {
-            log.error("NoSuchFieldException caught : " + e.toString());
-            throw new DataAccessException("Error in  BaseJpaDAO.getAnnotation(Class realClass, String pAttributeName, Class annotationClass): " + e.toString(),e);
-		} */
-		log.debug("Done");
-        return annotation;
-	}
-	
-	
-	
-	/**
-	 * 
-	 * @param realClass
-	 * @return the first EmbeddedId or Id annotation found iterating over fields and methods of realClass
-	 * @throws DataAccessException
-	 */
-	@SuppressWarnings("unused")
-	private Annotation getEmbeddedIdOrId(Class realClass) throws DataAccessException{
-		log.debug("Entering");
-		Annotation annotation = null;
-		try {
-			EmbeddedId embeddedId = null;
-			Id idAnnotation = null; 
-			/******* start looking for EmbeddedId or Id anntoations on fields*******/
-			Field[] fields = realClass.getDeclaredFields();
-//			Field field = null;
-			for(int i=0; i<fields.length; i++){
-				embeddedId = fields[i].getAnnotation(EmbeddedId.class);
-				//if(embeddedId!=null ||idAnnotation!=null) {
-				if(embeddedId!=null) {
-					annotation = embeddedId;
-					break;
-				}else{
-					idAnnotation= fields[i].getAnnotation(Id.class);
-					if(idAnnotation!=null){
-						annotation = idAnnotation;
-						break;
-					}	
-				}
-			}
-			
-			/******* start looking for EmbeddedId or Id anntoations on getters*******/
-			//Method idGetter = null;
-			//if(embeddedId==null && field==null){
-			if(annotation==null){
-				Method[] metods = realClass.getMethods();
-				
-				for(int i=0; i<metods.length; i++){
-					embeddedId = metods[i].getAnnotation(EmbeddedId.class);
-					if(embeddedId!=null){
-						annotation = embeddedId;
-						break;
-					}else{
-						idAnnotation= metods[i].getAnnotation(Id.class);
-						if(idAnnotation!=null){
-							annotation = idAnnotation;
-							break;
-						}	
-					}
-				}
-			}
-		} catch (SecurityException e) {
-            log.error("SecurityException caught : " + e.toString());
-            throw new DataAccessException("Error in  BaseJpaDAO.getEmbeddedIdOrId(Class realClass): " + e.toString(),e);
-		}
-		log.debug("Done");
-		return annotation;
-		
-	}
-	
-	/**
-	 * 
-	 * @param realClass
-	 * @return the first EmbeddedId annotation found iterating over fields and methods of realClass
-	 * @throws DataAccessException
-	 */
-	@SuppressWarnings("unused")
-	private EmbeddedId getEmbeddedId(Class realClass) throws DataAccessException{
-		log.debug("Entering");
-		EmbeddedId embeddedId = null;
-		try {
-			/******* start looking for EmbeddedId  on fields*******/
-			Field[] fields = realClass.getDeclaredFields();
-			for(int i=0; i<fields.length; i++){
-				embeddedId = fields[i].getAnnotation(EmbeddedId.class);
-				if(embeddedId!=null) {
-					break;
-				}
-			}
-			
-			/******* start looking for EmbeddedId or Id anntoations on getters*******/
-			if(embeddedId==null){
-				Method[] metods = realClass.getMethods();
-				
-				for(int i=0; i<metods.length; i++){
-					embeddedId = metods[i].getAnnotation(EmbeddedId.class);
-					if(embeddedId!=null){
-						break;
-					}
-				}
-			}
-		} catch (SecurityException e) {
-            log.error("SecurityException caught : " + e.toString());
-            throw new DataAccessException("Error in  BaseJpaDAO.getEmbeddedId(Class realClass) : " + e.toString(),e);
-		}
-		log.debug("Done");
-		return embeddedId;
-		
-	}
-	
-	/**
-	 * 
-	 * @param realClass
-	 * @return the first EmbeddedId or Id annotation found iterating over fields 
-	 * @throws DataAccessException
-	 */
-	@SuppressWarnings("unused")
-	private Annotation getEmbeddedIdOrIdOnField(Class realClass) throws DataAccessException{
-		log.debug("Entering");
-		Annotation annotation = null;
-		try {
-			EmbeddedId embeddedId = null;
-			Id idAnnotation = null; 
-			/******* start looking for EmbeddedId or Id anntoations on fields*******/
-			Field[] fields = realClass.getDeclaredFields();
-//			Field field = null;
-			for(int i=0; i<fields.length; i++){
-				embeddedId = fields[i].getAnnotation(EmbeddedId.class);
-				//if(embeddedId!=null ||idAnnotation!=null) {
-				if(embeddedId!=null) {
-					annotation = embeddedId;
-					break;
-				}else{
-					idAnnotation= fields[i].getAnnotation(Id.class);
-					if(idAnnotation!=null){
-						annotation = idAnnotation;
-						break;
-					}	
-				}
-			}
-		} catch (SecurityException e) {
-            log.error("SecurityException caught : " + e.toString());
-            throw new DataAccessException("Error in  BaseJpaDAO.getEmbeddedIdOrIdOnField(Class realClass): " + e.toString(),e);
-		}
-		log.debug("Done");
-		return annotation;
-		
-	}
-	
-	/**
-	 * 
-	 * @param realClass
-	 * @return the first EmbeddedId or Id annotation found iterating over methods of realClass
-	 * @throws DataAccessException
-	 */
-	@SuppressWarnings("unused")
-	private Annotation getEmbeddedIdOrIdOnMethod(Class realClass) throws DataAccessException{
-		log.debug("Entering");
-		Annotation annotation = null;
-		try {
-			EmbeddedId embeddedId = null;
-			Id idAnnotation = null; 
-			
-			/******* start looking for EmbeddedId or Id anntoations on getters*******/
-			//Method idGetter = null;
-			//if(embeddedId==null && field==null){
-			
-			Method[] metods = realClass.getMethods();
-			
-			for(int i=0; i<metods.length; i++){
-				embeddedId = metods[i].getAnnotation(EmbeddedId.class);
-				if(embeddedId!=null){
-					annotation = embeddedId;
-					break;
-				}else{
-					idAnnotation= metods[i].getAnnotation(Id.class);
-					if(idAnnotation!=null){
-						annotation = idAnnotation;
-						break;
-					}	
-				}
-			}
-			
-		} catch (SecurityException e) {
-            log.error("SecurityException caught : " + e.toString());
-            throw new DataAccessException("Error in  BaseJpaDAO.getEmbeddedIdOrIdOnMethod(Class realClass): " + e.toString(),e);
-		}
-		log.debug("Done");
-		return annotation;
-		
-	}
-	
-	private Field getEmbeddedIdOrIdAnnotatedField (Class realClass) throws DataAccessException{
-		log.debug("Entering");
-		Field field=null;
-		try {
-			Field[] fields = realClass.getDeclaredFields();
-			for(int i=0; i<fields.length; i++){
-				if(fields[i].isAnnotationPresent(EmbeddedId.class)||fields[i].isAnnotationPresent(Id.class)) {
-					field = fields[i];
-					break;
-				}
-			}
-		} catch (SecurityException e) {
-            log.error("SecurityException caught : " + e.toString());
-            throw new DataAccessException("Error in  BaseJpaDAO.getEmbeddedIdOrIdAnnotatedField(Class realClass): " + e.toString(),e);
-		}
-		log.debug("Done");
-		return field;
-	}
-	
-	private Method getEmbeddedIdOrIdAnnotatedMethod (Class realClass) throws DataAccessException {
-		log.debug("Entering");
-		Method idGetter = null;
-		try {
-			Method[] metods = realClass.getMethods();
-			for(int i=0; i<metods.length; i++){
-				if(metods[i].isAnnotationPresent(EmbeddedId.class) ||metods[i].isAnnotationPresent(Id.class)) {
-					idGetter = metods[i];
-					break;
-				}
-			}
-		} catch (SecurityException e) {
-            log.error("SecurityException caught : " + e.toString());
-            throw new DataAccessException("Error in  BaseJpaDAO.getEmbeddedIdOrIdAnnotatedMethod(Class realClass): " + e.toString(),e);
-		}
-		
-		log.debug("Done");
-		return idGetter;
-	}
-	
-	private  AccessibleObject getEmbeddedIdOrIdAnnotatedAccessibleObject(Class realClass) throws DataAccessException{
-		log.debug("Entering");
-		AccessibleObject accessibleObject = null;
-		try {
-			accessibleObject=getEmbeddedIdOrIdAnnotatedField (realClass);
-			if(accessibleObject==null)
-				accessibleObject=getEmbeddedIdOrIdAnnotatedMethod(realClass);
-		} catch (Exception e) {
-            log.error("Exception caught : " + e.toString());
-            throw new DataAccessException("Error in  BaseJpaDAO.getEmbeddedIdOrIdAnnotatedAccessibleObject(Class realClass): " + e.toString(),e);
-		}
-		log.debug("Done");
-		return accessibleObject;
-	}
+		/******
+		 * end calculate path from startIndex to endindex
+		 *********/
 
-	
-	private boolean isCascade(Object pInstance, String pAttributeName, CascadeType cascadeType) throws DataAccessException{
-		boolean isCascade=false;
-		try {
-			CascadeType[] cascades = getCascade(pInstance, pAttributeName);
-			if(cascades!=null){
-				for (int i=0;i<cascades.length && !isCascade ;i++){
-					isCascade = cascades[i].equals(cascadeType);
-				}
-			}
-		} catch (DataAccessException e) {
-			log.error("Exception caught : " + e.toString());
-            throw new DataAccessException("Error in  BaseJpaDAO.isCascade(Object pInstance, String pAttributeName, CascadeType cascadeType): " + e.toString(),e);
-		}
-		return isCascade;
-	}
-	
-	private CascadeType[] getCascade(Object pInstance, String pAttributeName) throws DataAccessException{
-		
-		CascadeType[] cascades = null;
-		try {
-			Annotation annotation = getRelationMappingAnnotation(pInstance,  pAttributeName);
-			if(annotation!=null){
-				if(annotation instanceof ManyToMany){
-					cascades = ((ManyToMany)annotation).cascade();
-				}else if(annotation instanceof OneToMany){
-					cascades = ((OneToMany)annotation).cascade();
-				}else if(annotation instanceof ManyToOne){
-					cascades = ((ManyToOne)annotation).cascade();
-				}else if(annotation instanceof OneToOne){
-					cascades = ((OneToOne)annotation).cascade();
-				}
-			}
-		} catch (Exception e) {
-			log.error("Exception caught : " + e.toString());
-            throw new DataAccessException("Error in  BaseJpaDAO.getCascade(Object pInstance, String pAttributeName): " + e.toString(),e);
-		}
-		return cascades;
-	}
-	
-	private Annotation getRelationMappingAnnotation(Class realClass, String pAttributeName) throws DataAccessException{
-		Annotation annotation = null;
-		try {
-			ManyToMany manyToMany = (ManyToMany) getAnnotation(realClass, pAttributeName, ManyToMany.class);
-			if(manyToMany!=null){
-				annotation=manyToMany;
-			}else{
-				OneToMany oneToMany = (OneToMany) getAnnotation(realClass, pAttributeName, OneToMany.class);
-				if(oneToMany!=null){
-					annotation=oneToMany;
-				}else{
-					ManyToOne manyToOne = (ManyToOne) getAnnotation(realClass, pAttributeName, ManyToOne.class);
-					if(manyToOne!=null){
-						annotation=manyToOne;
-					}else{
-						OneToOne oneToOne = (OneToOne) getAnnotation(realClass, pAttributeName, OneToOne.class);
-						if(oneToOne!=null){
-							annotation=oneToOne;
-						}
-					}
-				}
-			}
-		} catch (Exception e) {
-			log.error("Exception caught : " + e.toString());
-			throw new DataAccessException("Error in  BaseJpaDAO.getRelationMappingAnnotation(Class realClass, String pAttributeName): " + e.toString(),e);
-		}
-		return annotation;
-	}
-	
-	private Annotation getRelationMappingAnnotation(Object pInstance, String pAttributeName) throws DataAccessException{
-		Annotation annotation = null;
-		try {
-			Class realClass = getEntityClass(pInstance); 
-			annotation = getRelationMappingAnnotation( realClass,  pAttributeName);
-		} catch (Exception e) {
-			log.error("Exception caught : " + e.toString());
-			throw new DataAccessException("Error in  BaseJpaDAO.getRelationMappingAnnotation(Object pInstance, String pAttributeName): " + e.toString(),e);
-		}
-		return annotation;
-	}
-	
-	
-	private String getMappedBy(Class realClass, String pAttributeName) throws DataAccessException{
-		log.debug("Entering");
-		String mappedBy;
-		try {
-			mappedBy = null;
-			//Annotation annotation = getAnnotation(pInstance.getClass(), pAttributeName, OneToMany.class);
-			Annotation annotation = getAnnotation(realClass, pAttributeName, OneToMany.class);
-			if (annotation== null){
-				//annotation = getAnnotation(pInstance.getClass(), pAttributeName, ManyToMany.class);
-				annotation = getAnnotation(realClass, pAttributeName, ManyToMany.class);
-				if (annotation==null) throw new DataAccessException("DataAccessException thrown in BaseJpaDAO.getMappedBy(Class realClass, String pAttributeName) : pAttributeName or its getter must be annotated with OneToMany or ManyToMany ");
-				mappedBy = ((ManyToMany)annotation).mappedBy();
-			}else{
-				mappedBy = ((OneToMany)annotation).mappedBy();
-			}
-			
-			
-		} catch (Exception e) {
-            log.error("Exception caught : " + e.toString());
-            throw new DataAccessException("Error in  BaseJpaDAO.getMappedBy(Object pInstance, String pAttributeName): " + e.toString(),e);
-		}
-		log.debug("Done");
-		return mappedBy;
-	}
-	
-	private String getMappedBy(Object pInstance, String pAttributeName) throws DataAccessException{
-		log.debug("Entering");
-		String mappedBy;
-		try {
-			
-			Class realClass = getEntityClass(pInstance); 
-			mappedBy = getMappedBy( realClass,  pAttributeName);
-//			Annotation annotation = getAnnotation(realClass, pAttributeName, OneToMany.class);
-//			if (annotation== null){
-//				annotation = getAnnotation(realClass, pAttributeName, ManyToMany.class);
-//				if (annotation==null) throw new DataAccessException("DataAccessException thrown in BaseJpaDAO.getMappedBy(Object pInstance, String pAttributeName) : pAttributeName or its getter must be annotated with OneToMany or ManyToMany ");
-//				mappedBy = ((ManyToMany)annotation).mappedBy();
-//			}else{
-//				mappedBy = ((OneToMany)annotation).mappedBy();
-//			}
-			
-			
-		} catch (Exception e) {
-            log.error("Exception caught : " + e.toString());
-            throw new DataAccessException("Error in  BaseJpaDAO.getMappedBy(Object pInstance, String pAttributeName): " + e.toString(),e);
-		}
-		log.debug("Done");
-		return mappedBy;
-	}
-	
-	private Method getGetter(Class realClass, String pAttributeName) throws DataAccessException{
-		Method getter=null;
-		try {
-			if(realClass==null || pAttributeName==null || pAttributeName.trim().equals("")){
-				throw new DataAccessException("Error in  BaseJpaDAO.getGetter(Class realClass, String pAttributeName): realClass is null or pAttributeName is null or empty string" );
-			}
-			//getter = realClass.getDeclaredMethod("get"+pAttributeName.substring(0,0).toUpperCase()+pAttributeName.substring(1));
-			getter = realClass.getDeclaredMethod("get"+pAttributeName.substring(0,1).toUpperCase()+pAttributeName.substring(1));
-		} catch (SecurityException e) {
-            log.error("SecurityException caught : " + e.toString());
-            throw new DataAccessException("Error in  BaseJpaDAO.getGetter(Class realClass, String pAttributeName): " + e.toString(),e);
-		} catch (NoSuchMethodException e) {
-            log.error("NoSuchMethodException caught : " + e.toString());
-            throw new DataAccessException("Error in  BaseJpaDAO.getGetter(Class realClass, String pAttributeName): " + e.toString(),e);
-		}
-		return getter;
-	}
-	
-	
-	public void flush() throws DataAccessException, DataOptimisticLockException {
-		log.debug("************Entering ***************");
-		try {
-			
-				
-			getEntityManager().flush();
-		} /*catch (InvalidStateException e) {   // quitado porqu� con hibernate-validator-4.2.0 no funciona
-			log.error("BaseJpaDAO.flush()" + e.toString(), e);
-			InvalidValue[] invalid = e.getInvalidValues();
-			for (int i = 0; i < invalid.length; ++i) {
-				InvalidValue bad = invalid[i];
-				log.error("BaseJpaDAO.flush(), " + bad.getPropertyPath() + ":"+ bad.getPropertyName() + ":" + bad.getMessage()	+ ": value is " + bad.getValue());
-			}
-			throw new DataAccessException("Error in  BaseJpaDAO.flush(): "+ e.getCause()!=null ? e.getCause().toString():"no cause ", e);
-		} */catch (OptimisticLockException e) {
-			log.error("OptimisticLockException caught: " + e.toString());
-			throw new OptimisticLockException("Error in  BaseJpaDAO.flush(): "+ e.toString(), e);
-		} catch (Exception e) {
-			log.error("Exception caught: " + e.toString());
-			if (e.getCause() != null && e.getCause().getCause() != null)
-				throw new DataAccessException("Error in  BaseJpaDAO.flush(): "+ e.getCause().toString() + " "+ e.getCause().getCause().toString(), e);
-			if (e.getCause() != null)
-				throw new DataAccessException("Error in  BaseJpaDAO.flush(): "+ e.getCause().toString(), e);
+		final String[] selectAndJoinString = makeSelectAndJoinString(realClass, "a", path);
+		final String queryString = "SELECT " + selectAndJoinString[0] + " FROM " + realClass.getSimpleName() + " a " + selectAndJoinString[1] + " WHERE a IN (:startEntities) ";
 
-			throw new DataAccessException("Error in  BaseJpaDAO.flush(): "	+ e.toString(), e);
+		final Query query = getEntityManager().createQuery(queryString);
+		query.setParameter("startEntities", startEntities);
+		final List result = query.getResultList();
+		partialPathEntities.addAll(result);
 
-		}
-		log.debug("************Done **************");
+	    }
+	} catch (final Exception e) {
+	    log.error("Exception thrown in BaseJpaDAO.getPartialPathEntities(ArrayList startEntities, String[] splitPath, int startIndex, int endIndex) : " + e.toString());
+	    throw new DataAccessException("Error in BaseJpaDAO.getPartialPathEntities(ArrayList startEntities, String[] splitPath, int startIndex, int endIndex) : " + e.toString(), e);
 	}
-	
-	protected  Class getEntityClass(Object entity) throws DataAccessException{
-		try {
-			return PersistenceUtil.getEntityClass(entity);
-		} catch (Exception e) {
-            log.error("InvocationTargetException caught in   JpaPersistenceContextDAO.getEntityClass(Object entity): " + e.toString());
-            throw new DataAccessException("Error in   BaseJpaDAO.getEntityClass(Object entity): " + e.toString(),e);
-		}
-	}
-	
-	public void updateByNativeQueryString(String queryString) throws DataAccessException{
-        log.debug("************Entering ***************");
-        try{
-        	Query query = getEntityManager().createNativeQuery(queryString);
-        	query.executeUpdate();
-
-        } catch (Exception e) {
-            log.error("Exception caught  : " + e.toString());
-            throw new DataAccessException("Error in  BaseJpaDAO.updateByNativeQueryString(String queryString) : " + e.toString(),e);
-        }
-        log.debug("************Done **************");
-    }
-	
-	public void updateByNativeQueryString(String queryString, Map parameters) throws DataAccessException{
-        log.debug("************Entering ***************");
-        try{
-        	Query query = getEntityManager().createNativeQuery(queryString);
-        	setQueryParameters(query, parameters);
-        	query.executeUpdate();
-
-        } catch (Exception e) {
-            log.error("Exception caught  : " + e.toString());
-            throw new DataAccessException("Error in  BaseJpaDAO.updateByNativeQueryString(String queryString, , Map parameters) : " + e.toString(),e);
-        }
-        log.debug("************Done **************");
+	log.info("************Done ***************");
+	return partialPathEntities;
     }
 
-	
+    private String[] makeSelectAndJoinString(Class startingEntityClass, String join0, String path) throws DataAccessException {
+	final String[] selectAndJoinString = new String[2];
+	log.info("************Entering **************");
+	try {
+	    if (startingEntityClass == null) {
+		throw new DataAccessException("Error in BaseJpaDAO.makeSelectAndJoinString(Class startingEntityClass, String join0, String path): startingEntityClass  is null");
+	    }
+	    final StringBuffer joinSB = new StringBuffer("");
+	    Integer joinIndex = 0;
+	    String lastJoin = join0;
+	    // if(join0!=null && !join0.trim().equals("") &&
+	    // !path.trim().equals("")){
+	    if (join0 == null || join0.trim().equals("") || path.trim().equals("")) {
+		throw new DataAccessException("Error in BaseJpaDAO.makeSelectAndJoinString(Class startingEntityClass, String join0, String path) : join0 or path null or empty");
+	    }
+	    StringBuffer currentPartialPath = new StringBuffer("");
+	    final String[] pathArray = path.split("\\.");
+	    for (int index = 0; index < pathArray.length; index++) {
+		currentPartialPath.append("." + pathArray[index]);
+		if (isReferenceCollection(startingEntityClass, pathArray[index])) {
+		    joinIndex++;
+		    final String currentJoin = "join" + joinIndex;
+		    joinSB.append("join " + lastJoin + currentPartialPath + " " + currentJoin + " ");
+		    lastJoin = currentJoin;
+		    currentPartialPath = new StringBuffer("");
+		} else if (!isReferenceBean(startingEntityClass, pathArray[index])) {
+		    throw new DataAccessException("Error in BaseJpaDAO. makeSelectAndJoinString(Class startingEntityClass, String join0, String path) : " + startingEntityClass.getSimpleName() + "."
+			    + pathArray[index] + " is not a Bean and not a Collection");
+		}
+		startingEntityClass = getClassFromPath(startingEntityClass, pathArray[index]);// added
+											      // alessandro
+											      // 11/09/2011
+	    }
+	    selectAndJoinString[0] = lastJoin + currentPartialPath;
+	    selectAndJoinString[1] = joinSB.toString();
+
+	    log.info("selectAndJoinString[0] is " + selectAndJoinString[0]);
+	    log.info("selectAndJoinString[1] is " + selectAndJoinString[1]);
+	} catch (final Exception e) {
+	    log.error("Exception thrown in BaseJpaDAO. makeSelectAndJoinString(Class startingEntityClass, String join0, String path) : " + e.toString());
+	    throw new DataAccessException("Error in BaseJpaDAO. makeSelectAndJoinString(Class startingEntityClass, String join0, String path): " + e.toString(), e);
+	}
+
+	log.info("************Done ***************");
+	return selectAndJoinString;
+
+    }
+
+    private boolean isReferenceCollection(Class pInstanceClass, String pAttributeName) throws DataAccessException {
+
+	return getAnnotation(pInstanceClass, pAttributeName, OneToMany.class) != null || getAnnotation(pInstanceClass, pAttributeName, ManyToMany.class) != null;
+
+    }
+
+    private boolean isReferenceBean(Class pInstanceClass, String pAttributeName) throws DataAccessException {
+
+	return getAnnotation(pInstanceClass, pAttributeName, OneToOne.class) != null || getAnnotation(pInstanceClass, pAttributeName, ManyToOne.class) != null;
+
+    }
+
+    private boolean isManyToMany(Class pInstanceClass, String pAttributeName) throws DataAccessException {
+
+	return getAnnotation(pInstanceClass, pAttributeName, ManyToMany.class) != null;
+
+    }
+
+    private boolean isOneToMany(Class pInstanceClass, String pAttributeName) throws DataAccessException {
+
+	return getAnnotation(pInstanceClass, pAttributeName, OneToMany.class) != null;
+
+    }
+
+    public Object refresh(Object refreshVO) throws DataAccessException {
+	log.debug("************Entering ***************");
+	try {
+
+	    if (refreshVO != null) {
+		getEntityManager().refresh(refreshVO);
+	    }
+
+	} catch (final EntityNotFoundException e) {
+	    log.warn("Entity Not Found  ");
+	    refreshVO = null;
+	} catch (final Exception e) {
+	    log.error("Exception caught: " + e.toString());
+	    throw new DataAccessException("Error in  BaseJpaDAO.refresh(Object refreshVO) : " + e.toString(), e);
+	}
+	log.debug("************Done **************");
+	return refreshVO;
+    }
+
+    public Object update(Object storeVO) throws DataAccessException, DataOptimisticLockException {
+	log.debug("************Entering ***************");
+	try {
+	    if (storeVO != null) {
+		storeVO = getEntityManager().merge(storeVO);
+	    }
+	    if (flush) {
+		flush();
+	    }
+	} catch (final Exception e) {
+	    log.error("Exception caught: " + e.toString());
+	    throw new DataAccessException("Error in  BaseJpaDAO.update(Object storeVO) : " + e.toString(), e);
+	}
+	log.debug("************Done **************");
+	return storeVO;
+    }
+
+    public void updateCollection(Collection storeVOs) throws DataAccessException, DataOptimisticLockException {
+	log.debug("Entering ");
+	try {
+	    updateCollectionCore(storeVOs);
+	    if (flush) {
+		flush();
+	    }
+	} catch (final Exception e) {
+	    log.error("Exception caught: " + e.toString());
+	    throw new DataAccessException("Error in BaseJpaDAO.updateCollection(Collection storeVOs): " + e.toString(), e);
+	}
+	log.info("************Done with the BaseJpaDAO.updateCollection(Collection storeVOs)***************");
+    }
+
+    private void updateCollectionCore(Collection storeVOs) throws DataAccessException {
+	log.info("Entering ");
+	try {
+	    if (storeVOs == null) {
+		throw new DataAccessException("Error in BaseJpaDAO.updateCollectionCore(Collection storeVOs): storeVOs can't be null. ");
+	    }
+	    final Iterator iterator = storeVOs.iterator();
+	    while (iterator.hasNext()) {
+
+		final Object storeVO = iterator.next();
+
+		// if (getEntityManager().contains(storeVO)) {
+		if (isPersisted(storeVO)) {
+		    getEntityManager().merge(storeVO);
+		} else {
+		    getEntityManager().persist(storeVO);
+		}
+	    }
+	} catch (final Exception e) {
+	    log.error("Exception caught: " + e.toString());
+	    throw new DataAccessException("Error in BaseJpaDAO.updateCollectionCore(Collection storeVOs): " + e.toString(), e);
+	}
+	log.info("************Done with the BaseJpaDAO.updateCollectionCore(Collection storeVOs)***************");
+    }
+
+    public Object insert(Object storeVO) throws DataAccessException, DataOptimisticLockException {
+	log.debug("************Entering ***************");
+	try {
+	    if (storeVO != null) {
+		getEntityManager().persist(storeVO);// getEntityManager().getFlushMode()
+	    }
+	    if (flush) {
+		flush();
+	    }
+	} catch (final Exception e) {
+	    log.error("Exception caught: " + e.toString());
+	    throw new DataAccessException("Error in  BaseJpaDAO.insert(Object storeVO) : " + e.toString(), e);
+	}
+	log.debug("************Done **************");
+	return storeVO;
+    }
+
+    private Object storeCore(Object storeVO) throws DataAccessException {
+	log.debug("************Entering ***************");
+	try {
+	    if (storeVO != null) {
+		if (isPersisted(storeVO)) {
+		    storeVO = getEntityManager().merge(storeVO);
+		} else {
+		    getEntityManager().persist(storeVO);
+		}
+	    }
+	} catch (final Exception e) {
+	    log.error("Exception caught: " + e.toString());
+	    throw new DataAccessException("Error in  BaseJpaDAO.storeCore(Object storeVO): " + e.toString(), e);
+	}
+	log.debug("************Done **************");
+	return storeVO;
+    }
+
+    private Object persistIfNotPersisted(Object storeVO) throws DataAccessException {
+	log.debug("************Entering ***************");
+	try {
+	    if (storeVO != null && !isPersisted(storeVO)) {
+
+		getEntityManager().persist(storeVO);
+
+	    }
+	} catch (final Exception e) {
+	    log.error("Exception caught: " + e.toString());
+	    throw new DataAccessException("Error in  BaseJpaDAO.persistIfNotPersisted(Object storeVO): " + e.toString(), e);
+	}
+	log.debug("************Done **************");
+	return storeVO;
+    }
+
+    private Object store(Object storeVO) throws DataAccessException {
+	log.debug("************Entering ***************");
+	try {
+	    storeVO = storeCore(storeVO);
+	    if (flush) {
+		flush();
+	    }
+	} catch (final Exception e) {
+	    log.error("Exception caught: " + e.toString());
+	    throw new DataAccessException("Error in  BaseJpaDAO.store(Object storeVO): " + e.toString(), e);
+	}
+	log.debug("************Done **************");
+	return storeVO;
+    }
+
+    public Object updateCollectionReference(Object storeVO, String pAttributeName) throws DataAccessException, DataOptimisticLockException {
+	log.info("************Entering ***************");
+
+	try {
+	    if (storeVO == null) {
+		throw new DataAccessException("Error in BaseJpaDAO.updateCollectionReference(Object storeVO, String pAttributeName): storeVO can't be null. ");
+	    }
+	    // if(!isReferenceCollection(storeVO.getClass(), pAttributeName))
+	    // throw new DataAccessException("Error in
+	    // BaseJpaDAO.updateCollectionReference(Object storeVO, String
+	    // pAttributeName) : pAttributeName doesn't represent a collection
+	    // ");
+	    if (!isReferenceCollection(getEntityClass(storeVO), pAttributeName)) {
+		throw new DataAccessException("Error in BaseJpaDAO.updateCollectionReference(Object storeVO, String pAttributeName) : pAttributeName doesn't represent a collection ");
+	    }
+	    // getAnnotation(pInstanceClass,pAttributeName,
+	    // OneToMany.class)!=null ||
+	    // getAnnotation(pInstanceClass,pAttributeName,
+	    // ManyToMany.class)!=null;
+	    // if(getAnnotation(storeVO.getClass(),pAttributeName,
+	    // OneToMany.class)!=null){
+	    if (getAnnotation(getEntityClass(storeVO), pAttributeName, OneToMany.class) != null) {
+		// storeVO = storeCore(storeVO);
+		updateCollectionReferenceWithoutMain(storeVO, pAttributeName, Boolean.TRUE, Boolean.TRUE, Boolean.TRUE);
+		// storeVO = storeCore(storeVO);
+		persistIfNotPersisted(storeVO);
+		setInverseForeignKeyFields(storeVO, pAttributeName);
+	    } else {
+		updateCollectionReferenceWithoutMain(storeVO, pAttributeName, Boolean.TRUE, Boolean.TRUE, Boolean.TRUE);
+		// storeVO = storeCore(storeVO);
+		persistIfNotPersisted(storeVO);
+	    }
+	    if (flush) {
+		flush();
+	    }
+	} catch (final OptimisticLockException e) {
+	    log.error("OptimisticLockException caught in BaseJpaDAO.updateCollectionReference(Object storeVO, String pAttributeName): " + e.toString());
+	    throw new DataOptimisticLockException("Error in BaseJpaDAO.updateCollectionReference(Object storeVO, String pAttributeName): " + e.toString(), e);
+	} catch (final Exception e) {
+	    log.error("Exception  in BaseJpaDAO.updateCollectionReference(Object storeVO, String pAttributeName): " + e.toString());
+	    throw new DataAccessException("Error in BaseJpaDAO.updateCollectionReference(Object storeVO, String pAttributeName): " + e.toString(), e);
+	}
+	log.info("************Done **************");
+	return storeVO;
+    }
+
+    private Object updateCollectionReferenceWithoutMain(Object storeVO, String pAttributeName, Boolean deleteNotInBeanReferencedObjects, Boolean storeCollection, Boolean ifM2NDeleteOnlyRelationship)
+	    throws DataAccessException {
+	log.info("************Entering   **************");
+
+	try {
+	    if (storeVO == null) {
+		throw new DataAccessException(
+			"Error in BaseJpaDAO.updateCollectionReferenceWithoutMain(Object storeVO, String pAttributeName, Boolean deleteNotInBeanReferencedObjects, Boolean storeCollection, Boolean ifM2NDeleteOnlyRelationship): storeVO can't be null. ");
+	    }
+	    if (pAttributeName == null || pAttributeName.trim().equals("")) {
+		throw new DataAccessException(
+			"Error in BaseJpaDAO.updateCollectionReferenceWithoutMain(Object storeVO, String pAttributeName, Boolean deleteNotInBeanReferencedObjects, Boolean storeCollection, Boolean ifM2NDeleteOnlyRelationship) : pAttributeName can't be null or empty or blank characters string. ");
+	    }
+	    // if(!isReferenceCollection(storeVO.getClass(), pAttributeName))
+	    // throw new DataAccessException("Error in
+	    // BaseJpaDAO.updateCollectionReferenceWithoutMain(Object storeVO,
+	    // String pAttributeName, Boolean deleteNotInBeanReferencedObjects,
+	    // Boolean storeCollection, Boolean ifM2NDeleteOnlyRelationship) :
+	    // pAttributeName doesn't represent a collection ");
+	    if (!isReferenceCollection(getEntityClass(storeVO), pAttributeName)) {
+		throw new DataAccessException(
+			"Error in BaseJpaDAO.updateCollectionReferenceWithoutMain(Object storeVO, String pAttributeName, Boolean deleteNotInBeanReferencedObjects, Boolean storeCollection, Boolean ifM2NDeleteOnlyRelationship) : pAttributeName doesn't represent a collection ");
+	    }
+
+	    final PropertyUtilsBean propertyUtilsBean = BeanUtilsBean.getInstance().getPropertyUtils();
+
+	    if (deleteNotInBeanReferencedObjects.booleanValue()) {
+		deleteItemsNotInCollectionsInPathCore(storeVO, pAttributeName, false, ifM2NDeleteOnlyRelationship, false);
+	    }
+
+	    final Collection pAttributeNameCollection = (Collection) propertyUtilsBean.getProperty(storeVO, pAttributeName);
+
+	    if (pAttributeNameCollection != null) {
+
+		if (storeCollection.booleanValue()) {
+
+		    updateCollectionCore(pAttributeNameCollection);
+		}
+
+	    }
+
+	} catch (final Exception e) {
+	    log.error(
+		    "Exception thrown in BaseJpaDAO.updateCollectionReferenceWithoutMain(Object storeVO, String pAttributeName, Boolean deleteNotInBeanReferencedObjects, Boolean storeCollection, Boolean ifM2NDeleteOnlyRelationship): "
+			    + e.toString());
+	    throw new DataAccessException(
+		    "Error in BaseJpaDAO.updateCollectionReferenceWithoutMain(Object storeVO, String pAttributeName, Boolean deleteNotInBeanReferencedObjects, Boolean storeCollection, Boolean ifM2NDeleteOnlyRelationship): "
+			    + e.toString(),
+		    e);
+	}
+	log.info("************Done  ***************");
+	return storeVO;
+    }
+
+    @SuppressWarnings("unused")
+    private void deleteReferencedCollection(Object parentVO, String pAttributeName, Collection toBeDeletedCollection, Boolean ifM2NDeleteOnlyRelationship) throws DataAccessException {
+	log.info("************Entering **************");
+
+	try {
+	    if (parentVO == null) {
+		throw new DataAccessException(
+			"Error in BaseJpaDAO.deleteReferencedCollection(Object parentVO, String pAttributeName, Collection toBeDeletedIdentities, Boolean ifM2NDeleteOnlyRelationship) : parentVO can't be null. ");
+	    }
+	    if (pAttributeName == null || pAttributeName.trim().equals("")) {
+		throw new DataAccessException(
+			"Error in BaseJpaDAO.deleteReferencedCollection(Object parentVO, String pAttributeName, Collection toBeDeletedIdentities,Boolean ifM2NDeleteOnlyRelationship)  : pAttributeName can't be null or empty or blank characters string. ");
+	    }
+	    // if(!isReferenceCollection(parentVO.getClass(), pAttributeName))
+	    // throw new DataAccessException("Error in
+	    // BaseJpaDAO.deleteReferencedCollection(Object parentVO, String
+	    // pAttributeName, Collection toBeDeletedIdentities, Boolean
+	    // ifM2NDeleteOnlyRelationship) : pAttributeName doesn't represent a
+	    // collection ");
+	    if (!isReferenceCollection(getEntityClass(parentVO), pAttributeName)) {
+		throw new DataAccessException(
+			"Error in BaseJpaDAO.deleteReferencedCollection(Object parentVO, String pAttributeName, Collection toBeDeletedIdentities, Boolean ifM2NDeleteOnlyRelationship)  : pAttributeName doesn't represent a collection ");
+	    }
+
+	    if (toBeDeletedCollection != null) {
+
+		// if(collectionDescriptor.isMtoNRelation()){
+		// if(getAnnotation(parentVO.getClass(),pAttributeName,
+		// ManyToMany.class)!=null){
+		if (getAnnotation(getEntityClass(parentVO), pAttributeName, ManyToMany.class) != null) {
+		    // deleteMToNRelationshipIdentitiesCollection(parentVO,pAttributeName,toBeDeletedIdentities,broker);
+		    deleteMToNRelationshipCollectionCore(parentVO, pAttributeName, toBeDeletedCollection);
+		    if (!ifM2NDeleteOnlyRelationship.booleanValue()) {
+			deleteCollectionCore(toBeDeletedCollection);
+		    }
+		} else {
+		    deleteCollectionCore(toBeDeletedCollection);
+		}
+
+	    }
+
+	} catch (final Exception e) {
+	    log.error("Exception thrown in BaseJpaDAO.deleteReferencedCollection(Object parentVO, String pAttributeName, Collection toBeDeletedIdentities, Boolean ifM2NDeleteOnlyRelationship)  : "
+		    + e.toString());
+	    throw new DataAccessException(
+		    "Error in BaseJpaDAO.deleteReferencedCollection(Object parentVO, String pAttributeName, Collection toBeDeletedIdentities, Boolean ifM2NDeleteOnlyRelationship)  : " + e.toString(),
+		    e);
+	}
+	log.info("************Done **************");
+    }
+
+    public Object updateCollectionReferences(Object storeVO) throws DataAccessException, DataOptimisticLockException {
+	log.info("************Entering **************");
+	if (storeVO == null) {
+	    throw new DataAccessException("Error in BaseJpaDAO.updateCollectionReferences(Object storeVO) : storeVO can't be null. ");
+	}
+
+	try {
+	    final PropertyUtilsBean propertyUtilsBean = BeanUtilsBean.getInstance().getPropertyUtils();
+
+	    // Class storeVOClass=storeVO.getClass();
+	    final Class storeVOClass = getEntityClass(storeVO);
+
+	    // storeVO = getEntityManager().merge(storeVO);
+
+	    final Map describe = propertyUtilsBean.describe(storeVO);
+	    Iterator iterator = describe.keySet().iterator();
+	    while (iterator.hasNext()) {
+		final String pAttributeName = (String) iterator.next();
+		if (getAnnotation(storeVOClass, pAttributeName, ManyToMany.class) != null) {
+		    updateCollectionReferenceWithoutMain(storeVO, pAttributeName, Boolean.TRUE, Boolean.TRUE, Boolean.TRUE);
+		}
+	    }
+
+	    // storeVO=storeCore(storeVO);
+	    persistIfNotPersisted(storeVO);
+
+	    iterator = describe.keySet().iterator();
+	    while (iterator.hasNext()) {
+		final String pAttributeName = (String) iterator.next();
+		if (getAnnotation(storeVOClass, pAttributeName, OneToMany.class) != null) {
+		    updateCollectionReferenceWithoutMain(storeVO, pAttributeName, Boolean.TRUE, Boolean.TRUE, Boolean.TRUE);
+		}
+	    }
+	    if (flush) {
+		flush();
+	    }
+
+	} catch (final OptimisticLockException e) {
+	    log.error("OptimisticLockException  in BaseJpaDAO.updateCollectionReferences(Object storeVO): " + e.toString());
+	    throw new DataOptimisticLockException("Error in BaseJpaDAO.updateCollectionReferences(Object storeVO): " + e.toString(), e);
+	} catch (final Exception e) {
+	    log.error("Exception thrown in BaseJpaDAO.updateCollectionReferences(Object storeVO): " + e.toString());
+	    throw new DataAccessException("Error in BaseJpaDAO.updateCollectionReferences(Object storeVO): " + e.toString(), e);
+	}
+	log.info("************Done************");
+	return storeVO;
+    }
+
+    public void storePathCascade(Object storeVO, String path) throws DataAccessException, DataOptimisticLockException {
+	log.info("************Entering ***************");
+
+	try {
+	    if (storeVO != null) {
+		if (path == null || path.trim().equals("")) {
+		    store(storeVO);
+		} else {
+		    final Collection paths = new ArrayList();
+		    paths.add(path);
+		    storePathsCascadeCore(storeVO, paths, false, true);
+		    // ArrayList storeVOs =new ArrayList();
+		    // storeVOs.add(storeVO);
+		    // storeCollectionPathCascadeCore(storeVOs, path);
+		}
+
+	    }
+
+	    if (flush) {
+		flush();
+	    }
+
+	} catch (final OptimisticLockException e) {
+	    log.error("OptimisticLockException  in BaseJpaDAO.storePathCascade(Object storeVO, String path) : " + e.toString());
+	    throw new DataOptimisticLockException("Error in BaseJpaDAO.storePathCascade(Object storeVO, String path) : " + e.toString(), e);
+	} catch (final Exception e) {
+	    log.error("Exception thrown in BaseJpaDAO.storePathCascade(Object storeVO, String path) : " + e.toString());
+	    throw new DataAccessException("Error in BaseJpaDAO.storePathCascade(Object storeVO, String path) : " + e.toString(), e);
+	}
+	log.info("************Done **************");
+
+    }
+
+    private void storeCollectionPathCascadeCore(Collection storeVOs, String path) throws DataAccessException {
+	log.info("************Entering  ***************");
+
+	try {
+	    if (log.isDebugEnabled()) {
+		if (storeVOs == null) {
+		    log.debug("storeVOs==null");
+		} else {
+		    log.debug("storeVOs.size() == " + storeVOs.size());
+		}
+	    }
+
+	    if (storeVOs != null && !storeVOs.isEmpty()) {
+		if (path == null || path.trim().equals("")) {
+		    updateCollectionCore(storeVOs);
+		} else {
+
+		    final String[] firstAttributeNameAndRemainingPath = Utils.getFirstAttributeNameAndRemainingPath(path);
+		    final String firstAttributeName = firstAttributeNameAndRemainingPath[0];
+		    final String remainingPath = firstAttributeNameAndRemainingPath[1];
+
+		    // Class realClass = storeVOs.iterator().next().getClass();
+		    final Class realClass = getEntityClass(storeVOs.iterator().next());
+		    final Collection childrenVOs = BeanCollectionUtils.getTreeLeaves(storeVOs, firstAttributeName);
+		    // if(isReferenceBean(realClass,firstAttributeName) ||
+		    // isManyToMany(realClass,firstAttributeName)){
+		    if (isReferenceBean(realClass, firstAttributeName)) {
+			storeCollectionPathCascadeCore(childrenVOs, remainingPath);
+			updateCollectionCore(storeVOs);
+		    } else if (isManyToMany(realClass, firstAttributeName)) {
+			setInverseForeignKeyFields(storeVOs, firstAttributeName);
+			storeCollectionPathCascadeCore(childrenVOs, remainingPath);
+			updateCollectionCore(storeVOs);
+		    } else if (isOneToMany(realClass, firstAttributeName)) {
+			setInverseForeignKeyFields(storeVOs, firstAttributeName);
+			// updateCollectionCore(storeVOs); moved bottom for
+			// entitynotfoundexception
+			// https://hibernate.onjira.com/browse/HHH-3217
+			storeCollectionPathCascadeCore(childrenVOs, remainingPath);
+			updateCollectionCore(storeVOs);
+		    } else {
+			throw new DataAccessException("Error in BaseJpaDAO.storeCollectionPathCascadeCore(Collection storeVOs, String path): The relation between  " + realClass.getSimpleName()
+				+ " and " + firstAttributeName + " is no one of oneToOne, oneToMany, manyToMany, manyToOne");
+		    }
+		}
+
+	    }
+	} catch (final Exception e) {
+	    log.error("Exception thrown in BaseJpaDAO.storeCollectionPathCascadeCore(Collection storeVOs, String path): " + e.toString());
+	    throw new DataAccessException("Error in BaseOjbPbCore.BaseJpaDAO.storeCollectionPathCascadeCore(Collection storeVOs, String path): " + e.toString(), e);
+	}
+	log.info("************Done **************");
+
+    }
+
+    /**
+     * This method checks if all elements in a collection are of instances of
+     * the same class
+     *
+     * @param valueObjects
+     * @return true if the collection is null or empty, or if none of its
+     *         elements is null and are all instances of the same class; it
+     *         returns false, if at least one of its elements is null or not
+     *         instances of the same class
+     * @throws DataAccessException
+     */
+    @SuppressWarnings("unused")
+    private boolean allElementsInCollectionSameClass(Collection valueObjects) throws DataAccessException {
+	log.info("************Entering  ***************");
+	boolean allElementsInCollectionSameClass = true;
+	try {
+	    if (valueObjects != null && !valueObjects.isEmpty()) {
+		final Iterator iterator = valueObjects.iterator();
+		final Object firstElement = iterator.next(); // at least one
+							     // identity is in
+							     // valueObjects as
+							     // it is not empty.
+		if (firstElement == null) {
+		    allElementsInCollectionSameClass = false;
+		} else {
+		    // Class realClass = firstElement.getClass();
+		    final Class realClass = getEntityClass(firstElement);
+		    while (iterator.hasNext() && allElementsInCollectionSameClass) {
+			final Object element = iterator.next();
+			// if(element== null ||
+			// !element.getClass().equals(realClass)){
+			if (element == null || !getEntityClass(element).equals(realClass)) {
+			    allElementsInCollectionSameClass = false;
+			}
+		    }
+		}
+	    }
+	} catch (final Exception e) {
+	    log.error("Exception thrown in BaseJpaDAO.allElementsInCollectionSameClass(Collection valueObjects): " + e.toString());
+	    throw new DataAccessException("Error in BaseJpaDAO.allElementsInCollectionSameClass(Collection valueObjects): " + e.toString(), e);
+	}
+	log.info("************ Done  ***************");
+	return allElementsInCollectionSameClass;
+    }
+
+    public void storePathsCascade(Object storeVO, Collection paths, Boolean pathsHasToBeSorted, Boolean storeVOHasToBeStored) throws DataAccessException, DataOptimisticLockException {
+	log.info("************Entering ***************");
+
+	storePathsCascadeCore(storeVO, paths, pathsHasToBeSorted, storeVOHasToBeStored);
+	if (flush) {
+	    flush();
+	}
+
+	log.info("************Done **************");
+    }
+
+    /**
+     *
+     *
+     * @param storeVO
+     * @param paths
+     * @param pathsHasToBeSorted
+     * @param storeVOHasToBeStored
+     * @param isStoreVORightHandM2N
+     * @return
+     * @throws DataAccessException
+     */
+    private List<Graph> storePathsCascadeCore(Object storeVO, Collection<String> paths, Boolean pathsHasToBeSorted, Boolean storeVOHasToBeStored) throws DataAccessException {
+	log.info("************Entering   ***************");
+	final List<Graph> notStoredGraphs = new ArrayList<Graph>();
+	try {
+	    if (storeVO != null) {
+		if (pathsHasToBeSorted == null) {
+		    pathsHasToBeSorted = Boolean.TRUE;
+		}
+		if (storeVOHasToBeStored == null) {
+		    storeVOHasToBeStored = Boolean.TRUE;
+		}
+		if (paths != null && !paths.isEmpty()) {
+		    final Class storeVOClass = getEntityClass(storeVO);
+		    final PropertyUtilsBean propertyUtilsBean = BeanUtilsBean.getInstance().getPropertyUtils();
+
+		    final HashMap<String, ArrayList<String>> directReferenceMap = new HashMap<String, ArrayList<String>>();
+		    final HashMap<String, ArrayList<String>> oneToNReferenceMap = new HashMap<String, ArrayList<String>>();
+		    final HashMap<String, ArrayList<String>> mToNReferenceMap = new HashMap<String, ArrayList<String>>();
+
+		    final HashMap<String, ArrayList<String>> mToNInverseReferenceMap = new HashMap<String, ArrayList<String>>();
+
+		    Collection<String> sortedPaths = null;
+		    if (pathsHasToBeSorted.booleanValue()) {
+			final ArrayList<String> tempPaths = Collections.list(Collections.enumeration(paths));
+			Collections.sort(tempPaths);
+			sortedPaths = tempPaths;
+		    } else {
+			sortedPaths = paths;
+		    } // no side effects on paths
+
+		    String firstAttributeName = "";
+		    ArrayList<String> subPaths = null;
+		    Iterator iterator = sortedPaths.iterator(); // sure
+								// sortedPaths!=null
+		    while (iterator.hasNext()) {
+			// log.debug("storePathsCascade : entering in the
+			// iterator ");
+			final String path = (String) iterator.next();
+			if (path != null && !path.trim().equals("")) {
+			    final String[] firstAttributeNameAndRemainingPath = Utils.getFirstAttributeNameAndRemainingPath(path);
+			    final String firstAttributeName2 = firstAttributeNameAndRemainingPath[0];
+			    if (!firstAttributeName.equals(firstAttributeName2)) {
+				firstAttributeName = firstAttributeName2;
+				// log.debug("storePathsCascade : in iterator
+				// firstAttributeName= "+firstAttributeName);
+
+				// int relationType =
+				// getRelationType(storeVO.getClass(),
+				// firstAttributeName);
+				final int relationType = getRelationType(storeVOClass, firstAttributeName);
+				HashMap<String, ArrayList<String>> map = null;
+				switch (relationType) {
+				case ONE_TO_ONE:
+				    map = directReferenceMap;
+				    break;
+				case M_TO_ONE:
+				    map = directReferenceMap;
+				    break;
+				case EMBEDDED_ID:
+				    map = directReferenceMap;
+				    break;
+				case ONE_TO_N:
+				    map = oneToNReferenceMap;
+				    break;
+				case M_TO_N:
+				    map = mToNReferenceMap;
+				    break;
+				case M_TO_N_INVERSE:
+				    map = mToNInverseReferenceMap;
+				    break;
+				}
+				// log.debug("storePathsCascade : in iterator
+				// before map.put(firstAttributeName, new
+				// ArrayList()); ");
+				if (map == null) {
+				    throw new DataAccessException(
+					    "Error in BaseJpaDAO.storePathsCascadeCore(Object storeVO, Collection<String> paths, Boolean pathsHasToBeSorted, Boolean  storeVOHasToBeStored): no relation annotation found ");
+				}
+				map.put(firstAttributeName, new ArrayList<String>()); // each
+										      // key
+										      // firstAttributeName
+										      // inserted
+										      // has
+										      // always
+										      // an
+										      // arraylist
+										      // at
+										      // least
+										      // empty
+										      // ,
+										      // never
+										      // nul
+				subPaths = map.get(firstAttributeName);
+			    }
+			    final String remainingPath = firstAttributeNameAndRemainingPath[1];
+			    if (remainingPath != null && !remainingPath.trim().equals("")) {
+				if (subPaths == null) {
+				    throw new DataAccessException(
+					    "Error in BaseJpaDAO.storePathsCascadeCore(Object storeVO, Collection<String> paths, Boolean pathsHasToBeSorted, Boolean  storeVOHasToBeStored): subpaths is null");
+				}
+				subPaths.add(remainingPath);
+			    }
+			}
+		    }
+
+		    /*
+		     * ONE TO ONE and M TO ONE
+		     */
+		    iterator = directReferenceMap.keySet().iterator();
+		    String directReferenceMapFirstAttributeName;
+		    while (iterator.hasNext()) {
+			directReferenceMapFirstAttributeName = (String) iterator.next();
+			final boolean nuevoStoreVOHasToBeStored = getNuevoStoreVOHasToBeStored(storeVO, directReferenceMapFirstAttributeName);
+			log.debug("storePathsCascade : directReferenceMapFirstAttributeName = " + directReferenceMapFirstAttributeName);
+			// storePathsCascadeCore(propertyUtilsBean.getProperty(storeVO,
+			// directReferenceMapFirstAttributeName),
+			// directReferenceMap.get(directReferenceMapFirstAttributeName),
+			// Boolean.FALSE, Boolean.TRUE,false);
+			notStoredGraphs.addAll(storePathsCascadeCore(propertyUtilsBean.getProperty(storeVO, directReferenceMapFirstAttributeName),
+				directReferenceMap.get(directReferenceMapFirstAttributeName), Boolean.FALSE, nuevoStoreVOHasToBeStored));
+		    }
+
+		    /*
+		     * M TO N
+		     */
+		    notStoredGraphs.addAll(processStorePathsCascadeToMany(storeVO, mToNReferenceMap, false));
+		    // iterator = mToNReferenceMap.keySet().iterator();
+		    // String mToNReferenceFirstAttributeName;
+		    // while(iterator.hasNext()){
+		    // mToNReferenceFirstAttributeName = (String)
+		    // iterator.next();
+		    // Collection mToNReferenceFirstAttributeValue =
+		    // (Collection)propertyUtilsBean.getProperty(storeVO,
+		    // mToNReferenceFirstAttributeName);
+		    // setInverseForeignKeyFields(storeVO,
+		    // mToNReferenceFirstAttributeName);
+		    // boolean isCascadeAll = isCascade(storeVO,
+		    // mToNReferenceFirstAttributeName, CascadeType.ALL );
+		    // boolean isCascadePersist = isCascade(storeVO,
+		    // mToNReferenceFirstAttributeName, CascadeType.PERSIST );
+		    // boolean isCascadeMerge = isCascade(storeVO,
+		    // mToNReferenceFirstAttributeName, CascadeType.MERGE );
+		    // if(mToNReferenceFirstAttributeValue!=null){
+		    // ArrayList<String> mToNReferenceSubPaths =
+		    // mToNReferenceMap.get(mToNReferenceFirstAttributeName);
+		    // for(Object childVO:mToNReferenceFirstAttributeValue){
+		    // boolean nuevoStoreVOHasToBeStored =
+		    // getNuevoStoreVOHasToBeStored(storeVO,
+		    // childVO,isCascadeAll,isCascadePersist, isCascadeMerge);
+		    // notStoredGraphs.addAll(storePathsCascadeCore(childVO,
+		    // mToNReferenceSubPaths, Boolean.FALSE,
+		    // nuevoStoreVOHasToBeStored));
+		    // }
+		    // }
+		    // }
+
+		    /******************************************************************************/
+		    /*
+		     * ONE TO N
+		     */
+		    notStoredGraphs.addAll(processStorePathsCascadeToMany(storeVO, oneToNReferenceMap, true));
+		    // iterator = oneToNReferenceMap.keySet().iterator();
+		    // String oneToNReferenceFirstAttributeName;
+		    // while(iterator.hasNext()){
+		    // oneToNReferenceFirstAttributeName = (String)
+		    // iterator.next();
+		    // Collection oneToNReferenceFirstAttributeValue =
+		    // (Collection)propertyUtilsBean.getProperty(storeVO,
+		    // oneToNReferenceFirstAttributeName);
+		    // setInverseForeignKeyFields(storeVO,
+		    // oneToNReferenceFirstAttributeName);
+		    // boolean isCascadeAll = isCascade(storeVO,
+		    // oneToNReferenceFirstAttributeName, CascadeType.ALL );
+		    // boolean isCascadePersist = isCascade(storeVO,
+		    // oneToNReferenceFirstAttributeName, CascadeType.PERSIST );
+		    // boolean isCascadeMerge = isCascade(storeVO,
+		    // oneToNReferenceFirstAttributeName, CascadeType.MERGE );
+		    // if(oneToNReferenceFirstAttributeValue!=null){
+		    // ArrayList<String> oneToNReferenceSubPaths =
+		    // oneToNReferenceMap.get(oneToNReferenceFirstAttributeName);
+		    //
+		    // for(Object childVO:oneToNReferenceFirstAttributeValue){
+		    // boolean nuevoStoreVOHasToBeStored =
+		    // getNuevoStoreVOHasToBeStored(storeVO,
+		    // childVO,isCascadeAll,isCascadePersist, isCascadeMerge);
+		    // if(!nuevoStoreVOHasToBeStored){
+		    // notStoredGraphs.addAll(storePathsCascadeCore( childVO,
+		    // oneToNReferenceSubPaths, Boolean.FALSE, false));
+		    // }else{
+		    // notStoredGraphs.add(new
+		    // Graph(childVO,oneToNReferenceSubPaths));
+		    // }
+		    // }
+		    // }
+		    // }
+
+		    /*
+		     * M_TO_N_INVERSE
+		     */
+		    notStoredGraphs.addAll(processStorePathsCascadeToMany(storeVO, mToNInverseReferenceMap, true));
+		    // iterator = mToNInverseReferenceMap.keySet().iterator();
+		    // String mToNInverseReferenceFirstAttributeName;
+		    // while(iterator.hasNext()){
+		    // mToNInverseReferenceFirstAttributeName = (String)
+		    // iterator.next();
+		    // Collection mToNInverseReferenceFirstAttributeValue =
+		    // (Collection)propertyUtilsBean.getProperty(storeVO,
+		    // mToNInverseReferenceFirstAttributeName);
+		    // setInverseForeignKeyFields(storeVO,
+		    // mToNInverseReferenceFirstAttributeName);
+		    // boolean isCascadeAll = isCascade(storeVO,
+		    // mToNInverseReferenceFirstAttributeName, CascadeType.ALL
+		    // );
+		    // boolean isCascadePersist = isCascade(storeVO,
+		    // mToNInverseReferenceFirstAttributeName,
+		    // CascadeType.PERSIST );
+		    // boolean isCascadeMerge = isCascade(storeVO,
+		    // mToNInverseReferenceFirstAttributeName, CascadeType.MERGE
+		    // );
+		    // if(mToNInverseReferenceFirstAttributeValue!=null){
+		    // ArrayList<String> mToNInverseReferenceSubPaths =
+		    // mToNReferenceMap.get(mToNInverseReferenceFirstAttributeName);
+		    // for(Object
+		    // childVO:mToNInverseReferenceFirstAttributeValue){
+		    // boolean nuevoStoreVOHasToBeStored =
+		    // getNuevoStoreVOHasToBeStored(storeVO,
+		    // childVO,isCascadeAll,isCascadePersist, isCascadeMerge);
+		    // if(!nuevoStoreVOHasToBeStored){
+		    // notStoredGraphs.addAll(storePathsCascadeCore(childVO,
+		    // mToNInverseReferenceSubPaths, Boolean.FALSE, false));
+		    // }else{
+		    // notStoredGraphs.add(new
+		    // Graph(childVO,mToNInverseReferenceSubPaths));
+		    // }
+		    // }
+		    // }
+		    // }
+
+		    if (storeVOHasToBeStored) {
+			final EntityInfo entityInfo = new EntityInfo(storeVOClass);
+			if (!entityInfo.isEmbeddable()) {
+			    persistIfNotPersisted(storeVO);
+			    for (final Graph notStoredGraph : notStoredGraphs) {
+				storePathsCascadeCore(notStoredGraph.getRoot(), notStoredGraph.getPaths(), false, true);
+			    }
+			    notStoredGraphs.clear();
+			}
+		    }
+
+		} else { // paths==null || paths.isEmpty()
+			 // if (storeVOHasToBeStored) storeCore(storeVO);
+		    if (storeVOHasToBeStored) {
+			persistIfNotPersisted(storeVO);
+		    }
+		}
+	    }
+
+	} catch (final Exception e) {
+	    log.error("Exception caught in BaseJpaDAO.storePathsCascadeCore(Object storeVO, Collection<String> paths, Boolean pathsHasToBeSorted, Boolean  storeVOHasToBeStored): " + e.toString());
+	    throw new DataAccessException(
+		    "Error in BaseJpaDAO.storePathsCascadeCore(Object storeVO, Collection<String> paths, Boolean pathsHasToBeSorted, Boolean  storeVOHasToBeStored): " + e.toString(), e);
+	}
+	log.info("************Done ***************");
+	return notStoredGraphs;
+    }
+
+    private List<Graph> processStorePathsCascadeToMany(Object storeVO, HashMap<String, ArrayList<String>> map, boolean postStore) throws DataAccessException {
+	final List<Graph> notStoredGraphs = new ArrayList<Graph>();
+	try {
+	    final PropertyUtilsBean propertyUtilsBean = BeanUtilsBean.getInstance().getPropertyUtils();
+	    final Iterator iterator = map.keySet().iterator();
+	    String firstAttributeName;
+	    while (iterator.hasNext()) {
+		firstAttributeName = (String) iterator.next();
+		final Collection firstAttributeValue = (Collection) propertyUtilsBean.getProperty(storeVO, firstAttributeName);
+		setInverseForeignKeyFields(storeVO, firstAttributeName);
+		final boolean isCascadeAll = isCascade(storeVO, firstAttributeName, CascadeType.ALL);
+		final boolean isCascadePersist = isCascade(storeVO, firstAttributeName, CascadeType.PERSIST);
+		final boolean isCascadeMerge = isCascade(storeVO, firstAttributeName, CascadeType.MERGE);
+		if (firstAttributeValue != null) {
+		    final ArrayList<String> subPaths = map.get(firstAttributeName);
+		    for (final Object childVO : firstAttributeValue) {
+			final boolean nuevoStoreVOHasToBeStored = getNuevoStoreVOHasToBeStored(storeVO, childVO, isCascadeAll, isCascadePersist, isCascadeMerge);
+			if (postStore) {
+			    if (!nuevoStoreVOHasToBeStored) {
+				notStoredGraphs.addAll(storePathsCascadeCore(childVO, subPaths, Boolean.FALSE, false));
+			    } else {
+				notStoredGraphs.add(new Graph(childVO, subPaths));
+			    }
+			} else {
+			    notStoredGraphs.addAll(storePathsCascadeCore(childVO, subPaths, Boolean.FALSE, nuevoStoreVOHasToBeStored));
+			}
+		    }
+		}
+	    }
+	} catch (final IllegalAccessException e) {
+	    log.error("IllegalAccessException caught in BaseJpaDAO.processStorePathsCascadeToMany(Object storeVO, HashMap<String,ArrayList<String>> map, boolean postStore): " + e.toString());
+	    throw new DataAccessException("Error in BaseJpaDAO.processStorePathsCascadeToMany(Object storeVO, HashMap<String,ArrayList<String>> map, boolean postStore): " + e.toString(), e);
+	} catch (final InvocationTargetException e) {
+	    log.error("InvocationTargetException caught in BaseJpaDAO.processStorePathsCascadeToMany(Object storeVO, HashMap<String,ArrayList<String>> map, boolean postStore): " + e.toString());
+	    throw new DataAccessException("Error in BaseJpaDAO.processStorePathsCascadeToMany(Object storeVO, HashMap<String,ArrayList<String>> map, boolean postStore): " + e.toString(), e);
+	} catch (final NoSuchMethodException e) {
+	    log.error("NoSuchMethodException caught in BaseJpaDAO.processStorePathsCascadeToMany(Object storeVO, HashMap<String,ArrayList<String>> map, boolean postStore): " + e.toString());
+	    throw new DataAccessException("Error in BaseJpaDAO.processStorePathsCascadeToMany(Object storeVO, HashMap<String,ArrayList<String>> map, boolean postStore): " + e.toString(), e);
+	} catch (final Exception e) {
+	    log.error("Exception caught in BaseJpaDAO.processStorePathsCascadeToMany(Object storeVO, HashMap<String,ArrayList<String>> map, boolean postStore): " + e.toString());
+	    throw new DataAccessException("Error in BaseJpaDAO.processStorePathsCascadeToMany(Object storeVO, HashMap<String,ArrayList<String>> map, boolean postStore): " + e.toString(), e);
+	}
+	return notStoredGraphs;
+    }
+
+    /**
+     * It works only id pAttributeName is a direct reference (ManyToOne,
+     * OneToOne)
+     *
+     * @param pInstance
+     * @param pAttributeName
+     * @return
+     * @throws DataAccessException
+     */
+    private boolean getNuevoStoreVOHasToBeStored(Object pInstance, String pAttributeName) throws DataAccessException {
+	boolean nuevoStoreVOHasToBeStored = true;
+	try {
+	    final boolean isCascadeAll = isCascade(pInstance, pAttributeName, CascadeType.ALL);
+	    if (isCascadeAll) {
+		nuevoStoreVOHasToBeStored = false;
+	    } else {
+		final PropertyUtilsBean propertyUtilsBean = BeanUtilsBean.getInstance().getPropertyUtils();
+		final boolean isCascadePersist = isCascade(pInstance, pAttributeName, CascadeType.PERSIST);
+		final boolean isCascadeMerge = isCascade(pInstance, pAttributeName, CascadeType.MERGE);
+		final Object pReference = propertyUtilsBean.getProperty(pInstance, pAttributeName);
+		nuevoStoreVOHasToBeStored = getNuevoStoreVOHasToBeStored(pInstance, pReference, isCascadeAll, isCascadePersist, isCascadeMerge);
+
+	    }
+	} catch (final Exception e) {
+	    log.error("Exception caught in BaseJpaDAO.getNuevoStoreVOHasToBeStored(Object pInstance, String pAttributeName): " + e.toString());
+	    throw new DataAccessException("Error in BaseJpaDAO.getNuevoStoreVOHasToBeStored(Object pInstance, String pAttributeName): " + e.toString(), e);
+
+	}
+	return nuevoStoreVOHasToBeStored;
+    }
+
+    private boolean getNuevoStoreVOHasToBeStored(Object pInstance, Object pReference, boolean isCascadeAll, boolean isCascadePersist, boolean isCascadeMerge) throws DataAccessException {
+	boolean nuevoStoreVOHasToBeStored = true;
+	try {
+	    if (isCascadeAll) {
+		nuevoStoreVOHasToBeStored = false;
+	    } else {
+		Boolean isPersistedInstance = null;
+		Boolean isPersistedReference = null;
+		if (isCascadePersist) {
+		    isPersistedInstance = isPersisted(pInstance);
+		    if (!isPersistedInstance) {
+			isPersistedReference = isPersisted(pReference);
+			if (!isPersistedReference) {
+			    nuevoStoreVOHasToBeStored = false;
+			}
+		    }
+		}
+		if (nuevoStoreVOHasToBeStored && isCascadeMerge) {
+		    if (isPersistedInstance == null) {
+			isPersistedInstance = isPersisted(pInstance);
+		    }
+		    if (isPersistedInstance) {
+			if (isPersistedReference == null) {
+			    isPersistedReference = isPersisted(pReference);
+			}
+			if (isPersistedReference) {
+			    nuevoStoreVOHasToBeStored = false;
+			}
+		    }
+		}
+	    }
+	} catch (final Exception e) {
+	    log.error("Exception caught in BaseJpaDAO.getNuevoStoreVOHasToBeStored(Object pInstance, Object pReference,boolean isCascadeAll,boolean isCascadePersist,boolean isCascadeMerge): "
+		    + e.toString());
+	    throw new DataAccessException(
+		    "Error in BaseJpaDAO.getNuevoStoreVOHasToBeStored(Object pInstance, Object pReference,boolean isCascadeAll,boolean isCascadePersist,boolean isCascadeMerge): " + e.toString(), e);
+
+	}
+	return nuevoStoreVOHasToBeStored;
+    }
+
+    public Object updateCreateTrees(Object storeVO, Collection<String> trees, Boolean storeVOHasToBeUpdated, Boolean deleteChangedOneToOne, Boolean applyDeletePathCascade,
+	    Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) throws DataAccessException, DataOptimisticLockException {
+	log.info("************Entering  **************");
+	storeVO = updateCreateTreesCore(storeVO, trees, storeVOHasToBeUpdated, deleteChangedOneToOne, applyDeletePathCascade, ifM2NDeleteOnlyRelationship, deleteOneToOne);
+	if (flush) {
+	    flush();
+	}
+	log.info("************Done ***************");
+	return storeVO;
+    }
+
+    public Object updateCreateTrees(Object storeVO, Collection trees, Boolean storeVOHasToBeUpdated) throws DataAccessException, DataOptimisticLockException {
+	log.info("************Entering  **************");
+	storeVO = updateCreateTreesCore(storeVO, trees, storeVOHasToBeUpdated, Boolean.FALSE, Boolean.TRUE, Boolean.TRUE, Boolean.FALSE);
+	if (flush) {
+	    flush();
+	}
+	log.info("************Done ***************");
+	return storeVO;
+    }
+
+    public Object updateCreateTrees(Object storeVO, Collection trees) throws DataAccessException, DataOptimisticLockException {
+	log.info("************Entering  **************");
+	storeVO = updateCreateTreesCore(storeVO, trees, Boolean.TRUE, Boolean.FALSE, Boolean.TRUE, Boolean.TRUE, Boolean.FALSE);
+	if (flush) {
+	    flush();
+	}
+	log.info("************Done ***************");
+	return storeVO;
+    }
+
+    private Object updateCreateTreesCore(Object storeVO, Collection<String> trees, Boolean storeVOHasToBeUpdated, Boolean deleteChangedOneToOne, Boolean applyDeletePathCascade,
+	    Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) throws DataAccessException {
+	log.info("************Entering  **************");
+
+	try {
+	    if (storeVO != null) {
+		if (storeVOHasToBeUpdated == null) {
+		    storeVOHasToBeUpdated = Boolean.TRUE;
+		}
+		if (deleteChangedOneToOne == null) {
+		    deleteChangedOneToOne = Boolean.FALSE;
+		}
+		if (applyDeletePathCascade == null) {
+		    applyDeletePathCascade = Boolean.TRUE;
+		}
+		if (ifM2NDeleteOnlyRelationship == null) {
+		    ifM2NDeleteOnlyRelationship = Boolean.TRUE;
+		}
+		if (deleteOneToOne == null) {
+		    deleteOneToOne = Boolean.FALSE;
+		}
+		if (trees == null || trees.isEmpty()) {
+		    if (storeVOHasToBeUpdated.booleanValue()) {
+			storeVO = storeCore(storeVO);
+		    }
+		} else {
+		    Collection<EntityPaths> changedDirectReferencesInPaths = null;
+		    if (deleteChangedOneToOne.booleanValue()) {
+			changedDirectReferencesInPaths = getChangedDirectReferencesInPaths(storeVO, trees, Boolean.TRUE);
+			if (log.isDebugEnabled()) {
+			    log.debug("updateCreateTrees: changedDirectReferencesInPaths.size() = " + changedDirectReferencesInPaths.size());
+			}
+		    }
+		    deleteItemsNotInCollectionsInPathsCore(storeVO, trees, Boolean.TRUE, applyDeletePathCascade, ifM2NDeleteOnlyRelationship, deleteOneToOne);
+		    storePathsCascadeCore(storeVO, trees, Boolean.TRUE, storeVOHasToBeUpdated);
+		    if (deleteChangedOneToOne.booleanValue() && changedDirectReferencesInPaths != null) {
+			final Iterator<EntityPaths> iterator = changedDirectReferencesInPaths.iterator();
+			if (applyDeletePathCascade.booleanValue()) {
+			    while (iterator.hasNext()) {
+				final EntityPaths entityPaths = iterator.next();
+				// if(log.isDebugEnabled())
+				if (log.isDebugEnabled()) {
+				    log.debug("updateCreateTrees: identity =  " + entityPaths.getEntity().toString());
+				    final Iterator entityPathsIterator = entityPaths.getPaths().iterator();
+				    while (entityPathsIterator.hasNext()) {
+					log.debug("updateCreateTrees: entityPathsIterator.next() =  " + entityPathsIterator.next().toString());
+
+				    }
+				}
+				deletePathsCascadeCore(entityPaths.getEntity(), entityPaths.getPaths(), Boolean.FALSE, ifM2NDeleteOnlyRelationship, deleteOneToOne);
+			    }
+			} else {
+			    while (iterator.hasNext()) {
+				final EntityPaths entityPaths = iterator.next();
+				getEntityManager().remove(getEntityManager().merge(entityPaths.getEntity()));
+			    }
+			}
+		    }
+		}
+	    }
+
+	} catch (final Exception e) {
+	    log.error(
+		    "Exception thrown in BaseJpaDAO.updateCreateTreesCore(Object storeVO,Collection<String> trees, Boolean storeVOHasToBeUpdated, Boolean deleteChangedOneToOne, Boolean applyDeletePathCascade, Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne): "
+			    + e.toString());
+	    throw new DataAccessException(
+		    "Error in BaseJpaDAO.updateCreateTreesCore(Object storeVO,Collection<String> trees, Boolean storeVOHasToBeUpdated, Boolean deleteChangedOneToOne, Boolean applyDeletePathCascade, Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne): "
+			    + e.toString(),
+		    e);
+	}
+	log.info("************Done  ***************");
+	return storeVO;
+    }
+
+    private Collection<EntityPaths> getChangedDirectReferencesInPaths(Object rootVO, Collection<String> paths, Boolean pathsHasToBeSorted) throws DataAccessException {
+	log.info("************Entering  **************");
+	final ArrayList<EntityPaths> changedDirectReferencesInPaths = new ArrayList<EntityPaths>();
+	try {
+	    final PropertyUtilsBean propertyUtilsBean = BeanUtilsBean.getInstance().getPropertyUtils();
+	    if (rootVO != null && paths != null && !paths.isEmpty()) {
+		// Class rootVOClass = rootVO.getClass();
+		String[] pathsArray = new String[paths.size()];
+		if (pathsHasToBeSorted.booleanValue()) {
+		    final ArrayList<String> pathsList = Collections.list(Collections.enumeration(paths));
+		    Collections.sort(pathsList);
+		    pathsArray = pathsList.toArray(pathsArray);
+		} else {
+		    pathsArray = paths.toArray(pathsArray);
+		}
+		final int pathsArrayLenght = pathsArray.length;
+		int index = 0;
+		while (index < pathsArrayLenght) {
+		    final String path = pathsArray[index];
+		    if (path != null && !path.trim().equals("")) {
+			final String[] firstAttributeNameAndRemainingPath = Utils.getFirstAttributeNameAndRemainingPath(path);
+			final String firstAttributeName = firstAttributeNameAndRemainingPath[0];
+			final String remainingPath = firstAttributeNameAndRemainingPath[1];
+			final ArrayList<String> subPaths = new ArrayList<String>();
+			if (!remainingPath.trim().equals("")) {
+			    subPaths.add(remainingPath);
+			}
+			index++;
+			boolean matchingFirstAttributeName = true;
+			while (index < pathsArrayLenght && matchingFirstAttributeName) {
+			    if (pathsArray[index] != null && !pathsArray[index].trim().equals("")) {
+				final String[] firstAttributeNameAndRemainingPath2 = Utils.getFirstAttributeNameAndRemainingPath(pathsArray[index]);
+				final String firstAttributeName2 = firstAttributeNameAndRemainingPath2[0];
+				if (firstAttributeName2.equals(firstAttributeName)) {
+				    if (!firstAttributeNameAndRemainingPath2[1].trim().equals("")) {
+					subPaths.add(firstAttributeNameAndRemainingPath2[1]);
+				    }
+				    index++;
+				} else {
+				    matchingFirstAttributeName = false;
+				}
+			    } else {
+				index++;
+			    }
+			}
+
+			if (subPaths.size() <= 1) {
+			    final Collection<EntityPath> changedDirectReferencesInPathEntityPathCollection = getChangedDirectReferencesInPath(rootVO, path);
+			    if (changedDirectReferencesInPathEntityPathCollection != null) {
+				final Iterator<EntityPath> iterator = changedDirectReferencesInPathEntityPathCollection.iterator();
+				while (iterator.hasNext()) {
+				    changedDirectReferencesInPaths.add(new EntityPaths(iterator.next()));
+				}
+			    }
+			} else {// subPaths.size() >1
+
+			    final Object firstAttributeValue = propertyUtilsBean.getProperty(rootVO, firstAttributeName);
+			    // if(isReferenceCollection(rootVO.getClass(),
+			    // firstAttributeName)){
+			    if (isReferenceCollection(getEntityClass(rootVO), firstAttributeName)) {
+				if (firstAttributeValue != null) {
+				    final Iterator iterator = ((Collection) firstAttributeValue).iterator();
+				    while (iterator.hasNext()) {
+					final Collection<EntityPaths> partialChangedDirectReferencesInPaths = getChangedDirectReferencesInPaths(iterator.next(), subPaths, Boolean.FALSE);
+					if (partialChangedDirectReferencesInPaths != null) {
+					    changedDirectReferencesInPaths.addAll(partialChangedDirectReferencesInPaths);
+					}
+
+				    }
+				}
+			    } else { // firstAttributeValue is not a collection
+				final Object changedChild = getChangedChild(rootVO, firstAttributeName);
+				if (changedChild != null) {
+				    final EntityPaths entityPaths = new EntityPaths(changedChild, subPaths);
+				    changedDirectReferencesInPaths.add(entityPaths);
+				}
+				final Collection<EntityPaths> partialChangedDirectReferencesInPaths = getChangedDirectReferencesInPaths(firstAttributeValue, subPaths, Boolean.FALSE);
+				if (partialChangedDirectReferencesInPaths != null) {
+				    changedDirectReferencesInPaths.addAll(partialChangedDirectReferencesInPaths);
+				}
+			    }
+			}
+		    } else {
+			index++;
+		    }
+		}
+
+	    }
+	} catch (final Exception e) {
+	    log.error("Exception caught in BaseJpaDAO.getChangedDirectReferencesInPaths (Object rootVO, Collection<String> paths, Boolean pathsHasToBeSorted): " + e.toString());
+	    throw new DataAccessException("Error in BaseJpaDAO.getChangedDirectReferencesInPaths (Object rootVO, Collection<String> paths, Boolean pathsHasToBeSorted): " + e.toString(), e);
+	}
+	log.info("************Done  **************");
+	return changedDirectReferencesInPaths;
+    }
+
+    private Collection<EntityPath> getChangedDirectReferencesInPath(Object rootVO, String path) throws DataAccessException {
+	log.info("************Entering   ***************");
+	final ArrayList<EntityPath> changedDirectReferencesInPath = new ArrayList<EntityPath>();
+	try {
+	    if (rootVO != null && path != null && !path.trim().equals("")) {
+		final String[] firstAttributeNameAndRemainingPath = Utils.getFirstAttributeNameAndRemainingPath(path);
+		final String firstAttributeName = firstAttributeNameAndRemainingPath[0];
+		final String remainingPath = firstAttributeNameAndRemainingPath[1];
+
+		final PropertyUtilsBean propertyUtilsBean = BeanUtilsBean.getInstance().getPropertyUtils();
+
+		final Object firstAttributeValue = propertyUtilsBean.getProperty(rootVO, firstAttributeName);
+
+		// if (isReferenceCollection(rootVO.getClass(),
+		// firstAttributeName)){
+		if (isReferenceCollection(getEntityClass(rootVO), firstAttributeName)) {
+		    if (firstAttributeValue != null) { // only condition added
+						       // by ale 19-nov 2008
+						       // todo syncornize design
+			final Iterator iterator = ((Collection) firstAttributeValue).iterator();
+			while (iterator.hasNext()) {
+			    final Collection<EntityPath> partialChangedDirectReferencesInPath = getChangedDirectReferencesInPath(iterator.next(), remainingPath);
+			    if (partialChangedDirectReferencesInPath != null) {
+				changedDirectReferencesInPath.addAll(partialChangedDirectReferencesInPath);
+			    }
+			}
+		    }
+		} else { // direct relationship 1:1
+		    final Object changedChild = getChangedChild(rootVO, firstAttributeName);
+		    if (changedChild != null) {
+			final EntityPath entityPath = new EntityPath(changedChild, remainingPath);
+			changedDirectReferencesInPath.add(entityPath);
+		    }
+		    if (firstAttributeValue != null) {
+			final Collection<EntityPath> partialChangedDirectReferencesInPath = getChangedDirectReferencesInPath(firstAttributeValue, remainingPath);
+			if (partialChangedDirectReferencesInPath != null) {
+			    changedDirectReferencesInPath.addAll(partialChangedDirectReferencesInPath);
+			}
+		    }
+
+		}
+
+	    }
+	} catch (final Exception e) {
+	    log.error("Exception caught in BaseJpaDAO.getChangedDirectReferencesInPath(Object rootVO, String path): " + e.toString());
+	    throw new DataAccessException("Error in BaseJpaDAO.getChangedDirectReferencesInPath(Object rootVO, String path): " + e.toString(), e);
+	}
+	log.info("************Done  **************");
+	return changedDirectReferencesInPath;
+
+    }
+
+    // private Identity getChangedChildIdentity(Object parentVO ,
+    // ObjectReferenceDescriptor objectReferenceDescriptor, PersistenceBroker
+    // broker) throws OjbPbCoreException{
+    private Object getChangedChild(Object parentVO, String pAttributeName) throws DataAccessException {
+	log.info("************Entering  ***************");
+	Object changedChild = null;
+	try {
+	    if (pAttributeName == null || pAttributeName.trim().equals("")) {
+		throw new DataAccessException("Error in BaseJpaDAO.getChangedChild(Object parentVO , String pAttributeName)  :: pAttributeName can't be null or empty string. ");
+	    }
+	    // if(isReferenceCollection(parentVO.getClass(),
+	    // pAttributeName))throw new OjbPbCoreException("Error in
+	    // BaseJpaDAO.getChangedChild(Object parentVO ,String
+	    // pAttributeName) : pAttributeName can't represent a collection.
+	    // ");
+	    if (isReferenceCollection(getEntityClass(parentVO), pAttributeName)) {
+		throw new DataAccessException("Error in BaseJpaDAO.getChangedChild(Object parentVO ,String pAttributeName) : pAttributeName can't represent a collection. ");
+	    }
+	    if (parentVO != null) {
+		final PropertyUtilsBean propertyUtilsBean = BeanUtilsBean.getInstance().getPropertyUtils();
+
+		// String[] pkNames = getPkNames(parentVO.getClass());
+		final String[] pkNames = getPkNames(getEntityClass(parentVO));
+		final Object[] keyValues = getKeyValues(parentVO);
+		// Object storedChild = findObjectByLogicCondition(new
+		// String[]{pAttributeName}, parentVO.getClass(), new
+		// LogicSqlCondition(pkNames,keyValues));
+		final Object storedChild = findObjectByLogicCondition(new String[] { pAttributeName }, getEntityClass(parentVO), new LogicSqlCondition(pkNames, keyValues));
+
+		if (storedChild != null) {
+		    log.debug("storedChild: referencedIdentity = " + storedChild.toString());
+		    final Object childVO = propertyUtilsBean.getProperty(parentVO, pAttributeName);
+		    if (childVO != null) {
+			final FieldComparator fieldComparator = new FieldComparator(pkNames);
+			if (fieldComparator.compare(childVO, storedChild) != 0) {
+			    changedChild = storedChild;
+			}
+
+		    } else {
+			log.debug("childVO: is null = ");
+			changedChild = storedChild;
+		    }
+		}
+
+	    }
+	} catch (final Exception e) {
+	    log.error("Exception thrown in BaseJpaDAO.getChangedChild(Object parentVO , String pAttributeName) : " + e.toString());
+	    throw new DataAccessException("Error in BaseJpaDAO.getChangedChild(Object parentVO , String pAttributeName): " + e.toString(), e);
+	}
+
+	log.info("************Done  **************");
+	return changedChild;
+    }
+
+    /****************************************/
+
+    public Class getClassFromPath(Class realClass, String path) throws DataAccessException {
+	log.info("************Entering ***************");
+	Class classFromPath = null;
+	try {
+	    if (path != null) {
+		if (path.trim().equals("")) {
+		    classFromPath = realClass;
+		} else {
+		    final String[] pathArray = path.split("\\.");
+		    Class currentClass = realClass;
+		    for (final String element : pathArray) {
+
+			final Field field = currentClass.getDeclaredField(element);
+			// if(Collection.class.isAssignableFrom(field.getClass())
+			// || List.class.isAssignableFrom(field.getClass()) ||
+			// Set.class.isAssignableFrom(field.getClass())){
+			if (Collection.class.isAssignableFrom(field.getType()) || List.class.isAssignableFrom(field.getType()) || Set.class.isAssignableFrom(field.getType())) {
+
+			    Class targetEntityClass = Utils.getGenericClass(field.getGenericType());
+			    log.debug("targetEntityClass is " + targetEntityClass.toString());
+			    if (targetEntityClass == null) {// Generics are not
+							    // used, we look for
+							    // mappedBy
+							    // attribute of
+							    // annotation
+				OneToMany oneToMany = field.getAnnotation(OneToMany.class);
+				if (oneToMany == null) { // we look for
+							 // ManytoMany
+				    ManyToMany manyToMany = field.getAnnotation(ManyToMany.class);
+				    if (manyToMany == null) { // we look for
+							      // OneToMany in
+							      // the getter
+					final Method getter = getGetter(currentClass, field.getName());
+					oneToMany = getter.getAnnotation(OneToMany.class);
+					if (oneToMany == null) {// we look for
+								// ManyToMany in
+								// the getter
+					    manyToMany = getter.getAnnotation(ManyToMany.class);
+					    if (manyToMany == null) {
+						throw new DataAccessException(
+							"Error in  BaseJpaDAO.getClassFromPath(Class realClass, String path): In the class " + currentClass.getName() + " the property " + element
+								+ " is not a List, Collection or Set of Generics, and there is no annotation OneToMany or ManyToMany nor in the field and the getter");
+					    } else {
+						targetEntityClass = manyToMany.targetEntity();
+					    }
+					} else {
+					    targetEntityClass = oneToMany.targetEntity();
+					}
+				    } else {
+					targetEntityClass = manyToMany.targetEntity();
+				    }
+				} else {
+				    targetEntityClass = oneToMany.targetEntity();
+				}
+				if (targetEntityClass == null) {
+				    throw new DataAccessException("Error in  BaseJpaDAO.getClassFromPath(Class realClass, String path): In the class " + currentClass.getName() + " the property "
+					    + element + " is not a List, Collection or Set of Generics, and targetEntity not exists in the annotation");
+				}
+			    }
+			    currentClass = targetEntityClass;
+
+			} else { // oneToOne or ManyToOne
+				 // currentClass=field.getClass();
+			    currentClass = field.getType();
+			}
+		    }
+		    classFromPath = currentClass;
+		}
+	    }
+	} catch (final SecurityException e) {
+	    log.error("SecurityException caught: " + e.toString());
+	    throw new DataAccessException("Error in  BaseJpaDAO.getClassFromPath(Class realClass, String path): " + e.toString(), e);
+	} catch (final NoSuchFieldException e) {
+	    log.error("NoSuchFieldException caught: " + e.toString());
+	    throw new DataAccessException("Error in  BaseJpaDAO.getClassFromPath(Class realClass, String path): " + e.toString(), e);
+	} catch (final NoSuchMethodException e) {
+	    log.error("NoSuchMethodException caught: " + e.toString());
+	    throw new DataAccessException("Error in  BaseJpaDAO.getClassFromPath(Class realClass, String path): " + e.toString(), e);
+	} catch (final Exception e) {
+	    log.error("Exception caught: " + e.toString());
+	    throw new DataAccessException("Error in  BaseJpaDAO.getClassFromPath(Class realClass, String path): " + e.toString(), e);
+	}
+
+	log.info("************Done **************");
+	return classFromPath;
+    }
+
+    public Class getCollectionClassFromPath(Class realClass, String path) throws DataAccessException {
+	log.info("************Entering ***************");
+	Class collectionClassFromPath = null;
+
+	try {
+	    final String[] exceptLastTokenAndLastToken = Utils.getExceptLastTokenAndLastToken(path);
+	    final String exceptLastToken = exceptLastTokenAndLastToken[0];
+	    final String lastToken = exceptLastTokenAndLastToken[1];
+
+	    final Class penultimateClass = getClassFromPath(realClass, exceptLastToken);
+
+	    // Field lastField = penultimateClass.getField(lastToken);
+	    final Field lastField = penultimateClass.getDeclaredField(lastToken);
+	    // collectionClassFromPath = lastField.getClass();
+	    collectionClassFromPath = lastField.getType();
+
+	    if (!Collection.class.isAssignableFrom(collectionClassFromPath) && !List.class.isAssignableFrom(collectionClassFromPath) && !Set.class.isAssignableFrom(collectionClassFromPath)) {
+		collectionClassFromPath = null;
+	    } else {
+		if (collectionClassFromPath.isInterface()) {
+		    if (Collection.class.isAssignableFrom(collectionClassFromPath) || List.class.isAssignableFrom(collectionClassFromPath)) {
+			final ArrayList<?> a = new ArrayList();
+			collectionClassFromPath = a.getClass();
+		    } else if (Set.class.isAssignableFrom(collectionClassFromPath)) {
+			final HashSet<?> a = new HashSet();
+			collectionClassFromPath = a.getClass();
+		    }
+		}
+	    }
+
+	} catch (final SecurityException e) {
+	    log.error("SecurityException caught: " + e.toString());
+	    throw new DataAccessException("Error in  BaseJpaDAO.getCollectionClassFromPath(Class realClass, String path): " + e.toString(), e);
+	} catch (final NoSuchFieldException e) {
+	    log.error("NoSuchFieldException caught: " + e.toString());
+	    throw new DataAccessException("Error in  BaseJpaDAO.getCollectionClassFromPath(Class realClass, String path): " + e.toString(), e);
+	} catch (final Exception e) {
+	    log.error("Exception caught: " + e.toString());
+	    throw new DataAccessException("Error in  BaseJpaDAO.getCollectionClassFromPath(Class realClass, String path): " + e.toString(), e);
+	}
+	log.info("************Done ***************");
+	return collectionClassFromPath;
+    }
+
+    public Vector getFksToItemClassInDecomposedRelationship(Class realClass, String oneToN, String mToOne) throws DataAccessException {
+	log.info("************Entering ***************");
+	final Vector flds = new Vector();
+	try {
+	    /** implemented o n 15/08/2012 */
+	    final Class relatedObjectClass = getClassFromPath(realClass, oneToN + "." + mToOne);
+	    final List<String> pkNames = new EntityInfo(relatedObjectClass).getListPkNames();
+	    if (pkNames != null) {
+		for (final String pkName : pkNames) {
+		    flds.add(mToOne + "." + pkName);
+		}
+	    }
+	} catch (final Exception e) {
+	    log.error("Exception caught: " + e.toString());
+	    throw new DataAccessException("Error in  BaseJpaDAO.getFksToItemClassInDecomposedRelationship(Class realClass, String oneToN, String mToOne): " + e.toString(), e);
+	}
+
+	log.info("************Done ***************");
+	return flds;
+    }
+
+    public Object[] getKeyValues(Object pInstance) throws DataAccessException {
+	log.info("************Entering ***************");
+	Object[] keyValues = null;
+	try {
+	    final PropertyUtilsBean propertyUtilsBean = BeanUtilsBean.getInstance().getPropertyUtils();
+	    // EntityInfo info = new EntityInfo(pInstance.getClass());
+	    final EntityInfo info = new EntityInfo(getEntityClass(pInstance));
+	    final String[] pkNames = info.getPkNames();
+	    keyValues = new Object[pkNames.length];
+	    for (int i = 0; i < pkNames.length; i++) {
+		keyValues[i] = propertyUtilsBean.getProperty(pInstance, pkNames[i]);
+	    }
+	} catch (final IllegalAccessException e) {
+	    log.error("IllegalAccessException caught: " + e.toString());
+	    throw new DataAccessException("Error in  BaseJpaDAO.getKeyValues(Object pInstance): " + e.toString(), e);
+	} catch (final InvocationTargetException e) {
+	    log.error("InvocationTargetException caught: " + e.toString());
+	    throw new DataAccessException("Error in  BaseJpaDAO.getKeyValues(Object pInstance): " + e.toString(), e);
+	} catch (final NoSuchMethodException e) {
+	    log.error("NoSuchMethodException caught: " + e.toString());
+	    throw new DataAccessException("Error in  BaseJpaDAO.getKeyValues(Object pInstance): " + e.toString(), e);
+	} catch (final Exception e) {
+	    log.error("Exception caught: " + e.toString());
+	    throw new DataAccessException("Error in  BaseJpaDAO.getKeyValues(Object pInstance): " + e.toString(), e);
+	}
+	log.info("************Done **************");
+	return keyValues;
+    }
+
+    private boolean isPersisted(Object pInstance) throws DataAccessException {
+	boolean isPersisted = true;
+	try {
+	    final PropertyUtilsBean propertyUtilsBean = BeanUtilsBean.getInstance().getPropertyUtils();
+	    // EntityInfo info = new EntityInfo(pInstance.getClass());
+	    final EntityInfo info = new EntityInfo(getEntityClass(pInstance));
+	    final String idName = info.getIdField().getName();
+	    final Object idValue = propertyUtilsBean.getProperty(pInstance, idName);
+	    if (idValue == null) {
+		isPersisted = false;
+	    } else {
+
+		final String[] pkNames = info.getPkNames();
+		for (int i = 0; i < pkNames.length && isPersisted; i++) {
+		    try {
+			final Object key = propertyUtilsBean.getProperty(pInstance, pkNames[i]);
+			if (key == null) {
+			    isPersisted = false;
+			    break;
+			}
+		    } catch (final NestedNullException e) {
+			isPersisted = false;
+			break;
+		    }
+		}
+		if (isPersisted) {
+		    final Object persistedObject = findObjectByLogicCondition(new String[] { idName }, getEntityClass(pInstance), new LogicSqlCondition(idName, "==", idValue));
+		    isPersisted = persistedObject != null;
+		}
+	    }
+	} catch (final IllegalAccessException e) {
+	    log.error("IllegalAccessException caught: " + e.toString());
+	    throw new DataAccessException("Error in  BaseJpaDAO.isPersisted(Object pInstance): " + e.toString(), e);
+	} catch (final InvocationTargetException e) {
+	    log.error("InvocationTargetException caught: " + e.toString());
+	    throw new DataAccessException("Error in  BaseJpaDAO.isPersisted(Object pInstance): " + e.toString(), e);
+	} catch (final NoSuchMethodException e) {
+	    log.error("NoSuchMethodException caught: " + e.toString());
+	    throw new DataAccessException("Error in  BaseJpaDAO.isPersisted(Object pInstance): " + e.toString(), e);
+	} catch (final Exception e) {
+	    log.error("Exception caught: " + e.toString());
+	    throw new DataAccessException("Error in  BaseJpaDAO.isPersisted(Object pInstance): " + e.toString(), e);
+	}
+	return isPersisted;
+    }
+
+    public String[] getPkNames(Class realClass) throws DataAccessException {
+	log.info("************Entering ***************");
+	String[] pkNames = null;
+
+	try {
+	    final EntityInfo info = new EntityInfo(realClass);
+	    pkNames = info.getPkNames();
+	} catch (final Exception e) {
+	    log.error("Exception caught: " + e.toString());
+	    throw new DataAccessException("Error in  BaseJpaDAO.getPkNames(Class realClass): " + e.toString(), e);
+	}
+
+	log.info("************Done ***************");
+	return pkNames;
+    }
+
+    public String[] getFksToThisClass(Class realClass, String oneToN) throws DataAccessException {
+	log.info("************Entering***************");
+	final String[] flds = new String[] { getMappedBy(realClass, oneToN) };
+	log.info("************Done **************");
+	return flds;
+    }
+
+    public Vector getForeignKeyFields(Class realClass, String pAttributeName) throws DataAccessException {
+	log.info("************Entering ***************");
+
+	final Vector flds = new Vector();
+
+	try {
+	    /* implemented 14/08/2008 */
+	    final String[] exceptLastTokenAndLastToken = Utils.getExceptLastTokenAndLastToken(pAttributeName);
+	    final String exceptLastToken = exceptLastTokenAndLastToken[0];
+	    final String lastToken = exceptLastTokenAndLastToken[1];
+	    final Class penutlClass = getClassFromPath(realClass, exceptLastToken);
+	    final EntityInfo penutlClassEntityInfo = new EntityInfo(penutlClass);
+
+	    final Class pAttributeClass = getClassFromPath(realClass, pAttributeName);
+	    final EntityInfo pAttributeClassEntityInfo = new EntityInfo(pAttributeClass);
+	    ArrayList<String> listPkNames = null;
+	    if (penutlClassEntityInfo.isEmbeddable()) { //
+		listPkNames = pAttributeClassEntityInfo.getListPkNames();
+	    } else if (pAttributeClassEntityInfo.isEmbeddable()) {
+		listPkNames = penutlClassEntityInfo.getListPkNames();
+	    }
+
+	    if (listPkNames != null) {
+		for (final String pkName : listPkNames) {
+		    flds.add(lastToken + "." + pkName);
+		}
+	    }
+	} catch (final Exception e) {
+	    log.error("Exception caught: " + e.toString());
+	    throw new DataAccessException("Error in  BaseJpaDAO.getForeignKeyFields(Class realClass, String pAttributeName): " + e.toString(), e);
+	}
+
+	log.info("************Done **************");
+	return flds;
+    }
+
+    /*
+     * Only the one to many case is of interest Int his case in there is a
+     * mapped by on the relation the real classe primary keys are returned
+     * Actually this could not seem conceptually correct, but with this mapping,
+     * the inverse foreing key is represented by the mappedBy, the referes to
+     * the realClass. (non-Javadoc)
+     *
+     * @see
+     * it.aco.mandragora.dao.DAO#getInverseForeignKeyFields(java.lang.Class,
+     * java.lang.String)
+     */
+    public Vector getInverseForeignKeyFields(Class realClass, String pAttributeName) throws DataAccessException {
+	log.info("************Entering ***************");
+
+	final Vector flds = new Vector();
+	/* implemented 14/08/2008 */
+
+	try {
+	    final String[] exceptLastTokenAndLastToken = Utils.getExceptLastTokenAndLastToken(pAttributeName);
+	    final String exceptLastToken = exceptLastTokenAndLastToken[0];
+	    final String lastToken = exceptLastTokenAndLastToken[1];
+	    final Class penutlClass = getClassFromPath(realClass, exceptLastToken);
+	    if (isOneToMany(penutlClass, lastToken)) {
+		final String mappedBy = getMappedBy(penutlClass, lastToken);
+		if (!StringUtils.isEmpty(mappedBy)) {
+		    final EntityInfo penutlClassEntityInfo = new EntityInfo(penutlClass);
+		    final List<String> penutlClassPkNames = penutlClassEntityInfo.getListPkNames();
+		    if (penutlClassPkNames != null) {
+			for (final String pkName : penutlClassPkNames) {
+			    flds.add(mappedBy + "." + pkName);
+			}
+		    }
+
+		}
+	    }
+	} catch (final Exception e) {
+	    log.error("Exception caught: " + e.toString());
+	    throw new DataAccessException("Error in  BaseJpaDAO.getInverseForeignKeyFields(Class realClass, String pAttributeName): " + e.toString(), e);
+	}
+	log.info("************Done **************");
+	return flds;
+    }
+
+    public void setInverseForeignKeyFields(Collection valueObjects, String pAttributeName) throws DataAccessException {
+	log.info("************Entering **************");
+	if (valueObjects != null) {
+	    final Iterator iterator = valueObjects.iterator();
+	    while (iterator.hasNext()) {
+		setInverseForeignKeyFields(iterator.next(), pAttributeName);
+	    }
+	}
+	log.info("************Done **************");
+    }
+
+    public void setInverseForeignKeyFields(Object pInstance, String pAttributeName) throws DataAccessException {
+	log.info("************Entering **************");
+
+	try {
+
+	    final Class pInstanceClass = getEntityClass(pInstance);
+	    final PropertyUtilsBean propertyUtilsBean = BeanUtilsBean.getInstance().getPropertyUtils();
+
+	    if (isOneToMany(pInstanceClass, pAttributeName)) {
+		final String mappedBy = getMappedBy(pInstanceClass, pAttributeName);
+		if (mappedBy != null && !mappedBy.trim().equals("")) {
+		    final Collection pAttributeCollection = (Collection) propertyUtilsBean.getProperty(pInstance, pAttributeName);
+		    if (pAttributeCollection != null) {
+			for (final Object pAttributeCollectionElement : pAttributeCollection) {
+			    propertyUtilsBean.setProperty(pAttributeCollectionElement, mappedBy, pInstance);
+			}
+
+		    }
+		}
+	    } else if (isManyToMany(pInstanceClass, pAttributeName)) {
+
+		final Collection pAttributeCollection = (Collection) propertyUtilsBean.getProperty(pInstance, pAttributeName);
+		if (pAttributeCollection != null) {
+		    final String inverseManyToManyField = getInverseManyToManyField(pInstance, pAttributeName);
+		    if (inverseManyToManyField != null && !inverseManyToManyField.equals("")) {
+			for (final Object pAttributeCollectionElement : pAttributeCollection) {
+			    final Collection inverseCollection = (Collection) propertyUtilsBean.getProperty(pAttributeCollectionElement, inverseManyToManyField);
+			    if (!inverseCollection.contains(pInstance)) {
+				inverseCollection.add(pInstance);
+			    }
+			}
+		    }
+		}
+	    }
+	} catch (final IllegalAccessException e) {
+	    log.error("IllegalAccessException caught: " + e.toString());
+	    throw new DataAccessException("Error in  BaseJpaDAO.setInverseForeignKeyFields(Object pInstance, String pAttributeName): " + e.toString(), e);
+	} catch (final InvocationTargetException e) {
+	    log.error("InvocationTargetException caught: " + e.toString());
+	    throw new DataAccessException("Error in  BaseJpaDAO.setInverseForeignKeyFields(Object pInstance, String pAttributeName): " + e.toString(), e);
+	} catch (final NoSuchMethodException e) {
+	    log.error("NoSuchMethodException caught: " + e.toString());
+	    throw new DataAccessException("Error in  BaseJpaDAO.setInverseForeignKeyFields(Object pInstance, String pAttributeName): " + e.toString(), e);
+	} catch (final Exception e) {
+	    log.error("Exception caught: " + e.toString());
+	    throw new DataAccessException("Error in  BaseJpaDAO.setInverseForeignKeyFields(Object pInstance, String pAttributeName): " + e.toString(), e);
+	}
+	log.info("************Done *************");
+    }
+
+    private String getInverseManyToManyField(Object pInstance, String pAttributeName) throws DataAccessException {
+	String inverseManyToManyField = null;
+	try {
+	    final Class pInstanceClass = getEntityClass(pInstance);
+	    final ManyToMany manyToMany = (ManyToMany) getAnnotation(pInstanceClass, pAttributeName, ManyToMany.class);
+	    if (manyToMany != null) {
+		if (!StringUtils.isEmpty(manyToMany.mappedBy())) {
+		    inverseManyToManyField = manyToMany.mappedBy();
+		} else {
+		    Class targetEntityClass = manyToMany.targetEntity();
+		    if (targetEntityClass == null) {
+			targetEntityClass = Utils.getGenericClass(pInstanceClass.getDeclaredField(pAttributeName).getGenericType());
+		    }
+		    final Field[] declaredFields = targetEntityClass.getDeclaredFields();
+		    if (declaredFields != null) {
+			for (int i = 0; i < declaredFields.length && inverseManyToManyField == null; i++) {
+
+			    final ManyToMany inverseManyToMany = declaredFields[i].getAnnotation(ManyToMany.class);
+			    if (inverseManyToMany != null && pAttributeName.equals(inverseManyToMany.mappedBy())) {
+				inverseManyToManyField = declaredFields[i].getName();
+			    }
+			}
+		    }
+		}
+	    }
+	} catch (final SecurityException e) {
+	    log.error("SecurityException caught: " + e.toString());
+	    throw new DataAccessException("Error in  BaseJpaDAO.getInverseManyToManyField(Object pInstance, String pAttributeName): " + e.toString(), e);
+	} catch (final NoSuchFieldException e) {
+	    log.error("NoSuchFieldException caught: " + e.toString());
+	    throw new DataAccessException("Error in  BaseJpaDAO.getInverseManyToManyField(Object pInstance, String pAttributeName): " + e.toString(), e);
+	} catch (final Exception e) {
+	    log.error("Exception caught: " + e.toString());
+	    throw new DataAccessException("Error in  BaseJpaDAO.getInverseManyToManyField(Object pInstance, String pAttributeName): " + e.toString(), e);
+	}
+	return inverseManyToManyField;
+    }
+
+    private Collection<String> getAssociationOverridesColumnNames(AssociationOverrides associationOverrides) throws DataAccessException {
+	final ArrayList<String> columnNames = new ArrayList<String>();
+	try {
+	    if (associationOverrides != null) {
+		final AssociationOverride[] associationOverrideArray = associationOverrides.value();
+		for (final AssociationOverride associationOverride : associationOverrideArray) {
+		    final JoinColumn[] joinColumns = associationOverride.joinColumns();
+
+		    for (final JoinColumn joinColumn : joinColumns) {
+			columnNames.add(joinColumn.name());
+		    }
+		}
+	    }
+	} catch (final Exception e) {
+	    log.error("Exception caught: " + e.toString());
+	    throw new DataAccessException("Error in  BaseJpaDAO.getAssociationOverridesColumnNames(AssociationOverrides associationOverrides): " + e.toString(), e);
+	}
+	return columnNames;
+    }
+
+    private Collection<String> getAttributeOverridesColumnNames(AttributeOverrides attributeOverrides) throws DataAccessException {
+	final ArrayList<String> columnNames = new ArrayList<String>();
+	try {
+	    if (attributeOverrides != null) {
+		final AttributeOverride[] attributeOverrideArray = attributeOverrides.value();
+		for (final AttributeOverride attributeOverride : attributeOverrideArray) {
+		    columnNames.add(attributeOverride.column().name());
+		}
+	    }
+	} catch (final Exception e) {
+	    log.error("Exception caught: " + e.toString());
+	    throw new DataAccessException("Error in  BaseJpaDAO.getAttributeOverridesColumnNames(AttributeOverrides attributeOverrides): " + e.toString(), e);
+	}
+	return columnNames;
+    }
+
+    public String[] getPkColumnNames(Class realClass) throws DataAccessException {
+
+	String[] pkColumnNames = null;
+
+	try {
+	    final ArrayList<String> pkColumnNamesList = new ArrayList<String>();
+	    final EntityInfo entityInfo = new EntityInfo(realClass);
+	    final Field pkField = entityInfo.getIdField();
+	    if (entityInfo.isEmbeddedIdAnnotated()) {
+		final Annotation[] pkFieldAnnotations = pkField.getAnnotations();
+		for (final Annotation pkFieldAnnotation : pkFieldAnnotations) {
+		    if (pkFieldAnnotation.annotationType().equals(AssociationOverrides.class)) {
+			pkColumnNamesList.addAll(getAssociationOverridesColumnNames((AssociationOverrides) pkFieldAnnotation));
+		    } else if (pkFieldAnnotation.annotationType().equals(AttributeOverrides.class)) {
+			pkColumnNamesList.addAll(getAttributeOverridesColumnNames((AttributeOverrides) pkFieldAnnotation));
+		    }
+		}
+		pkColumnNames = pkColumnNamesList.toArray(new String[0]);
+
+	    } else {
+		final String columnName = ((Column) getAnnotation(realClass, pkField.getName(), Column.class)).name();
+		pkColumnNames = new String[] { columnName };
+	    }
+	} catch (final Exception e) {
+	    log.error("Exception caught: " + e.toString());
+	    throw new DataAccessException("Error in  BaseJpaDAO.getPkColumnNames(Class realClass): " + e.toString(), e);
+	}
+
+	return pkColumnNames;
+
+    }
+
+    private String[] getJoinTableInverseColumnName(JoinTable joinTable) throws DataAccessException {
+	String[] columnName = null;
+	try {
+	    if (joinTable != null) {
+		final JoinColumn[] joinColumns = joinTable.inverseJoinColumns();
+		columnName = new String[joinColumns.length];
+		for (int i = 0; i < joinColumns.length; i++) {
+		    columnName[i] = joinColumns[i].name();
+		}
+	    }
+	} catch (final Exception e) {
+	    log.error("Exception caught: " + e.toString());
+	    throw new DataAccessException("Error in  BaseJpaDAO.getJoinTableInverseColumnName(JoinTable joinTable): " + e.toString(), e);
+	}
+	return columnName;
+    }
+
+    private String[] getJoinTableColumnName(JoinTable joinTable) throws DataAccessException {
+	String[] columnName = null;
+	try {
+	    if (joinTable != null) {
+		final JoinColumn[] joinColumns = joinTable.joinColumns();
+		columnName = new String[joinColumns.length];
+		for (int i = 0; i < joinColumns.length; i++) {
+		    columnName[i] = joinColumns[i].name();
+		}
+	    }
+	} catch (final Exception e) {
+	    log.error("Exception caught: " + e.toString());
+	    throw new DataAccessException("Error in  BaseJpaDAO.getJoinTableColumnName(JoinTable joinTable): " + e.toString(), e);
+	}
+	return columnName;
+    }
+
+    private void setQueryParameters(Query query, Map parameters) throws DataAccessException {
+	log.debug("************Entering ***************");
+	try {
+
+	    final Iterator iterator = parameters.keySet().iterator();
+	    while (iterator.hasNext()) {
+		final Object key = iterator.next();
+		// log.debug("executing query.setParameter(
+		// #0,#1",key,parameters.get(key));
+
+		if (Integer.class.isInstance(key)) {
+		    query.setParameter(((Integer) key).intValue(), parameters.get(key));
+		} else {
+		    query.setParameter((String) key, parameters.get(key));
+		}
+	    }
+	} catch (final Exception e) {
+	    log.error("Exception caught  : " + e.toString());
+	    throw new DataAccessException("Error in  BaseOjbPbCore.setQueryParameters(Query query, Map parameters) : " + e.toString(), e);
+	}
+	log.info("************Done **************");
+    }
+
+    private String translateInAll(String queryString, Map parameters) throws DataAccessException {
+	log.debug("************Entering ***************");
+	String result = null;
+	try {
+
+	    result = translateIn(queryString, parameters);
+	    result = translateIn(result);
+
+	} catch (final DataAccessException e) {
+	    log.error("DataAccessException caught  : " + e.toString());
+	    throw new DataAccessException("Error in  BaseJpaDAO.translateInAll(String queryString, Map parameter): " + e.toString(), e);
+	} catch (final Exception e) {
+	    log.error("Exception caught  : " + e.toString());
+	    throw new DataAccessException("Error in  BaseJpaDAO.translateInAll(String queryString, Map parameter): " + e.toString(), e);
+	}
+
+	log.debug("************Done ***************");
+	return result;
+    }
+
+    private String translateIn(String queryString, Map parameters) throws DataAccessException {
+	log.debug("************Entering ***************");
+	try {
+	    if (parameters != null) {
+		final Map parametersToSplit = new HashMap();
+		final Set keySet = parameters.keySet();
+		Iterator iterator = keySet.iterator();
+
+		while (iterator.hasNext()) {
+		    final String key = (String) iterator.next();
+		    final Object value = parameters.get(key);
+		    if (Collection.class.isInstance(value) && ((Collection) value).size() > inLimit) {
+			parametersToSplit.put(key, value);
+		    }
+		}
+		if (!parametersToSplit.isEmpty()) {
+		    iterator = parametersToSplit.keySet().iterator();
+		    while (iterator.hasNext()) {
+			final Object key = iterator.next();
+			final Object value = parameters.get(key);
+
+			// final String regex =
+			// "(\\S+)\\s+(not\\s+)?in\\s*\\((\\s*\\S+(\\s*,\\s*\\S+)*)\\s*\\)";
+			// String regex =
+			// "(\\w\\.+)\\s+(not\\s+)?in\\s*\\(s*:s*" + key+
+			// "\\s*\\)";
+			final String regex = "(\\S+)\\s+(not\\s+)?in\\s*\\(\\s*:\\s*" + key + "\\s*\\)";
+			final Pattern pattern = Pattern.compile(regex, Pattern.CASE_INSENSITIVE);
+			final Matcher matcher = pattern.matcher(queryString);
+			if (matcher.find()) {
+			    String replacement = "(";
+			    final String entityIdentifier = matcher.group(1);
+			    final String not = matcher.group(2);
+			    if (not != null) {
+				// replacement = replacement + " NOT
+				// ("+entityIdentifier+orOfInsCollection(key,splitIn((Collection)value),parameters)+"
+				// ) ";
+				replacement = replacement + " NOT (" + orOfInsCollection(entityIdentifier, key, splitIn((Collection) value), parameters) + " ) ";
+			    } else {
+				// replacement = replacement +
+				// entityIdentifier+orOfInsCollection(key,splitIn((Collection)value),parameters);
+				replacement = replacement + " " + orOfInsCollection(entityIdentifier, key, splitIn((Collection) value), parameters);
+			    }
+			    replacement = replacement + " ) ";
+			    queryString = matcher.replaceAll(replacement);
+			}
+		    }
+		}
+	    }
+
+	} catch (final DataAccessException e) {
+	    log.error("DataAccessException caught  : " + e.toString());
+	    throw new DataAccessException("Error in  BaseJpaDAO.translateIn(String queryString, Map parameter): " + e.toString(), e);
+	}
+
+	log.debug("************Done ***************");
+	return queryString;
+    }
+
+    /**
+     * Este metodo quita del parameters el elemento con key parameter, y a�ade
+     * uno para cada lista en splitIn. Devuelve la string IN
+     * (:split_0_paramemeter) OR IN (:split_1_paramemeter)...OR IN
+     * (:split_N_paramemeter)
+     *
+     * @param parameter
+     * @param splitIn
+     * @param parameters
+     * @return
+     * @throws DataAccessException
+     */
+    private String orOfInsCollection(String entityIdentifier, Object parameter, ArrayList<List> splitIn, Map parameters) throws DataAccessException {
+	log.debug("************Entering ***************");
+	String orOfIns = "";
+	try {
+	    if (splitIn != null) {
+		parameters.remove(parameter);
+		final Iterator<List> iterator = splitIn.iterator();
+		int count = 0;
+		if (iterator.hasNext()) {
+		    final List in = iterator.next();
+		    final String splitParameter = "split_" + count + "_" + parameter.toString();
+		    // orOfIns = " IN (:"+splitParameter+" ) ";
+		    orOfIns = " " + entityIdentifier + " IN (:" + splitParameter + " ) ";
+		    parameters.put(splitParameter, in);
+		}
+		while (iterator.hasNext()) {
+		    count++;
+		    final List in = iterator.next();
+		    final String splitParameter = "split_" + count + "_" + parameter.toString();
+		    // orOfIns = orOfIns +" OR IN (:"+splitParameter+" ) ";
+		    orOfIns = orOfIns + " OR " + entityIdentifier + " IN (:" + splitParameter + " ) ";
+		    parameters.put(splitParameter, in);
+		}
+	    }
+	} catch (final Exception e) {
+	    log.error("Exception caught  : " + e.toString());
+	    throw new DataAccessException("Error in  BaseJpaDAO.orOfInsCollection(String entityIdentifier,Object parameter, ArrayList<List> splitIn, Map parameters): " + e.toString(), e);
+	}
+	log.debug("************Done ***************");
+	return orOfIns;
+
+    }
+
+    /**
+     * este metodo devuelve una lista de listas, que son la particion de la
+     * lista data en ingreso por inLimit
+     *
+     * @param in
+     * @return
+     * @throws DataAccessException
+     */
+    private ArrayList<List> splitIn(Collection in) throws DataAccessException {
+	log.debug("************Entering ***************");
+	final ArrayList<List> limitedIns = new ArrayList<List>();
+	try {
+	    if (in != null && !in.isEmpty()) {
+
+		List toSplitList = null;
+		if (List.class.isInstance(in)) {
+		    toSplitList = (List) in;
+		} else {
+		    toSplitList = new ArrayList();
+		    toSplitList.addAll(in);
+		}
+
+		final int size = toSplitList.size();
+
+		// mod to know how much elements are inputted in last clause IN
+		final int mod = size % this.inLimit;
+		// calculate how much INs are injected
+		final int numberOfIn = size / this.inLimit + (mod == 0 ? 0 : 1);
+
+		for (int i = 0; i < numberOfIn - 1; i++) {
+		    final List limitedIn = toSplitList.subList(i * this.inLimit, (i + 1) * this.inLimit);
+		    limitedIns.add(limitedIn);
+		}
+		final List limitedIn = toSplitList.subList((numberOfIn - 1) * this.inLimit, size);
+		limitedIns.add(limitedIn);
+	    }
+	} catch (final Exception e) {
+	    log.error("Exception caught  : " + e.toString());
+	    throw new DataAccessException("Error in  BaseJpaDAO.splitIn(Collection in): " + e.toString(), e);
+	}
+	log.debug("************Done ***************");
+	return limitedIns;
+    }
+
+    @SuppressWarnings("unused")
+    private String orOfInsfromList(ArrayList<List> splitIn) throws DataAccessException {
+	log.debug("************Entering ***************");
+	String orOfIns = "";
+	try {
+	    if (splitIn != null) {
+		final Iterator<List> iterator = splitIn.iterator();
+		if (iterator.hasNext()) {
+		    final List in = iterator.next();
+		    orOfIns = " IN " + Utils.buildInString(in);
+		}
+		while (iterator.hasNext()) {
+		    final List in = iterator.next();
+		    orOfIns = orOfIns + " OR IN " + Utils.buildInString(in);
+		}
+	    }
+	} catch (final Exception e) {
+	    log.error("Exception caught  : " + e.toString());
+	    throw new DataAccessException("Error in  BaseJpaDAO.orOfIns(ArrayList<Collection> splitIn): " + e.toString(), e);
+	}
+	log.debug("************Done ***************");
+	return orOfIns;
+
+    }
+
+    private String translateIn(String queryString) throws DataAccessException {
+	log.debug("************Entering ***************");
+	String result = null;
+	try {
+	    // final String regex = "(\\w\\.+)\\s+(not\\s+)?in\\s*\\(s*:" +
+	    // param+ "\\s*)";
+	    // final String regex =
+	    // "(\\w\\.+)\\s+(not\\s+)?in\\s*\\((s*.*(s*,s*.*)*)s*\\)";
+	    // final String regex =
+	    // "(\\S+)\\s+(not\\s+)?in\\s*\\((\\s*\\S+(\\s*,\\s*\\S+)*)\\s*\\)";
+	    // final String regex =
+	    // "(\\S+)\\s+(not\\s+)?in\\s*\\((\\s*\\S+(\\s*,\\s*\\S+){"+(this.inLimit-1)+",})\\s*\\)";
+	    final String regex = "(\\S+)\\s+(not\\s+)?in\\s*\\((\\s*\\S+(\\s*,\\s*\\S+)+)\\s*\\)";
+
+	    final Pattern pattern = Pattern.compile(regex, Pattern.CASE_INSENSITIVE);
+	    final Matcher matcher = pattern.matcher(queryString);
+	    final StringBuffer sb = new StringBuffer();
+
+	    while (matcher.find()) {
+		String replacement = "(";
+		final String entityIdentifier = matcher.group(1);
+		final String not = matcher.group(2);
+		final String in = matcher.group(3);
+		if (not != null) {
+		    // replacement = replacement + " NOT
+		    // ("+entityIdentifier+orOfIns(splitIn(in))+" ) ";
+		    replacement = replacement + " NOT (" + orOfIns(entityIdentifier, splitIn(in)) + " ) ";
+		} else {
+		    // replacement = replacement +
+		    // entityIdentifier+orOfIns(splitIn(in));
+		    replacement = replacement + orOfIns(entityIdentifier, splitIn(in));
+		}
+		replacement = replacement + " ) ";
+		matcher.appendReplacement(sb, replacement);
+	    }
+	    matcher.appendTail(sb);
+	    // queryString = sb.toString();
+	    result = sb.toString();
+
+	} catch (final DataAccessException e) {
+	    log.error("DataAccessException caught  : " + e.toString());
+	    throw new DataAccessException("Error in  BaseJpaDAO.translateIn(String queryString): " + e.toString(), e);
+	}
+
+	log.debug("************Done ***************");
+	return result;
+    }
+
+    private String orOfIns(String entityIdentifier, ArrayList<String> toLimitedIns) throws DataAccessException {
+	log.debug("************Entering ***************");
+	String orOfIns = "";
+	try {
+	    if (toLimitedIns != null) {
+		final Iterator<String> iterator = toLimitedIns.iterator();
+		if (iterator.hasNext()) {
+		    // orOfIns = " IN ("+iterator.next()+" ) ";
+		    orOfIns = " " + entityIdentifier + " IN (" + iterator.next() + " ) ";
+		}
+		while (iterator.hasNext()) {
+		    // orOfIns = orOfIns +" OR IN ("+iterator.next()+" ) ";
+		    orOfIns = orOfIns + " OR " + entityIdentifier + " IN (" + iterator.next() + " ) ";
+		}
+	    }
+	} catch (final Exception e) {
+	    log.error("Exception caught  : " + e.toString());
+	    throw new DataAccessException("Error in  BaseJpaDAO.orOfIns(String entityIdentifier,ArrayList<String> toLimitedIns): " + e.toString(), e);
+	}
+	log.debug("************Done ***************");
+	return orOfIns;
+
+    }
+
+    private ArrayList<String> splitIn(String in) throws DataAccessException {
+	log.debug("************Entering ***************");
+	final ArrayList<String> splitIn = new ArrayList<String>();
+	try {
+	    if (in != null && !in.trim().equals("")) {
+		final String[] limitedInsArray = in.split(",");
+		// mod to know how much elements are inputted in last clause IN
+		final int mod = limitedInsArray.length % this.inLimit;
+		// calculate how much INs are injected
+		final int numberOfIn = limitedInsArray.length / this.inLimit + (mod == 0 ? 0 : 1);
+		for (int i = 0; i < numberOfIn; i++) {
+		    String limitedIn = limitedInsArray[i * this.inLimit];
+		    for (int k = i * this.inLimit + 1; k < (i + 1) * this.inLimit && k < limitedInsArray.length; k++) {
+			limitedIn = limitedIn + "," + limitedInsArray[k];
+		    }
+		    splitIn.add(limitedIn);
+		}
+	    }
+	} catch (final Exception e) {
+	    log.error("Exception caught  : " + e.toString());
+	    throw new DataAccessException("Error in  BaseJpaDAO.splitIn(String in ): " + e.toString(), e);
+	}
+	log.debug("************Done ***************");
+	return splitIn;
+    }
+
+    private Query createQuery(Class realClass, LogicCondition logicCondition) throws DataAccessException {
+	log.debug("Entering");
+	Query query = null;
+	try {
+	    // query = createQuery(null, realClass, logicCondition,null);
+	    query = createQuery(null, null, realClass, logicCondition, null);
+	} catch (final Exception e) {
+	    log.error("Exception caught: " + e.toString());
+	    throw new DataAccessException("Error in  BaseJpaDAO.createQuery(Class realClass, LogicCondition logicCondition): " + e.toString(), e);
+	}
+	log.debug("Done");
+	return query;
+    }
+
+    private Query createQuery(String[] selectFields, Class realClass, LogicCondition logicCondition) throws DataAccessException {
+	log.debug("Entering");
+	Query query = null;
+	try {
+	    // query = createQuery(selectFields, realClass, logicCondition,
+	    // null);
+	    query = createQuery(null, selectFields, realClass, logicCondition, null);
+	} catch (final Exception e) {
+	    log.error("Exception caught: " + e.toString());
+	    throw new DataAccessException("Error in  BaseJpaDAO.createQuery(String[] selectFields, Class realClass,  LogicCondition logicCondition): " + e.toString(), e);
+
+	}
+	log.debug("Done");
+	return query;
+    }
+
+    private Query createQuery(Boolean distinct, String[] selectFields, Class realClass, LogicCondition logicCondition, String orderBy) throws DataAccessException {
+	log.debug("Entering");
+	Query query = null;
+	try {
+	    query = createQuery(distinct, selectFields, realClass, logicCondition, orderBy, null);
+	} catch (final Exception e) {
+	    log.error("Exception caught: " + e.toString());
+	    throw new DataAccessException("Error in  BaseJpaDAO.createQuery(Boolean distinct,String[] selectFields, Class realClass,  LogicCondition logicCondition, String orderBy): " + e.toString(),
+		    e);
+	}
+	log.debug("Done");
+	return query;
+    }
+
+    private Query createQuery(Boolean distinct, String[] selectFields, Class realClass, LogicCondition logicCondition, String orderBy, String[] groupBy) throws DataAccessException {
+	log.debug("Entering");
+	Query query = null;
+	try {
+
+	    final Map<String, Object> parametersMap = new HashMap<String, Object>();
+	    final String queryString = createQueryString(distinct, selectFields, realClass, logicCondition, orderBy, groupBy, parametersMap);
+	    // log.debug("queryString is #0", queryString);
+	    query = getEntityManager().createQuery(queryString);
+
+	    setQueryParameters(query, parametersMap);
+	} catch (final Exception e) {
+	    log.error("Exception caught: " + e.toString());
+	    throw new DataAccessException(
+		    "Error in  BaseJpaDAO.createQuery(Boolean distinct,String[] selectFields, Class realClass,  LogicCondition logicCondition, String orderBy, String[] groupBy): " + e.toString(), e);
+
+	}
+	log.debug("Done");
+	return query;
+    }
+
+    private boolean isFunction(String fieldName) throws DataAccessException {
+	boolean isFuntion = false;
+	try {
+	    if (fieldName != null) {
+		isFuntion = fieldName.contains("(");
+	    }
+	} catch (final Exception e) {
+	    log.error("Exception caught: " + e.toString());
+	    throw new DataAccessException("Error in  BaseJpaDAO.isFunction(String fieldName): " + e.toString(), e);
+	}
+	return isFuntion;
+    }
+
+    private HashMap<String, String> createJoinMap(Class realClass, String fieldName, Cursor joinIndex) throws DataAccessException {
+	final HashMap<String, String> joinMap = new HashMap<String, String>();
+	try {
+	    if (fieldName != null && !isFunction(fieldName)) {
+		fieldName = fieldName.split(" ")[0];
+		String[] firstAttributeNameAndRemainingPath = Utils.getFirstAttributeNameAndRemainingPath(fieldName);
+		String firstAttributeName = firstAttributeNameAndRemainingPath[0];
+		String remainingPath = firstAttributeNameAndRemainingPath[1];
+		// StringBuffer currentPath=new StringBuffer("a.");
+		StringBuffer currentPath = new StringBuffer("");
+		// int joinIndex=0;
+		// String joinPrefix ="bbb";
+		Class currentClass = realClass;
+		while (!firstAttributeName.trim().equals("")) {
+
+		    if (isReferenceCollection(currentClass, firstAttributeName)) {
+			currentPath.append(firstAttributeName);
+			String joinAlias = joinMap.get(currentPath.toString());
+			if (joinAlias == null) {
+			    joinAlias = joinPrefix + joinIndex.getValue();
+			    joinMap.put(currentPath.toString(), joinAlias);
+			    joinIndex.increment();
+			}
+			currentClass = Utils.getGenericClass(currentClass.getDeclaredField(firstAttributeName).getGenericType());
+
+			// currentPath=new StringBuffer(firstAttributeName+".");
+			currentPath = new StringBuffer(joinAlias + ".");
+
+		    } else {
+			currentPath.append(firstAttributeName + ".");
+			currentClass = currentClass.getDeclaredField(firstAttributeName).getType();
+		    }
+		    firstAttributeNameAndRemainingPath = Utils.getFirstAttributeNameAndRemainingPath(remainingPath);
+		    firstAttributeName = firstAttributeNameAndRemainingPath[0];
+		    remainingPath = firstAttributeNameAndRemainingPath[1];
+		}
+	    }
+	} catch (final SecurityException e) {
+	    log.error("SecurityException caught: " + e.toString());
+	    throw new DataAccessException("Error in  BaseJpaDAO.createJoinMap(Class realClass,String fieldName, Cursor joinIndex): " + e.toString(), e);
+	} catch (final NoSuchFieldException e) {
+	    log.error("NoSuchFieldException caught: " + e.toString());
+	    throw new DataAccessException("Error in  BaseJpaDAO.createJoinMap(Class realClass,String fieldName, Cursor joinIndex): " + e.toString(), e);
+	} catch (final Exception e) {
+	    log.error("Exception caught: " + e.toString());
+	    throw new DataAccessException("Error in  BaseJpaDAO.createJoinMap(Class realClass,String fieldName, Cursor joinIndex): " + e.toString(), e);
+	}
+
+	return joinMap;
+    }
+
+    private HashMap<String, String> createJoinMap(Class realClass, String[] selectFields, Cursor joinIndex) throws DataAccessException {
+	final HashMap<String, String> joinMap = new HashMap<String, String>();
+
+	try {
+	    if (selectFields != null) {
+		for (final String selectField : selectFields) {
+		    joinMap.putAll(createJoinMap(realClass, selectField, joinIndex));
+		}
+	    }
+	} catch (final Exception e) {
+	    log.error("Exception caught: " + e.toString());
+	    throw new DataAccessException("Error in  BaseJpaDAO.createJoinMap(Class realClass,String[] selectFields): " + e.toString(), e);
+	}
+
+	return joinMap;
+    }
+
+    private HashMap<String, String> createJoinMap(Class realClass, LogicCondition logicCondition, Cursor joinIndex) throws DataAccessException {
+	final HashMap<String, String> joinMap = new HashMap<String, String>();
+	try {
+	    while (logicCondition != null) {
+		final SimpleCondition simpleCondition = logicCondition.getSimpleCondition();
+		final String fieldName = (String) simpleCondition.getParameter().iterator().next();
+		joinMap.putAll(createJoinMap(realClass, fieldName, joinIndex));
+		logicCondition = logicCondition.getLogicCondition();
+	    }
+	} catch (final Exception e) {
+	    log.error("Exception caught: " + e.toString());
+	    throw new DataAccessException("Error in  BaseJpaDAO.createJoinMap(Class realClass,LogicCondition logicCondition, Cursor joinIndex): " + e.toString(), e);
+	}
+
+	return joinMap;
+
+    }
+
+    private void replanceLogicConditionFieldsWithJoinMap(LogicCondition logicCondition, Map<String, String> joinMap) throws DataAccessException {
+	try {
+	    if (joinMap != null) {
+		while (logicCondition != null) {
+		    final SimpleCondition simpleCondition = logicCondition.getSimpleCondition();
+		    final Collection replacedParameters = new ArrayList();
+		    final Iterator iterator = simpleCondition.getParameter().iterator();
+		    String fieldName = (String) iterator.next();
+		    fieldName = replanceFieldWithJoinMap(fieldName, joinMap);
+		    replacedParameters.add(fieldName);
+		    while (iterator.hasNext()) {
+			replacedParameters.add(iterator.next());
+		    }
+		    simpleCondition.setParameter(replacedParameters);
+		    logicCondition = logicCondition.getLogicCondition();
+		}
+	    }
+	} catch (final Exception e) {
+	    log.error("Exception caught: " + e.toString());
+	    throw new DataAccessException("Error in  BaseJpaDAO.replanceLogicConditionFieldsWithJoinMap(LogicCondition logicCondition, Map<String,String> joinMap): " + e.toString(), e);
+	}
+    }
+
+    private void replanceFieldsWithJoinMap(String[] fields, Map<String, String> joinMap) throws DataAccessException {
+	if (fields != null) {
+	    for (int i = 0; i < fields.length; i++) {
+		fields[i] = replanceFieldWithJoinMap(fields[i], joinMap);
+	    }
+	}
+    }
+
+    private String replanceFieldWithJoinMap(String field, Map<String, String> joinMap) throws DataAccessException {
+	String replacedField = field;
+
+	try {
+	    if (joinMap != null && replacedField != null) {
+		boolean fullReplaced = false;
+		while (!fullReplaced) {
+		    final Iterator<String> iterator = joinMap.keySet().iterator();
+		    boolean replaced = false;
+		    while (iterator.hasNext() && !replaced) {
+			final String join = iterator.next();
+			if (replacedField.contains(join)) {
+			    replacedField = replacedField.replace(join, joinMap.get(join));
+			    replaced = true;
+			}
+		    }
+		    if (!replaced) {
+			fullReplaced = true;
+		    }
+		}
+	    }
+	} catch (final Exception e) {
+	    log.error("Exception caught: " + e.toString());
+	    throw new DataAccessException("Error in  BaseJpaDAO.replanceFieldWithJoinMap(String field, Map<String,String> joinMap): " + e.toString(), e);
+	}
+	return replacedField;
+    }
+
+    // private String createSelectString(Boolean distinct, String[]
+    // selectFields, boolean isCount, Map<String,String> joinMap){
+    // String selectString="";
+    // selectString = createSelectString(distinct, selectFields, isCount);
+    //
+    // if(joinMap!=null){
+    // Iterator<String> iterator = joinMap.keySet().iterator();
+    // while(iterator.hasNext()){
+    // String join =iterator.next();
+    // selectString=selectString.replace(join, joinMap.get(join));
+    // }
+    // }
+    // return selectString;
+    // }
+
+    private String prefixNotJoinFieldName(String fieldName) throws DataAccessException {
+	String prefixedFieldName = fieldName;
+	try {
+	    if (prefixedFieldName != null && !prefixedFieldName.startsWith(joinPrefix) && !isFunction(prefixedFieldName)) {
+		prefixedFieldName = " a." + prefixedFieldName;
+	    }
+	} catch (final Exception e) {
+	    log.error("Exception caught: " + e.toString());
+	    throw new DataAccessException("Error in  BaseJpaDAO.prefixNotJoinFieldName(String fieldName): " + e.toString(), e);
+	}
+	return prefixedFieldName;
+
+    }
+
+    private String createSelectString(Boolean distinct, String[] selectFields, boolean isCount) throws DataAccessException {
+	log.debug("Entering");
+	String selectString = "";
+	try {
+	    // String selectString ="";
+	    if (selectFields != null && selectFields.length > 0) {
+		for (int i = 0; i < selectFields.length; i++) {
+		    // selectString=selectString+"a."+selectFields[i];
+		    selectString = selectString + prefixNotJoinFieldName(selectFields[i]);
+		    if (i < selectFields.length - 1) {
+			selectString = selectString + ",";
+		    }
+		}
+	    } else {
+		selectString = "a";
+	    }
+
+	    if (distinct != null && distinct.booleanValue()) {
+		if (!isCount) {
+		    selectString = "SELECT DISTINCT " + selectString + " ";
+		} else {
+		    selectString = "SELECT COUNT (DISTINCT " + selectString + ") ";
+		}
+	    } else {
+		if (!isCount) {
+		    selectString = "SELECT " + selectString + " ";
+		} else {
+		    selectString = "SELECT COUNT (" + selectString + ") ";
+		}
+	    }
+
+	} catch (final Exception e) {
+	    log.error("Exception caught: " + e.toString());
+	    throw new DataAccessException("Error in  BaseJpaDAO.createSelectString(Boolean distinct, String[] selectFields,boolean isCount): " + e.toString(), e);
+	}
+	log.debug("Done");
+	return selectString;
+
+    }
+
+    private String createSelectString(Boolean distinct, String[] selectFields) throws DataAccessException {
+	log.debug("Entering");
+	String selectString = "";
+	try {
+
+	    selectString = createSelectString(distinct, selectFields, false);
+
+	} catch (final Exception e) {
+	    log.error("Exception caught: " + e.toString());
+	    throw new DataAccessException("Error in  BaseJpaDAO.createSelectString(Boolean distinct, String[] selectFields): " + e.toString(), e);
+	}
+	log.debug("Done");
+	return selectString;
+
+    }
+
+    private String createWhereString(Class realClass, LogicCondition logicCondition, Map<String, Object> parametersMap) throws DataAccessException {
+	log.debug("Entering");
+	String whereString = "";
+	try {
+	    if (logicCondition != null) {
+
+		// String whereCondition = " WHERE "+
+		// translateLogicCondition(realClass, logicCondition,
+		// parametersMap);
+		whereString = " WHERE " + translateLogicCondition(realClass, logicCondition, parametersMap);
+		// log.debug("whereCondition is #0", whereCondition);
+		// whereString = " WHERE "+whereCondition;
+	    }
+	    log.debug("whereString is " + whereString);
+
+	} catch (final Exception e) {
+	    log.error("Exception caught: " + e.toString());
+	    throw new DataAccessException("Error in  BaseJpaDAO.createWhereString(Class realClass,  LogicCondition logicCondition,  Map<String,Object> parametersMap): " + e.toString(), e);
+
+	}
+	log.debug("Done");
+	return whereString;
+
+    }
+
+    private String createGroupByString(String[] groupBy) throws DataAccessException {
+	log.debug("Entering");
+	String groupByString;
+	try {
+	    groupByString = "";
+
+	    if (groupBy != null && groupBy.length > 0) {
+		groupByString = " GROUP BY ";
+		for (final String element : groupBy) {
+		    groupByString += prefixNotJoinFieldName(element) + ", ";
+		}
+		groupByString = groupByString.substring(0, groupByString.lastIndexOf(","));
+	    }
+	} catch (final Exception e) {
+	    log.error("Exception caught: " + e.toString());
+	    throw new DataAccessException("Error in  BaseJpaDAO.createGroupByString(String[] groupBy): " + e.toString(), e);
+	}
+	log.debug("Done");
+	return groupByString;
+    }
+
+    private String[] buildOrderByArray(String orderBy) {
+	String[] orderByArray = null;
+	if (orderBy != null && !orderBy.trim().equals("")) {
+	    orderByArray = orderBy.split(",");
+
+	}
+	return orderByArray;
+    }
+
+    private String createOrderByString(String[] orderByArray, Map<String, String> joinMap) throws DataAccessException {
+	log.debug("Entering");
+	String orderByString = "";
+
+	try {
+	    if (orderByArray != null) {
+		String finalOrderBy = "";
+		for (int k = 0; k < orderByArray.length; k++) {
+		    final String[] splitOrderBy = orderByArray[k].split(" ");
+		    // finalOrderBy=finalOrderBy+prefixNotJoinFieldName(replanceFieldWithJoinMap(splitOrderBy[0],joinMap))+"
+		    // "+splitOrderBy[1];
+		    /**
+		     * TODO verificar bien este cambio
+		     */
+		    finalOrderBy = finalOrderBy + prefixNotJoinFieldName(replanceFieldWithJoinMap(splitOrderBy[0], joinMap)) + " " + (splitOrderBy.length > 1 ? splitOrderBy[1] : "");
+		    if (k < orderByArray.length - 1) {
+			finalOrderBy = finalOrderBy + ",";
+		    }
+		}
+		orderByString = orderByString + " ORDER BY " + finalOrderBy;
+	    }
+	} catch (final Exception e) {
+	    log.error("Exception caught: " + e.toString());
+	    throw new DataAccessException("Error in  BaseJpaDAO.createOrderByString(String[] orderByArray, Map<String,String> joinMap): " + e.toString(), e);
+	}
+
+	log.debug("Done");
+	return orderByString;
+    }
+
+    private String createOrderByString(String orderBy) throws DataAccessException {
+	log.debug("Entering");
+	String orderByString = "";
+	try {
+	    //
+	    if (orderBy != null && !orderBy.trim().equals("")) {
+		final String[] orderBySplit = orderBy.split(",");
+		String finalOrderBy = "";
+		for (int k = 0; k < orderBySplit.length; k++) {
+		    // finalOrderBy=finalOrderBy+" a."+orderBySplit[k];
+		    finalOrderBy = finalOrderBy + prefixNotJoinFieldName(orderBySplit[k]);
+		    if (k < orderBySplit.length - 1) {
+			finalOrderBy = finalOrderBy + ",";
+		    }
+		}
+		orderByString = orderByString + " ORDER BY " + finalOrderBy;
+
+		// orderByString = createOrderByString(orderBySplit);
+	    }
+
+	    // log.debug("orderByString is #0", orderByString);
+	    log.debug("orderByString is " + orderByString);
+
+	} catch (final Exception e) {
+	    log.error("Exception caught: " + e.toString());
+	    throw new DataAccessException("Error in  BaseJpaDAO.createOrderByString(String orderBy): " + e.toString(), e);
+
+	}
+	log.debug("Done");
+	return orderByString;
+
+    }
+
+    @SuppressWarnings("unused")
+    private String createQueryString(Boolean distinct, String[] selectFields, Class realClass, LogicCondition logicCondition, String orderBy, Map<String, Object> parametersMap)
+	    throws DataAccessException {
+	log.debug("Entering");
+	String queryString = null;
+	try {
+
+	    queryString = createQueryString(distinct, selectFields, realClass, logicCondition, orderBy, null, parametersMap);
+
+	} catch (final Exception e) {
+	    log.error("Exception caught: " + e.toString());
+	    throw new DataAccessException(
+		    "Error in  BaseJpaDAO.createQueryString(Boolean distinct,String[] selectFields, Class realClass,  LogicCondition logicCondition, String orderBy, Map<String,Object> parametersMap): "
+			    + e.toString(),
+		    e);
+	}
+	log.debug("Done");
+	return queryString;
+    }
+
+    private String createFromString(Class realClass, Map<String, String> joinMap) throws DataAccessException {
+	String fromString = null;
+	try {
+	    fromString = " FROM " + realClass.getSimpleName() + " a ";
+	    if (joinMap != null && !joinMap.isEmpty()) {
+		final Iterator<String> iterator = joinMap.keySet().iterator();
+		while (iterator.hasNext()) {
+		    final String join = iterator.next();
+		    final String joinAlias = joinMap.get(join);
+		    // fromString+=" JOIN "+join+" "+joinAlias+" ";
+		    fromString += " JOIN " + prefixNotJoinFieldName(join) + " " + joinAlias + " ";
+		}
+	    }
+	} catch (final Exception e) {
+	    log.error("Exception caught: " + e.toString());
+	    throw new DataAccessException("Error in  BaseJpaDAO.createFromString(Class realClass, Map<String,String> joinMap): " + e.toString(), e);
+	}
+	return fromString;
+    }
+
+    private String createQueryString(Boolean distinct, String[] selectFields, Class realClass, LogicCondition logicCondition, String orderBy, String[] groupBy, Map<String, Object> parametersMap)
+	    throws DataAccessException {
+	log.debug("Entering");
+	String queryString = null;
+	try {
+
+	    // String unqualifiedClassName = realClass.getSimpleName();
+	    // Integer joinIndex=0;
+	    final Cursor joinIndex = new Cursor();
+	    final HashMap<String, String> joinMap = createJoinMap(realClass, selectFields, joinIndex);
+	    log.info("joinIndex = " + joinIndex);
+	    joinMap.putAll(createJoinMap(realClass, logicCondition, joinIndex));
+	    log.info("joinIndex = " + joinIndex);
+	    joinMap.putAll(createJoinMap(realClass, groupBy, joinIndex));
+	    log.info("joinIndex = " + joinIndex);
+
+	    final String[] orderByArray = buildOrderByArray(orderBy);
+	    joinMap.putAll(createJoinMap(realClass, orderByArray, joinIndex));
+	    log.info("joinIndex = " + joinIndex);
+
+	    replanceFieldsWithJoinMap(selectFields, joinMap);
+
+	    final String selectString = createSelectString(distinct, selectFields);
+
+	    final String fromString = createFromString(realClass, joinMap);
+	    // queryString =selectString +" FROM "+unqualifiedClassName +" a ";
+
+	    queryString = selectString + " " + fromString + " ";
+
+	    replanceLogicConditionFieldsWithJoinMap(logicCondition, joinMap);
+
+	    queryString = queryString + createWhereString(realClass, logicCondition, parametersMap);
+
+	    replanceFieldsWithJoinMap(groupBy, joinMap);
+
+	    queryString = queryString + createGroupByString(groupBy);
+
+	    // queryString = queryString + createOrderByString(orderBy);
+	    queryString = queryString + createOrderByString(orderByArray, joinMap);
+	    // log.debug("queryString is #0", queryString);
+	    log.debug("queryString is " + queryString);
+	} catch (final Exception e) {
+	    log.error("Exception caught: " + e.toString());
+	    throw new DataAccessException(
+		    "Error in  BaseJpaDAO.createQueryString(Boolean distinct,String[] selectFields, Class realClass,  LogicCondition logicCondition, String orderBy, String[] groupBy, Map<String,Object> parametersMap): "
+			    + e.toString(),
+		    e);
+	}
+	log.debug("Done");
+	return queryString;
+    }
+
+    @SuppressWarnings("unused")
+    private Query createCountQuery(Boolean distinct, String[] selectFields, Class realClass, LogicCondition logicCondition) throws DataAccessException {
+	log.debug("Entering");
+	Query query = null;
+	try {
+
+	    if (distinct != null && distinct.booleanValue() && (selectFields == null || selectFields.length == 0)) {
+		log.error("distinct can't be true without selectFields");
+		throw new DataAccessException(
+			"Error in  BaseJpaDAO.createCountQuery(String[] selectFields,Class realClass, LogicCondition logicCondition): distinct can't be true without selectFields");
+
+	    }
+	    // String unqualifiedClassName =
+	    // Utils.getExceptLastTokenAndLastToken(realClass.getName())[1];
+	    final String unqualifiedClassName = realClass.getSimpleName();
+
+	    String queryString = "";
+	    String selectString = "";
+	    if (selectFields == null || selectFields.length == 0) {
+		selectString = "SELECT COUNT(*) ";
+	    } else {
+		// selectString = "SELECT COUNT("+createSelectString(distinct,
+		// selectFields)+") ";
+		selectString = createSelectString(distinct, selectFields, true);
+	    }
+	    final Map<String, Object> parametersMap = new HashMap<String, Object>();
+	    final String whereString = createWhereString(realClass, logicCondition, parametersMap);
+	    queryString = queryString + selectString + " FROM " + unqualifiedClassName + " a ";
+	    queryString = queryString + whereString;
+
+	    // log.debug("queryString is #0", queryString);
+	    log.debug("queryString is " + queryString);
+
+	    query = getEntityManager().createQuery(queryString);
+
+	    setQueryParameters(query, parametersMap);
+	} catch (final Exception e) {
+	    log.error("Exception caught: " + e.toString());
+	    throw new DataAccessException("Error in  BaseJpaDAO.createCountQuery(Boolean distinct,String[] selectFields,Class realClass, LogicCondition logicCondition): " + e.toString(), e);
+
+	}
+	log.debug("Done");
+	return query;
+
+    }
+
+    @SuppressWarnings("unused")
+    private Query createCountQuery(Class realClass, LogicCondition logicCondition) throws DataAccessException {
+	log.debug("Entering");
+	Query query = null;
+	try {
+	    // String unqualifiedClassName =
+	    // Utils.getExceptLastTokenAndLastToken(realClass.getName())[1];
+	    final String unqualifiedClassName = realClass.getSimpleName();
+
+	    String queryString = "SELECT count(*) FROM " + unqualifiedClassName + " a ";
+
+	    final Map<String, Object> parametersMap = new HashMap<String, Object>();
+
+	    if (logicCondition != null) {
+		final String whereCondition = translateLogicCondition(realClass, logicCondition, parametersMap);
+		queryString = queryString + " WHERE " + whereCondition;
+	    }
+
+	    // log.debug("queryString is #0", queryString);
+	    log.debug("queryString is " + queryString);
+
+	    query = getEntityManager().createQuery(queryString);
+
+	    setQueryParameters(query, parametersMap);
+	} catch (final Exception e) {
+	    log.error("Exception caught: " + e.toString());
+	    throw new DataAccessException("Error in  BaseJpaDAO.createCountQuery(Class realClass, LogicCondition logicCondition): " + e.toString(), e);
+
+	}
+	log.debug("Done");
+	return query;
+
+    }
+
+    private String translateLogicCondition(Class realClass, LogicCondition logicCondition, Map<String, Object> parametersMap) throws DataAccessException {
+	return translateLogicCondition(0, realClass, logicCondition, parametersMap);
+    }
+
+    private String translateLogicCondition(int progr, Class realClass, LogicCondition logicCondition, Map<String, Object> parametersMap) throws DataAccessException {
+	log.debug("Entering");
+	String condition = "";
+	try {
+	    final int newProgr = progr + 1;
+	    condition = translateSimpleCondition(progr, realClass, logicCondition.getSimpleCondition(), parametersMap);
+	    // criteria =
+	    // translateSimpleCondition(broker,realClass,logicCondition.getSimpleCondition());
+	    if (logicCondition.getLogicCondition() != null) {
+		if (logicCondition.getAndOr().equalsIgnoreCase("AND")) {
+		    condition = condition + " AND (" + translateLogicCondition(newProgr, realClass, logicCondition.getLogicCondition(), parametersMap) + " )";
+		    // criteria.addAndCriteria(translateLogicCondition(broker,realClass,logicCondition.getLogicCondition()));
+		} else if (logicCondition.getAndOr().equalsIgnoreCase("OR")) {
+		    condition = condition + " OR (" + translateLogicCondition(newProgr, realClass, logicCondition.getLogicCondition(), parametersMap) + " )";
+		    // criteria.addOrCriteria(translateLogicCondition(broker,realClass,logicCondition.getLogicCondition()));
+		} else {
+		    throw new Exception("Error in  BaseJpaDAO.translateLogicCondition(int progr,Class realClass,LogicCondition logicCondition,Map<String,Object> parametersMap): AND/OR missing");
+		}
+	    }
+	} catch (final Exception e) {
+	    log.error("Exception caught: " + e.toString());
+	    throw new DataAccessException("Error in  BaseJpaDAO.translateLogicCondition(int progr,Class realClass,LogicCondition logicCondition,Map<String,Object> parametersMap): " + e.toString(), e);
+
+	}
+	log.debug("Done");
+	return condition;
+    }
+
+    private String translateSimpleCondition(int progr, Class realClass, SimpleCondition simpleCondition, Map<String, Object> parametersMap) throws DataAccessException {
+	log.debug("Entering");
+	String condition = "";
+	String field = null;
+	Object value = null;
+	try {
+	    final Operator operator = simpleCondition.getOperator();
+	    final Collection parameters = simpleCondition.getParameter();
+	    final Iterator iterator = parameters.iterator();
+	    if (iterator.hasNext()) {
+		field = (String) iterator.next();
+	    }
+	    if (iterator.hasNext()) {
+		value = iterator.next();
+	    }
+	    String fieldLastToken = null;
+	    if (field != null) {
+		fieldLastToken = Utils.getExceptLastTokenAndLastToken(field)[1];
+		// fieldLastToken = fieldLastToken+"A"+progr;
+		fieldLastToken = fieldLastToken.replaceAll("(|)", "a") + "A" + progr;
+
+	    }
+
+	    /**********************
+	     * operators mapping
+	     ********************************************/
+	    boolean staticCondition = false;
+	    if (operator.getName().equalsIgnoreCase("==") || operator.getName().equalsIgnoreCase("=")) {
+		// condition ="a."+field+"= :"+field;
+		// condition =field+"= :"+field;
+		condition = field + "= :" + fieldLastToken;
+		// parametersMap.put(field, value);
+		parametersMap.put(fieldLastToken, value);
+	    } else if (operator.getName().equalsIgnoreCase("isNull")) {
+		// condition ="a."+field+" IS NULL";
+		condition = field + " IS NULL";
+		// TODO add the OR empty string
+	    } else if (operator.getName().equalsIgnoreCase("isNotNull")) {
+		// condition ="a."+field+" IS NOT NULL";
+		condition = field + " IS NOT NULL";
+	    } else if (operator.getName().equalsIgnoreCase("IN")) { // added
+								    // 29/08/2005
+		// if(value!=null&&!((Collection)value).isEmpty())
+		// criteria.addIn(field,(Collection)value);
+		// condition ="a."+field+" IN :"+field;
+		// condition =field+" IN :"+field;
+		// if (value == null || ((List) value).isEmpty()) {
+		if (value == null || ((Collection) value).isEmpty()) {
+		    condition = " 1 = 2"; // false condition
+		    staticCondition = true;
+		} else if (((Collection) value).size() > this.inLimit) {
+		    final ArrayList<List> splitIn = splitIn((Collection) value);
+		    // condition =field + orOfInsCollection(fieldLastToken,
+		    // splitIn, parametersMap);
+		    condition = orOfInsCollection(prefixNotJoinFieldName(field), fieldLastToken, splitIn, parametersMap);
+		    staticCondition = true;
+		} else {
+		    condition = field + " IN (:" + fieldLastToken + ")";
+		    // parametersMap.put(field, value);
+		    // parametersMap.put(fieldLastToken, value);
+		    parametersMap.put(fieldLastToken, value);
+		}
+
+	    } else if (operator.getName().equalsIgnoreCase("NOT IN") || operator.getName().equalsIgnoreCase("NOTIN")) {
+		// if(value!=null&&!((Collection)value).isEmpty())
+		// criteria.addNotIn(field,(Collection)value);
+		// condition ="a."+field+" NOT IN :"+field;
+		// condition =field+" NOT IN :"+field;
+		if (value == null || ((Collection) value).isEmpty()) {
+		    condition = " 1 = 1"; // true condition
+		    staticCondition = true;
+		} else if (((Collection) value).size() > this.inLimit) {
+		    final ArrayList<List> splitIn = splitIn((Collection) value);
+
+		    // condition =" NOT ("+ ((field!=null &&
+		    // !field.trim().equals(""))?"a."+field:"a ") +
+		    // orOfInsCollection(fieldLastToken, splitIn,
+		    // parametersMap)+" ) ";
+		    final String nuevoField = field != null && !field.trim().equals("") ? prefixNotJoinFieldName(field) : "a ";
+		    condition = " NOT (" + orOfInsCollection(nuevoField, fieldLastToken, splitIn, parametersMap) + " ) ";
+		    staticCondition = true;
+		} else {
+		    condition = field + " NOT IN (:" + fieldLastToken + ")";
+		    // parametersMap.put(field, value);
+		    parametersMap.put(fieldLastToken, value);
+		}
+	    } else if (operator.getName().equalsIgnoreCase("<=")) {
+		// condition ="a."+field+"<= :"+field;
+		// condition =field+"<= :"+field;
+		condition = field + "<= :" + fieldLastToken;
+		// parametersMap.put(field, value);
+		parametersMap.put(fieldLastToken, value);
+	    } else if (operator.getName().equalsIgnoreCase(">=")) {
+		// condition ="a."+field+">= :"+field;
+		// condition =field+">= :"+field;
+		condition = field + ">= :" + fieldLastToken;
+		// parametersMap.put(field, value);
+		parametersMap.put(fieldLastToken, value);
+	    } else if (operator.getName().equalsIgnoreCase("<")) {
+		// condition ="a."+field+"< :"+field;
+		// condition =field+"< :"+field;
+		condition = field + "< :" + fieldLastToken;
+		// parametersMap.put(field, value);
+		parametersMap.put(fieldLastToken, value);
+	    } else if (operator.getName().equalsIgnoreCase(">")) {
+		// condition ="a."+field+"> :"+field;
+		// condition =field+"> :"+field;
+		condition = field + "> :" + fieldLastToken;
+		// parametersMap.put(field, value);
+		parametersMap.put(fieldLastToken, value);
+	    } else if (operator.getName().equalsIgnoreCase("!=") || operator.getName().equalsIgnoreCase("<>")) {
+		// condition ="a."+field+"<> :"+field;
+		// condition =field+"<> :"+field;
+		condition = field + "<> :" + fieldLastToken;
+		// parametersMap.put(field, value);
+		parametersMap.put(fieldLastToken, value);
+	    } else if (operator.getName().equalsIgnoreCase("LEFTLIKE")) {
+		// condition ="a."+field+"LIKE % :"+field;
+		// condition =field+"LIKE % :"+field;
+		// condition = field + " LIKE lower(concat('%',:" +
+		// fieldLastToken
+		condition = "lower(a." + field + ") LIKE lower(concat('%',:" + fieldLastToken + "))";
+		staticCondition = true;
+		parametersMap.put(field, value);
+		// criteria.addLike(field,"%"+value);
+	    } else if (operator.getName().equalsIgnoreCase("RIGHTLIKE")) {
+		// condition ="a."+field+"LIKE :"+field+"%";
+		// condition =field+"LIKE :"+field+"%";
+		// condition = field + " LIKE lower(concat(:" + fieldLastToken
+		condition = "lower(a." + field + ") LIKE lower(concat(:" + fieldLastToken + ",'%'))";
+		staticCondition = true;
+		// parametersMap.put(field, value);
+		parametersMap.put(fieldLastToken, value);
+		// criteria.addLike(field,value+"%");
+	    } else if (operator.getName().equalsIgnoreCase("LIKE") || operator.getName().equalsIgnoreCase("BOTHLIKE")) {
+		// condition ="a."+field+"LIKE % :"+field+"%";
+		// condition =field+"LIKE % :"+field+"%";
+		// condition = field + " LIKE lower(concat('%',:" +
+		// fieldLastToken
+		condition = "lower(a." + field + ") LIKE lower(concat('%',:" + fieldLastToken + ",'%'))";
+		staticCondition = true;
+		// parametersMap.put(field, value);
+		parametersMap.put(fieldLastToken, value);
+		// criteria.addLike(field,"%"+value+"%");
+	    }
+	    // condition = "a."+condition;//deleted by alessandro 14-enero -2010
+	    if (!staticCondition) {
+		if (field != null && !field.trim().equals("")) { // added by
+								 // alessandro
+								 // 14-enero
+								 // -2010
+		    // condition = "a." + condition;
+		    condition = prefixNotJoinFieldName(condition);
+		} else {
+		    condition = "a" + condition;
+		}
+	    }
+
+	    /**********************
+	     * end operators mapping
+	     ********************************************/
+	} catch (final Exception e) {
+	    log.error("Exception caught : " + e.toString());
+	    throw new DataAccessException(
+		    "Error in  ImplIrisDAO.translateSimpleCondition(int progr,Class realClass, SimpleCondition simpleCondition, Map<String,Object> parametersMap): " + e.toString(), e);
+
+	}
+	log.debug("Done");
+	return condition;
+    }
+
+    // private String translateSimpleCondition(int progr,Class realClass,
+    // SimpleCondition simpleCondition, Map<String,Object> parametersMap) throws
+    // DataAccessException{
+    // log.debug("Entering");
+    // String condition = "";
+    // String field = null;
+    // Object value = null;
+    // try {
+    // Operator operator= simpleCondition.getOperator();
+    // Collection parameters = simpleCondition.getParameter();
+    // Iterator iterator = parameters.iterator();
+    // if (iterator.hasNext()){
+    // field = (String)iterator.next();
+    // }
+    // if (iterator.hasNext()){
+    // value = iterator.next();
+    // }
+    // String fieldLastToken=null;
+    // if(field!=null){
+    // fieldLastToken = Utils.getExceptLastTokenAndLastToken(field)[1];
+    // //fieldLastToken = fieldLastToken+"A"+progr;
+    // fieldLastToken = fieldLastToken.replaceAll("(|)", "a")+"A"+progr;
+    //
+    // }
+    //
+    // /********************** operators mapping
+    // ********************************************/
+    // boolean staticCondition = false;
+    // if
+    // (operator.getName().equalsIgnoreCase("==")||operator.getName().equalsIgnoreCase("=")){
+    // //condition ="a."+field+"= :"+field;
+    // //condition =field+"= :"+field;
+    // condition =field+"= :"+fieldLastToken;
+    // //parametersMap.put(field, value);
+    // parametersMap.put(fieldLastToken, value);
+    // }else if(operator.getName().equalsIgnoreCase("isNull")) {
+    // //condition ="a."+field+" IS NULL";
+    // condition =field+" IS NULL";
+    // //TODO add the OR empty string
+    // }else if(operator.getName().equalsIgnoreCase("isNotNull")) {
+    // //condition ="a."+field+" IS NOT NULL";
+    // condition =field+" IS NOT NULL";
+    // } else if(operator.getName().equalsIgnoreCase("IN")) { //added 29/08/2005
+    // //if(value!=null&&!((Collection)value).isEmpty())
+    // criteria.addIn(field,(Collection)value);
+    // //condition ="a."+field+" IN :"+field;
+    // //condition =field+" IN :"+field;
+    // if(value == null || ((List)value).isEmpty()){
+    // condition= " 1 = 2"; // false condition
+    // staticCondition=true;
+    // }else if ( ((List)value).size()>this.inLimit){
+    // ArrayList<List> splitIn = splitIn((Collection)value);
+    // //condition =field + orOfInsCollection(fieldLastToken, splitIn,
+    // parametersMap);
+    // //condition =orOfInsCollection("a."+field,fieldLastToken, splitIn,
+    // parametersMap);
+    // condition
+    // =orOfInsCollection(prefixNotJoinFieldName(field),fieldLastToken, splitIn,
+    // parametersMap);
+    // staticCondition=true;
+    // }else{
+    // condition =field+" IN (:"+fieldLastToken+")";
+    // //parametersMap.put(field, value);
+    // //parametersMap.put(fieldLastToken, value);
+    // parametersMap.put(fieldLastToken, value);
+    // }
+    //
+    // } else if(operator.getName().equalsIgnoreCase("NOT
+    // IN")||operator.getName().equalsIgnoreCase("NOTIN")) {
+    // //if(value!=null&&!((Collection)value).isEmpty())
+    // criteria.addNotIn(field,(Collection)value);
+    // //condition ="a."+field+" NOT IN :"+field;
+    // //condition =field+" NOT IN :"+field;
+    // if(value == null || ((List)value).isEmpty()){
+    // condition= " 1 = 1"; // true condition
+    // staticCondition=true;
+    // }else if ( ((List)value).size()>this.inLimit){
+    // ArrayList<List> splitIn = splitIn((Collection)value);
+    //
+    // //condition =" NOT ("+ ((field!=null &&
+    // !field.trim().equals(""))?"a."+field:"a ") +
+    // orOfInsCollection(fieldLastToken, splitIn, parametersMap)+" ) ";
+    // //String nuevoField = ((field!=null &&
+    // !field.trim().equals(""))?"a."+field:"a ");
+    // String nuevoField = ((field!=null &&
+    // !field.trim().equals(""))?prefixNotJoinFieldName(field):"a ");
+    // condition =" NOT ("+ orOfInsCollection(nuevoField,fieldLastToken,
+    // splitIn, parametersMap)+" ) ";
+    // staticCondition=true;
+    // }else{
+    // condition =field+" NOT IN (:"+fieldLastToken+")";
+    // //parametersMap.put(field, value);
+    // parametersMap.put(fieldLastToken, value);
+    // }
+    // } else if(operator.getName().equalsIgnoreCase("<=")) {
+    // //condition ="a."+field+"<= :"+field;
+    // //condition =field+"<= :"+field;
+    // condition =field+"<= :"+fieldLastToken;
+    // //parametersMap.put(field, value);
+    // parametersMap.put(fieldLastToken, value);
+    // } else if(operator.getName().equalsIgnoreCase(">=")) {
+    // //condition ="a."+field+">= :"+field;
+    // //condition =field+">= :"+field;
+    // condition =field+">= :"+fieldLastToken;
+    // //parametersMap.put(field, value);
+    // parametersMap.put(fieldLastToken, value);
+    // }else if(operator.getName().equalsIgnoreCase("<")) {
+    // //condition ="a."+field+"< :"+field;
+    // //condition =field+"< :"+field;
+    // condition =field+"< :"+fieldLastToken;
+    // //parametersMap.put(field, value);
+    // parametersMap.put(fieldLastToken, value);
+    // }else if(operator.getName().equalsIgnoreCase(">")) {
+    // //condition ="a."+field+"> :"+field;
+    // //condition =field+"> :"+field;
+    // condition =field+"> :"+fieldLastToken;
+    // //parametersMap.put(field, value);
+    // parametersMap.put(fieldLastToken, value);
+    // }else
+    // if(operator.getName().equalsIgnoreCase("!=")||operator.getName().equalsIgnoreCase("<>"))
+    // {
+    // //condition ="a."+field+"<> :"+field;
+    // //condition =field+"<> :"+field;
+    // condition =field+"<> :"+fieldLastToken;
+    // //parametersMap.put(field, value);
+    // parametersMap.put(fieldLastToken, value);
+    // }else if(operator.getName().equalsIgnoreCase("LEFTLIKE")) {
+    // //condition ="a."+field+"LIKE % :"+field;
+    // //condition =field+"LIKE % :"+field;
+    // condition =field+" LIKE lower(concat('%',:" + fieldLastToken + "))";
+    // //parametersMap.put(field, value);
+    // parametersMap.put(fieldLastToken, value);
+    // //criteria.addLike(field,"%"+value);
+    // }else if(operator.getName().equalsIgnoreCase("RIGHTLIKE")) {
+    // //condition ="a."+field+"LIKE :"+field+"%";
+    // //condition =field+"LIKE :"+field+"%";
+    // condition =field+" LIKE lower(concat(:" + fieldLastToken + ",'%'))";
+    // //parametersMap.put(field, value);
+    // parametersMap.put(fieldLastToken, value);
+    // //criteria.addLike(field,value+"%");
+    // }else
+    // if(operator.getName().equalsIgnoreCase("LIKE")||operator.getName().equalsIgnoreCase("BOTHLIKE"))
+    // {
+    // //condition ="a."+field+"LIKE % :"+field+"%";
+    // //condition =field+"LIKE % :"+field+"%";
+    // condition =field+" LIKE lower(concat('%',:" + fieldLastToken + ",'%'))";
+    // //parametersMap.put(field, value);
+    // parametersMap.put(fieldLastToken, value);
+    // //criteria.addLike(field,"%"+value+"%");
+    // }
+    // //condition = "a."+condition;//deleted by alessandro 14-enero -2010
+    // if(!staticCondition){
+    // if(field!=null && !field.trim().equals("")){ //added by alessandro
+    // 14-enero -2010
+    // //condition = "a."+condition;
+    // condition = prefixNotJoinFieldName(condition);
+    // }else{
+    // condition = "a "+condition;
+    // }
+    // }
+    //
+    //
+    // /********************** end operators mapping
+    // ********************************************/
+    // }
+    // catch (Exception e){
+    // log.error("Exception caught : " + e.toString());
+    // throw new DataAccessException("Error in
+    // BaseJpaDAO.translateSimpleCondition(int progr,Class realClass,
+    // SimpleCondition simpleCondition, Map<String,Object> parametersMap): " +
+    // e.toString(),e);
+    //
+    // }
+    // log.debug("Done");
+    // return condition;
+    // }
+
+    private Annotation getAnnotation(Class realClass, String pAttributeName, Class annotationClass) throws DataAccessException {
+	log.debug("Entering");
+	Annotation annotation = null;
+
+	try {
+
+	    Field field = null;
+	    try {
+		field = realClass.getDeclaredField(pAttributeName);
+	    } catch (final NoSuchFieldException e) {
+		log.warn(pAttributeName + "is not a field of " + realClass.toString());
+	    }
+
+	    if (field != null) {
+		annotation = field.getAnnotation(annotationClass);
+		if (annotation == null) {
+		    final Method getter = getGetter(realClass, pAttributeName);
+		    annotation = getter.getAnnotation(annotationClass);
+		}
+	    }
+
+	} catch (final SecurityException e) {
+	    log.error("SecurityException caught : " + e.toString());
+	    throw new DataAccessException("Error in  BaseJpaDAO.getAnnotation(Class realClass, String pAttributeName, Class annotationClass): " + e.toString(), e);
+	} /*
+	   * catch (NoSuchFieldException e) {
+	   * log.error("NoSuchFieldException caught : " + e.toString()); throw
+	   * new
+	   * DataAccessException("Error in  BaseJpaDAO.getAnnotation(Class realClass, String pAttributeName, Class annotationClass): "
+	   * + e.toString(),e); }
+	   */
+	log.debug("Done");
+	return annotation;
+    }
+
+    /**
+     *
+     * @param realClass
+     * @return the first EmbeddedId or Id annotation found iterating over fields
+     *         and methods of realClass
+     * @throws DataAccessException
+     */
+    @SuppressWarnings("unused")
+    private Annotation getEmbeddedIdOrId(Class realClass) throws DataAccessException {
+	log.debug("Entering");
+	Annotation annotation = null;
+	try {
+	    EmbeddedId embeddedId = null;
+	    Id idAnnotation = null;
+	    /*******
+	     * start looking for EmbeddedId or Id anntoations on fields
+	     *******/
+	    final Field[] fields = realClass.getDeclaredFields();
+	    // Field field = null;
+	    for (final Field field : fields) {
+		embeddedId = field.getAnnotation(EmbeddedId.class);
+		// if(embeddedId!=null ||idAnnotation!=null) {
+		if (embeddedId != null) {
+		    annotation = embeddedId;
+		    break;
+		} else {
+		    idAnnotation = field.getAnnotation(Id.class);
+		    if (idAnnotation != null) {
+			annotation = idAnnotation;
+			break;
+		    }
+		}
+	    }
+
+	    /*******
+	     * start looking for EmbeddedId or Id anntoations on getters
+	     *******/
+	    // Method idGetter = null;
+	    // if(embeddedId==null && field==null){
+	    if (annotation == null) {
+		final Method[] metods = realClass.getMethods();
+
+		for (final Method metod : metods) {
+		    embeddedId = metod.getAnnotation(EmbeddedId.class);
+		    if (embeddedId != null) {
+			annotation = embeddedId;
+			break;
+		    } else {
+			idAnnotation = metod.getAnnotation(Id.class);
+			if (idAnnotation != null) {
+			    annotation = idAnnotation;
+			    break;
+			}
+		    }
+		}
+	    }
+	} catch (final SecurityException e) {
+	    log.error("SecurityException caught : " + e.toString());
+	    throw new DataAccessException("Error in  BaseJpaDAO.getEmbeddedIdOrId(Class realClass): " + e.toString(), e);
+	}
+	log.debug("Done");
+	return annotation;
+
+    }
+
+    /**
+     *
+     * @param realClass
+     * @return the first EmbeddedId annotation found iterating over fields and
+     *         methods of realClass
+     * @throws DataAccessException
+     */
+    @SuppressWarnings("unused")
+    private EmbeddedId getEmbeddedId(Class realClass) throws DataAccessException {
+	log.debug("Entering");
+	EmbeddedId embeddedId = null;
+	try {
+	    /******* start looking for EmbeddedId on fields *******/
+	    final Field[] fields = realClass.getDeclaredFields();
+	    for (final Field field : fields) {
+		embeddedId = field.getAnnotation(EmbeddedId.class);
+		if (embeddedId != null) {
+		    break;
+		}
+	    }
+
+	    /*******
+	     * start looking for EmbeddedId or Id anntoations on getters
+	     *******/
+	    if (embeddedId == null) {
+		final Method[] metods = realClass.getMethods();
+
+		for (final Method metod : metods) {
+		    embeddedId = metod.getAnnotation(EmbeddedId.class);
+		    if (embeddedId != null) {
+			break;
+		    }
+		}
+	    }
+	} catch (final SecurityException e) {
+	    log.error("SecurityException caught : " + e.toString());
+	    throw new DataAccessException("Error in  BaseJpaDAO.getEmbeddedId(Class realClass) : " + e.toString(), e);
+	}
+	log.debug("Done");
+	return embeddedId;
+
+    }
+
+    /**
+     *
+     * @param realClass
+     * @return the first EmbeddedId or Id annotation found iterating over fields
+     * @throws DataAccessException
+     */
+    @SuppressWarnings("unused")
+    private Annotation getEmbeddedIdOrIdOnField(Class realClass) throws DataAccessException {
+	log.debug("Entering");
+	Annotation annotation = null;
+	try {
+	    EmbeddedId embeddedId = null;
+	    Id idAnnotation = null;
+	    /*******
+	     * start looking for EmbeddedId or Id anntoations on fields
+	     *******/
+	    final Field[] fields = realClass.getDeclaredFields();
+	    // Field field = null;
+	    for (final Field field : fields) {
+		embeddedId = field.getAnnotation(EmbeddedId.class);
+		// if(embeddedId!=null ||idAnnotation!=null) {
+		if (embeddedId != null) {
+		    annotation = embeddedId;
+		    break;
+		} else {
+		    idAnnotation = field.getAnnotation(Id.class);
+		    if (idAnnotation != null) {
+			annotation = idAnnotation;
+			break;
+		    }
+		}
+	    }
+	} catch (final SecurityException e) {
+	    log.error("SecurityException caught : " + e.toString());
+	    throw new DataAccessException("Error in  BaseJpaDAO.getEmbeddedIdOrIdOnField(Class realClass): " + e.toString(), e);
+	}
+	log.debug("Done");
+	return annotation;
+
+    }
+
+    /**
+     *
+     * @param realClass
+     * @return the first EmbeddedId or Id annotation found iterating over
+     *         methods of realClass
+     * @throws DataAccessException
+     */
+    @SuppressWarnings("unused")
+    private Annotation getEmbeddedIdOrIdOnMethod(Class realClass) throws DataAccessException {
+	log.debug("Entering");
+	Annotation annotation = null;
+	try {
+	    EmbeddedId embeddedId = null;
+	    Id idAnnotation = null;
+
+	    /*******
+	     * start looking for EmbeddedId or Id anntoations on getters
+	     *******/
+	    // Method idGetter = null;
+	    // if(embeddedId==null && field==null){
+
+	    final Method[] metods = realClass.getMethods();
+
+	    for (final Method metod : metods) {
+		embeddedId = metod.getAnnotation(EmbeddedId.class);
+		if (embeddedId != null) {
+		    annotation = embeddedId;
+		    break;
+		} else {
+		    idAnnotation = metod.getAnnotation(Id.class);
+		    if (idAnnotation != null) {
+			annotation = idAnnotation;
+			break;
+		    }
+		}
+	    }
+
+	} catch (final SecurityException e) {
+	    log.error("SecurityException caught : " + e.toString());
+	    throw new DataAccessException("Error in  BaseJpaDAO.getEmbeddedIdOrIdOnMethod(Class realClass): " + e.toString(), e);
+	}
+	log.debug("Done");
+	return annotation;
+
+    }
+
+    private Field getEmbeddedIdOrIdAnnotatedField(Class realClass) throws DataAccessException {
+	log.debug("Entering");
+	Field field = null;
+	try {
+	    final Field[] fields = realClass.getDeclaredFields();
+	    for (final Field field2 : fields) {
+		if (field2.isAnnotationPresent(EmbeddedId.class) || field2.isAnnotationPresent(Id.class)) {
+		    field = field2;
+		    break;
+		}
+	    }
+	} catch (final SecurityException e) {
+	    log.error("SecurityException caught : " + e.toString());
+	    throw new DataAccessException("Error in  BaseJpaDAO.getEmbeddedIdOrIdAnnotatedField(Class realClass): " + e.toString(), e);
+	}
+	log.debug("Done");
+	return field;
+    }
+
+    private Method getEmbeddedIdOrIdAnnotatedMethod(Class realClass) throws DataAccessException {
+	log.debug("Entering");
+	Method idGetter = null;
+	try {
+	    final Method[] metods = realClass.getMethods();
+	    for (final Method metod : metods) {
+		if (metod.isAnnotationPresent(EmbeddedId.class) || metod.isAnnotationPresent(Id.class)) {
+		    idGetter = metod;
+		    break;
+		}
+	    }
+	} catch (final SecurityException e) {
+	    log.error("SecurityException caught : " + e.toString());
+	    throw new DataAccessException("Error in  BaseJpaDAO.getEmbeddedIdOrIdAnnotatedMethod(Class realClass): " + e.toString(), e);
+	}
+
+	log.debug("Done");
+	return idGetter;
+    }
+
+    private AccessibleObject getEmbeddedIdOrIdAnnotatedAccessibleObject(Class realClass) throws DataAccessException {
+	log.debug("Entering");
+	AccessibleObject accessibleObject = null;
+	try {
+	    accessibleObject = getEmbeddedIdOrIdAnnotatedField(realClass);
+	    if (accessibleObject == null) {
+		accessibleObject = getEmbeddedIdOrIdAnnotatedMethod(realClass);
+	    }
+	} catch (final Exception e) {
+	    log.error("Exception caught : " + e.toString());
+	    throw new DataAccessException("Error in  BaseJpaDAO.getEmbeddedIdOrIdAnnotatedAccessibleObject(Class realClass): " + e.toString(), e);
+	}
+	log.debug("Done");
+	return accessibleObject;
+    }
+
+    private boolean isCascade(Object pInstance, String pAttributeName, CascadeType cascadeType) throws DataAccessException {
+	boolean isCascade = false;
+	try {
+	    final CascadeType[] cascades = getCascade(pInstance, pAttributeName);
+	    if (cascades != null) {
+		for (int i = 0; i < cascades.length && !isCascade; i++) {
+		    isCascade = cascades[i].equals(cascadeType);
+		}
+	    }
+	} catch (final DataAccessException e) {
+	    log.error("Exception caught : " + e.toString());
+	    throw new DataAccessException("Error in  BaseJpaDAO.isCascade(Object pInstance, String pAttributeName, CascadeType cascadeType): " + e.toString(), e);
+	}
+	return isCascade;
+    }
+
+    private CascadeType[] getCascade(Object pInstance, String pAttributeName) throws DataAccessException {
+
+	CascadeType[] cascades = null;
+	try {
+	    final Annotation annotation = getRelationMappingAnnotation(pInstance, pAttributeName);
+	    if (annotation != null) {
+		if (annotation instanceof ManyToMany) {
+		    cascades = ((ManyToMany) annotation).cascade();
+		} else if (annotation instanceof OneToMany) {
+		    cascades = ((OneToMany) annotation).cascade();
+		} else if (annotation instanceof ManyToOne) {
+		    cascades = ((ManyToOne) annotation).cascade();
+		} else if (annotation instanceof OneToOne) {
+		    cascades = ((OneToOne) annotation).cascade();
+		}
+	    }
+	} catch (final Exception e) {
+	    log.error("Exception caught : " + e.toString());
+	    throw new DataAccessException("Error in  BaseJpaDAO.getCascade(Object pInstance, String pAttributeName): " + e.toString(), e);
+	}
+	return cascades;
+    }
+
+    private Annotation getRelationMappingAnnotation(Class realClass, String pAttributeName) throws DataAccessException {
+	Annotation annotation = null;
+	try {
+	    final ManyToMany manyToMany = (ManyToMany) getAnnotation(realClass, pAttributeName, ManyToMany.class);
+	    if (manyToMany != null) {
+		annotation = manyToMany;
+	    } else {
+		final OneToMany oneToMany = (OneToMany) getAnnotation(realClass, pAttributeName, OneToMany.class);
+		if (oneToMany != null) {
+		    annotation = oneToMany;
+		} else {
+		    final ManyToOne manyToOne = (ManyToOne) getAnnotation(realClass, pAttributeName, ManyToOne.class);
+		    if (manyToOne != null) {
+			annotation = manyToOne;
+		    } else {
+			final OneToOne oneToOne = (OneToOne) getAnnotation(realClass, pAttributeName, OneToOne.class);
+			if (oneToOne != null) {
+			    annotation = oneToOne;
+			}
+		    }
+		}
+	    }
+	} catch (final Exception e) {
+	    log.error("Exception caught : " + e.toString());
+	    throw new DataAccessException("Error in  BaseJpaDAO.getRelationMappingAnnotation(Class realClass, String pAttributeName): " + e.toString(), e);
+	}
+	return annotation;
+    }
+
+    private Annotation getRelationMappingAnnotation(Object pInstance, String pAttributeName) throws DataAccessException {
+	Annotation annotation = null;
+	try {
+	    final Class realClass = getEntityClass(pInstance);
+	    annotation = getRelationMappingAnnotation(realClass, pAttributeName);
+	} catch (final Exception e) {
+	    log.error("Exception caught : " + e.toString());
+	    throw new DataAccessException("Error in  BaseJpaDAO.getRelationMappingAnnotation(Object pInstance, String pAttributeName): " + e.toString(), e);
+	}
+	return annotation;
+    }
+
+    private String getMappedBy(Class realClass, String pAttributeName) throws DataAccessException {
+	log.debug("Entering");
+	String mappedBy;
+	try {
+	    mappedBy = null;
+	    // Annotation annotation = getAnnotation(pInstance.getClass(),
+	    // pAttributeName, OneToMany.class);
+	    Annotation annotation = getAnnotation(realClass, pAttributeName, OneToMany.class);
+	    if (annotation == null) {
+		// annotation = getAnnotation(pInstance.getClass(),
+		// pAttributeName, ManyToMany.class);
+		annotation = getAnnotation(realClass, pAttributeName, ManyToMany.class);
+		if (annotation == null) {
+		    throw new DataAccessException(
+			    "DataAccessException thrown in BaseJpaDAO.getMappedBy(Class realClass, String pAttributeName) : pAttributeName or its getter must be annotated with OneToMany or ManyToMany ");
+		}
+		mappedBy = ((ManyToMany) annotation).mappedBy();
+	    } else {
+		mappedBy = ((OneToMany) annotation).mappedBy();
+	    }
+
+	} catch (final Exception e) {
+	    log.error("Exception caught : " + e.toString());
+	    throw new DataAccessException("Error in  BaseJpaDAO.getMappedBy(Object pInstance, String pAttributeName): " + e.toString(), e);
+	}
+	log.debug("Done");
+	return mappedBy;
+    }
+
+    private String getMappedBy(Object pInstance, String pAttributeName) throws DataAccessException {
+	log.debug("Entering");
+	String mappedBy;
+	try {
+
+	    final Class realClass = getEntityClass(pInstance);
+	    mappedBy = getMappedBy(realClass, pAttributeName);
+	    // Annotation annotation = getAnnotation(realClass, pAttributeName,
+	    // OneToMany.class);
+	    // if (annotation== null){
+	    // annotation = getAnnotation(realClass, pAttributeName,
+	    // ManyToMany.class);
+	    // if (annotation==null) throw new
+	    // DataAccessException("DataAccessException thrown in
+	    // BaseJpaDAO.getMappedBy(Object pInstance, String pAttributeName) :
+	    // pAttributeName or its getter must be annotated with OneToMany or
+	    // ManyToMany ");
+	    // mappedBy = ((ManyToMany)annotation).mappedBy();
+	    // }else{
+	    // mappedBy = ((OneToMany)annotation).mappedBy();
+	    // }
+
+	} catch (final Exception e) {
+	    log.error("Exception caught : " + e.toString());
+	    throw new DataAccessException("Error in  BaseJpaDAO.getMappedBy(Object pInstance, String pAttributeName): " + e.toString(), e);
+	}
+	log.debug("Done");
+	return mappedBy;
+    }
+
+    private Method getGetter(Class realClass, String pAttributeName) throws DataAccessException {
+	Method getter = null;
+	try {
+	    if (realClass == null || pAttributeName == null || pAttributeName.trim().equals("")) {
+		throw new DataAccessException("Error in  BaseJpaDAO.getGetter(Class realClass, String pAttributeName): realClass is null or pAttributeName is null or empty string");
+	    }
+	    // getter =
+	    // realClass.getDeclaredMethod("get"+pAttributeName.substring(0,0).toUpperCase()+pAttributeName.substring(1));
+	    getter = realClass.getDeclaredMethod("get" + pAttributeName.substring(0, 1).toUpperCase() + pAttributeName.substring(1));
+	} catch (final SecurityException e) {
+	    log.error("SecurityException caught : " + e.toString());
+	    throw new DataAccessException("Error in  BaseJpaDAO.getGetter(Class realClass, String pAttributeName): " + e.toString(), e);
+	} catch (final NoSuchMethodException e) {
+	    log.error("NoSuchMethodException caught : " + e.toString());
+	    throw new DataAccessException("Error in  BaseJpaDAO.getGetter(Class realClass, String pAttributeName): " + e.toString(), e);
+	}
+	return getter;
+    }
+
+    public void flush() throws DataAccessException, DataOptimisticLockException {
+	log.debug("************Entering ***************");
+	try {
+
+	    getEntityManager().flush();
+	} /*
+	   * catch (InvalidStateException e) { // quitado porqu� con
+	   * hibernate-validator-4.2.0 no funciona
+	   * log.error("BaseJpaDAO.flush()" + e.toString(), e); InvalidValue[]
+	   * invalid = e.getInvalidValues(); for (int i = 0; i < invalid.length;
+	   * ++i) { InvalidValue bad = invalid[i];
+	   * log.error("BaseJpaDAO.flush(), " + bad.getPropertyPath() + ":"+
+	   * bad.getPropertyName() + ":" + bad.getMessage() + ": value is " +
+	   * bad.getValue()); } throw new
+	   * DataAccessException("Error in  BaseJpaDAO.flush(): "+
+	   * e.getCause()!=null ? e.getCause().toString():"no cause ", e); }
+	   */catch (final OptimisticLockException e) {
+	    log.error("OptimisticLockException caught: " + e.toString());
+	    throw new OptimisticLockException("Error in  BaseJpaDAO.flush(): " + e.toString(), e);
+	} catch (final Exception e) {
+	    log.error("Exception caught: " + e.toString());
+	    if (e.getCause() != null && e.getCause().getCause() != null) {
+		throw new DataAccessException("Error in  BaseJpaDAO.flush(): " + e.getCause().toString() + " " + e.getCause().getCause().toString(), e);
+	    }
+	    if (e.getCause() != null) {
+		throw new DataAccessException("Error in  BaseJpaDAO.flush(): " + e.getCause().toString(), e);
+	    }
+
+	    throw new DataAccessException("Error in  BaseJpaDAO.flush(): " + e.toString(), e);
+
+	}
+	log.debug("************Done **************");
+    }
+
+    protected Class getEntityClass(Object entity) throws DataAccessException {
+	try {
+	    return PersistenceUtil.getEntityClass(entity);
+	} catch (final Exception e) {
+	    log.error("InvocationTargetException caught in   JpaPersistenceContextDAO.getEntityClass(Object entity): " + e.toString());
+	    throw new DataAccessException("Error in   BaseJpaDAO.getEntityClass(Object entity): " + e.toString(), e);
+	}
+    }
+
+    public void updateByNativeQueryString(String queryString) throws DataAccessException {
+	log.debug("************Entering ***************");
+	try {
+	    final Query query = getEntityManager().createNativeQuery(queryString);
+	    query.executeUpdate();
+
+	} catch (final Exception e) {
+	    log.error("Exception caught  : " + e.toString());
+	    throw new DataAccessException("Error in  BaseJpaDAO.updateByNativeQueryString(String queryString) : " + e.toString(), e);
+	}
+	log.debug("************Done **************");
+    }
+
+    public void updateByNativeQueryString(String queryString, Map parameters) throws DataAccessException {
+	log.debug("************Entering ***************");
+	try {
+	    final Query query = getEntityManager().createNativeQuery(queryString);
+	    setQueryParameters(query, parameters);
+	    query.executeUpdate();
+
+	} catch (final Exception e) {
+	    log.error("Exception caught  : " + e.toString());
+	    throw new DataAccessException("Error in  BaseJpaDAO.updateByNativeQueryString(String queryString, , Map parameters) : " + e.toString(), e);
+	}
+	log.debug("************Done **************");
+    }
+
 }

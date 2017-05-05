@@ -56,7 +56,7 @@
  *
  *     The precise terms and conditions for copying, distribution and
  *  modification follow.
- *  
+ *
  *	                	    GNU GENERAL PUBLIC LICENSE
  *       TERMS AND CONDITIONS FOR COPYING, DISTRIBUTION AND MODIFICATION
  *
@@ -111,7 +111,7 @@
  *     License.  (Exception: if the Program itself is interactive but
  *     does not normally print such an announcement, your work based on
  *     the Program is not required to print an announcement.)
- *     
+ *
  *     These requirements apply to the modified work as a whole.  If
  *  identifiable sections of that work are not derived from the Program,
  *  and can be reasonably considered independent and separate works in
@@ -169,7 +169,7 @@
  *  access to copy the source code from the same place counts as
  *  distribution of the source code, even though third parties are not
  *  compelled to copy the source along with the object code.
- *  
+ *
  *     4. You may not copy, modify, sublicense, or distribute the Program
  *  except as expressly provided under this License.  Any attempt
  *  otherwise to copy, modify, sublicense or distribute the Program is
@@ -226,7 +226,7 @@
 
  *  This section is intended to make thoroughly clear what is believed to
  *  be a consequence of the rest of this License.
- *  
+ *
  *    8. If the distribution and/or use of the Program is restricted in
  *  certain countries either by patents or by copyrighted interfaces, the
  *  original copyright holder who places the Program under this License
@@ -279,7 +279,7 @@
  *  POSSIBILITY OF SUCH DAMAGES.
  *
  *  		     END OF TERMS AND CONDITIONS
- *  
+ *
  *  	    How to Apply These Terms to Your New Programs
  *    If you develop a new program, and you want it to be of the greatest
  *  possible use to the public, the best way to achieve this is to make it
@@ -343,15 +343,6 @@
 
 package it.aco.mandragora.dao.impl.ojb.pb;
 
-import it.aco.mandragora.dao.DAO;
-import it.aco.mandragora.dao.impl.ojb.pb.core.OjbPbCore;
-import it.aco.mandragora.dao.impl.ojb.pb.support.PersistenceBrokerSupport;
-import it.aco.mandragora.exception.DataAccessException;
-import it.aco.mandragora.exception.DataOptimisticLockException;
-import it.aco.mandragora.exception.OjbPbCoreException;
-import it.aco.mandragora.exception.PersistenceBrokerSupportException;
-import it.aco.mandragora.query.LogicCondition;
-
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
@@ -361,2206 +352,2575 @@ import org.apache.ojb.broker.OptimisticLockException;
 import org.apache.ojb.broker.PersistenceBroker;
 import org.apache.ojb.broker.util.ObjectModification;
 
+import it.aco.mandragora.dao.DAO;
+import it.aco.mandragora.dao.impl.ojb.pb.core.OjbPbCore;
+import it.aco.mandragora.dao.impl.ojb.pb.support.PersistenceBrokerSupport;
+import it.aco.mandragora.exception.DataAccessException;
+import it.aco.mandragora.exception.DataOptimisticLockException;
+import it.aco.mandragora.exception.OjbPbCoreException;
+import it.aco.mandragora.exception.PersistenceBrokerSupportException;
+import it.aco.mandragora.query.LogicCondition;
 
-public abstract class BaseOjbPbDAO implements DAO{
-
-
+public abstract class BaseOjbPbDAO implements DAO {
 
     protected PersistenceBrokerSupport persistenceBrokerSupport;
     protected OjbPbCore ojbPbCore;
 
-
     // Create Log4j category instance for logging
     static private org.apache.log4j.Category log = org.apache.log4j.Logger.getLogger(BaseOjbPbDAO.class.getName());
 
+    public Object findByPrimaryKey(Class realClass, Object[] pkValues) throws DataAccessException {
+	log.info("************Entering the BaseOjbPbDAO.findByPrimaryKey(Class realClass, Object[] pkValues) ***************");
+	PersistenceBroker pb = null;
+	Object result = null;
+	try {
 
+	    pb = persistenceBrokerSupport.getPersistenceBroker();
+	    result = ojbPbCore.findByPrimaryKey(realClass, pkValues, pb);
 
+	} catch (final PersistenceBrokerSupportException e) {
+	    log.error("PersistenceBrokerSupportException thrown in  BaseOjbPbDAO.findByPrimaryKey(Class realClass,Object[] pkValues) : " + e.toString());
+	    throw new DataAccessException("Error in  BaseOjbPbDAO.findByPrimaryKey(Class realClass, Object[] pkValues): " + e.toString(), e);
+	} catch (final OjbPbCoreException e) {
+	    log.error("OjbPbCoreException thrown in  BaseOjbPbDAO.findByPrimaryKey(Class realClass,Object[] pkValues) : " + e.toString());
+	    throw new DataAccessException("Error in  BaseOjbPbDAO.findByPrimaryKey(Class realClass, Object[] pkValues): " + e.toString(), e);
+	} catch (final Exception e) {
+	    log.error("Exception thrown in  BaseOjbPbDAO.findByPrimaryKey(Class realClass,Object[] pkValues): " + e.toString());
+	    throw new DataAccessException("Error in  BaseOjbPbDAO.findByPrimaryKey(Class realClass, Object[] pkValues): " + e.toString(), e);
+	} finally {
+	    try {
 
-    public Object findByPrimaryKey(Class realClass,Object[] pkValues)throws DataAccessException{
-        log.info("************Entering the BaseOjbPbDAO.findByPrimaryKey(Class realClass, Object[] pkValues) ***************");
-        PersistenceBroker pb = null;
-        Object result = null;
-        try{
+		persistenceBrokerSupport.releasePersistenceBroker(pb);
 
-            pb = persistenceBrokerSupport.getPersistenceBroker();
-            result = ojbPbCore.findByPrimaryKey(realClass, pkValues, pb);
-
-        }catch(PersistenceBrokerSupportException e) {
-            log.error("PersistenceBrokerSupportException thrown in  BaseOjbPbDAO.findByPrimaryKey(Class realClass,Object[] pkValues) : " + e.toString());
-            throw new DataAccessException("Error in  BaseOjbPbDAO.findByPrimaryKey(Class realClass, Object[] pkValues): " + e.toString(),e);
-        }catch(OjbPbCoreException e) {
-            log.error("OjbPbCoreException thrown in  BaseOjbPbDAO.findByPrimaryKey(Class realClass,Object[] pkValues) : " + e.toString());
-            throw new DataAccessException("Error in  BaseOjbPbDAO.findByPrimaryKey(Class realClass, Object[] pkValues): " + e.toString(),e);
-        } catch (Exception e) {
-            log.error("Exception thrown in  BaseOjbPbDAO.findByPrimaryKey(Class realClass,Object[] pkValues): " + e.toString());
-            throw new DataAccessException("Error in  BaseOjbPbDAO.findByPrimaryKey(Class realClass, Object[] pkValues): " + e.toString(),e);
-        }  finally {
-            try{
-
-                persistenceBrokerSupport.releasePersistenceBroker(pb);
-
-            } catch(PersistenceBrokerSupportException e) {
-                log.error("PersistenceBrokerSupportException thrown in  BaseOjbPbDAO.findByPrimaryKey(Class realClass,Object[] pkValues) in the finally clause: " + e.toString());
-                throw new DataAccessException("Error in  BaseOjbPbDAO.findByPrimaryKey(Class realClass, Object[] pkValues) in the finally clause: " + e.toString(),e);
-            }
-        }
-        log.info("************Done with the  BaseOjbPbDAO.findByPrimaryKey(Class realClass, Object[] pkValues)***************");
-        return result;
+	    } catch (final PersistenceBrokerSupportException e) {
+		log.error("PersistenceBrokerSupportException thrown in  BaseOjbPbDAO.findByPrimaryKey(Class realClass,Object[] pkValues) in the finally clause: " + e.toString());
+		throw new DataAccessException("Error in  BaseOjbPbDAO.findByPrimaryKey(Class realClass, Object[] pkValues) in the finally clause: " + e.toString(), e);
+	    }
+	}
+	log.info("************Done with the  BaseOjbPbDAO.findByPrimaryKey(Class realClass, Object[] pkValues)***************");
+	return result;
     }
 
+    public Object findByPrimaryKey(Class realClass, String[] pkFieldNames, Object[] pkValues) throws DataAccessException {
+	log.info("************Entering the BaseOjbPbDAO.findByPrimaryKey(Class realClass,String[] pkFieldNames, Object[] pkValues) ***************");
+	PersistenceBroker pb = null;
+	Object result = null;
+	try {
+	    pb = persistenceBrokerSupport.getPersistenceBroker();
+	    result = ojbPbCore.findByPrimaryKey(realClass, pkFieldNames, pkValues, pb);
+	} catch (final PersistenceBrokerSupportException e) {
+	    log.error("PersistenceBrokerSupportException thrown in  BaseOjbPbDAO.findByPrimaryKey(Class realClass,String[] pkFieldNames, Object[] pkValues): " + e.toString());
+	    throw new DataAccessException("Error in  BaseOjbPbDAO.findByPrimaryKey(Class realClass,String[] pkFieldNames, Object[] pkValues): " + e.toString(), e);
+	} catch (final OjbPbCoreException e) {
+	    log.error("OjbPbCoreException thrown in  BaseOjbPbDAO.findByPrimaryKey(Class realClass,String[] pkFieldNames, Object[] pkValues): " + e.toString());
+	    throw new DataAccessException("Error in  BaseOjbPbDAO.findByPrimaryKey(Class realClass,String[] pkFieldNames, Object[] pkValues): " + e.toString(), e);
+	} catch (final Exception e) {
+	    log.error("Exception thrown in  BaseOjbPbDAO.findByPrimaryKey(Class realClass,String[] pkFieldNames, Object[] pkValues): " + e.toString());
+	    throw new DataAccessException("Error in  BaseOjbPbDAO.findByPrimaryKey(Class realClass,String[] pkFieldNames, Object[] pkValues): " + e.toString(), e);
+	} finally {
+	    try {
 
-    public Object findByPrimaryKey(Class realClass,String[] pkFieldNames, Object[] pkValues)throws DataAccessException{
-        log.info("************Entering the BaseOjbPbDAO.findByPrimaryKey(Class realClass,String[] pkFieldNames, Object[] pkValues) ***************");
-        PersistenceBroker pb = null;
-        Object result = null;
-        try{
-            pb = persistenceBrokerSupport.getPersistenceBroker();
-            result =  ojbPbCore.findByPrimaryKey(realClass, pkFieldNames, pkValues, pb);
-        } catch (PersistenceBrokerSupportException e) {
-            log.error("PersistenceBrokerSupportException thrown in  BaseOjbPbDAO.findByPrimaryKey(Class realClass,String[] pkFieldNames, Object[] pkValues): " + e.toString());
-            throw new DataAccessException("Error in  BaseOjbPbDAO.findByPrimaryKey(Class realClass,String[] pkFieldNames, Object[] pkValues): " + e.toString(),e);
-        } catch (OjbPbCoreException e) {
-            log.error("OjbPbCoreException thrown in  BaseOjbPbDAO.findByPrimaryKey(Class realClass,String[] pkFieldNames, Object[] pkValues): " + e.toString());
-            throw new DataAccessException("Error in  BaseOjbPbDAO.findByPrimaryKey(Class realClass,String[] pkFieldNames, Object[] pkValues): " + e.toString(),e);
-        } catch (Exception e) {
-            log.error("Exception thrown in  BaseOjbPbDAO.findByPrimaryKey(Class realClass,String[] pkFieldNames, Object[] pkValues): " + e.toString());
-            throw new DataAccessException("Error in  BaseOjbPbDAO.findByPrimaryKey(Class realClass,String[] pkFieldNames, Object[] pkValues): " + e.toString(),e);
-        } finally {
-            try{
+		persistenceBrokerSupport.releasePersistenceBroker(pb);
 
-                persistenceBrokerSupport.releasePersistenceBroker(pb);
-
-            } catch(PersistenceBrokerSupportException e) {
-                log.error("PersistenceBrokerSupportException thrown in  BaseOjbPbDAO.findByPrimaryKey(Class realClass,String[] pkFieldNames, Object[] pkValues) in the finally clause: " + e.toString());
-                throw new DataAccessException("Error in  BaseOjbPbDAO.findByPrimaryKey(Class realClass,String[] pkFieldNames, Object[] pkValues) in the finally clause: " + e.toString(),e);
-            }
-        }
-        log.info("************Done with the  BaseOjbPbDAO.findByPrimaryKey(Class realClass,String[] pkFieldNames, Object[] pkValues)***************");
-        return result;
+	    } catch (final PersistenceBrokerSupportException e) {
+		log.error(
+			"PersistenceBrokerSupportException thrown in  BaseOjbPbDAO.findByPrimaryKey(Class realClass,String[] pkFieldNames, Object[] pkValues) in the finally clause: " + e.toString());
+		throw new DataAccessException("Error in  BaseOjbPbDAO.findByPrimaryKey(Class realClass,String[] pkFieldNames, Object[] pkValues) in the finally clause: " + e.toString(), e);
+	    }
+	}
+	log.info("************Done with the  BaseOjbPbDAO.findByPrimaryKey(Class realClass,String[] pkFieldNames, Object[] pkValues)***************");
+	return result;
     }
 
-    public Object findByPrimaryKey(Class realClass, Object pkValue)throws DataAccessException{
-        log.info("************Entering the BaseOjbPbDAO.findByPrimaryKey(Class realClass, java.lang.Object pkValue) ***************");
-        PersistenceBroker pb = null;
-        Object result = null;
-        try{
-            pb = persistenceBrokerSupport.getPersistenceBroker();
-            result =  ojbPbCore.findByPrimaryKey(realClass, pkValue, pb);
-        }catch (PersistenceBrokerSupportException e) {
-            log.error("PersistenceBrokerException thrown in  BaseOjbPbDAO.findByPrimaryKey(Class realClass, java.lang.Object pkValue): " + e.toString());
-            throw new DataAccessException("Error in  BaseOjbPbDAO.findByPrimaryKey(Class realClass, java.lang.Object pkValue): " + e.toString(),e);
-        } catch (OjbPbCoreException e) {
-            log.error("ServiceLocatorException thrown in  BaseOjbPbDAO.findByPrimaryKey(Class realClass, java.lang.Object pkValue): " + e.toString());
-            throw new DataAccessException("Error in  BaseOjbPbDAO.findByPrimaryKey(Class realClass, java.lang.Object pkValue): " + e.toString(),e);
-        } catch (Exception e) {
-            log.error("Exception thrown in  BaseOjbPbDAO.findByPrimaryKey(Class realClass, Object pkValue): " + e.toString());
-            throw new DataAccessException("Error in  BaseOjbPbDAO.findByPrimaryKey(Class realClass, Object pkValue): " + e.toString(),e);
-        } finally {
-                try{
+    public Object findByPrimaryKey(Class realClass, Object pkValue) throws DataAccessException {
+	log.info("************Entering the BaseOjbPbDAO.findByPrimaryKey(Class realClass, java.lang.Object pkValue) ***************");
+	PersistenceBroker pb = null;
+	Object result = null;
+	try {
+	    pb = persistenceBrokerSupport.getPersistenceBroker();
+	    result = ojbPbCore.findByPrimaryKey(realClass, pkValue, pb);
+	} catch (final PersistenceBrokerSupportException e) {
+	    log.error("PersistenceBrokerException thrown in  BaseOjbPbDAO.findByPrimaryKey(Class realClass, java.lang.Object pkValue): " + e.toString());
+	    throw new DataAccessException("Error in  BaseOjbPbDAO.findByPrimaryKey(Class realClass, java.lang.Object pkValue): " + e.toString(), e);
+	} catch (final OjbPbCoreException e) {
+	    log.error("ServiceLocatorException thrown in  BaseOjbPbDAO.findByPrimaryKey(Class realClass, java.lang.Object pkValue): " + e.toString());
+	    throw new DataAccessException("Error in  BaseOjbPbDAO.findByPrimaryKey(Class realClass, java.lang.Object pkValue): " + e.toString(), e);
+	} catch (final Exception e) {
+	    log.error("Exception thrown in  BaseOjbPbDAO.findByPrimaryKey(Class realClass, Object pkValue): " + e.toString());
+	    throw new DataAccessException("Error in  BaseOjbPbDAO.findByPrimaryKey(Class realClass, Object pkValue): " + e.toString(), e);
+	} finally {
+	    try {
 
-                    persistenceBrokerSupport.releasePersistenceBroker(pb);
+		persistenceBrokerSupport.releasePersistenceBroker(pb);
 
-            } catch(PersistenceBrokerSupportException e) {
-                log.error("PersistenceBrokerSupportException thrown in  BaseOjbPbDAO.findByPrimaryKey(Class realClass, java.lang.Object pkValue) in the finally clause: " + e.toString());
-                throw new DataAccessException("Error in  BaseOjbPbDAO.findByPrimaryKey(Class realClass, java.lang.Object pkValue) in the finally clause: " + e.toString(),e);
-            }
-        }
-        log.info("************Done with the  BaseOjbPbDAO.findByPrimaryKey(Class realClass, java.lang.Object pkValue)***************");
-        return result;
+	    } catch (final PersistenceBrokerSupportException e) {
+		log.error("PersistenceBrokerSupportException thrown in  BaseOjbPbDAO.findByPrimaryKey(Class realClass, java.lang.Object pkValue) in the finally clause: " + e.toString());
+		throw new DataAccessException("Error in  BaseOjbPbDAO.findByPrimaryKey(Class realClass, java.lang.Object pkValue) in the finally clause: " + e.toString(), e);
+	    }
+	}
+	log.info("************Done with the  BaseOjbPbDAO.findByPrimaryKey(Class realClass, java.lang.Object pkValue)***************");
+	return result;
     }
 
-    public Object findObjectByTemplate(Object templateVO) throws DataAccessException{
-        log.info("************Entering the BaseOjbPbDAO.findObjectByTemplate(Object templateVO) ***************");
-        PersistenceBroker pb = null;
-        Object result = null;
-        try{
-            pb = persistenceBrokerSupport.getPersistenceBroker();
-            result =  ojbPbCore.findObjectByTemplate(templateVO, pb);
+    public Object findObjectByTemplate(Object templateVO) throws DataAccessException {
+	log.info("************Entering the BaseOjbPbDAO.findObjectByTemplate(Object templateVO) ***************");
+	PersistenceBroker pb = null;
+	Object result = null;
+	try {
+	    pb = persistenceBrokerSupport.getPersistenceBroker();
+	    result = ojbPbCore.findObjectByTemplate(templateVO, pb);
 
+	} catch (final PersistenceBrokerSupportException e) {
+	    log.error("PersistenceBrokerSupportException thrown in  BaseOjbPbDAO.findObjectByTemplate(Object templateVO): " + e.toString());
+	    throw new DataAccessException("Error in  BaseOjbPbDAO.findObjectByTemplate(Object templateVO): " + e.toString(), e);
+	} catch (final OjbPbCoreException e) {
+	    log.error("OjbPbCoreException thrown in  BaseOjbPbDAO.findObjectByTemplate(Object templateVO): " + e.toString());
+	    throw new DataAccessException("Error in  BaseOjbPbDAO.findObjectByTemplate(Object templateVO): " + e.toString(), e);
+	} catch (final Exception e) {
+	    log.error("Exception thrown in  BaseOjbPbDAO.findObjectByTemplate(Object templateVO): " + e.toString());
+	    throw new DataAccessException("Error in  BaseOjbPbDAO.findObjectByTemplate(Object templateVO): " + e.toString(), e);
+	} finally {
+	    try {
 
-        } catch (PersistenceBrokerSupportException e) {
-            log.error("PersistenceBrokerSupportException thrown in  BaseOjbPbDAO.findObjectByTemplate(Object templateVO): " + e.toString());
-            throw new DataAccessException("Error in  BaseOjbPbDAO.findObjectByTemplate(Object templateVO): " + e.toString(),e);
-        } catch (OjbPbCoreException e) {
-            log.error("OjbPbCoreException thrown in  BaseOjbPbDAO.findObjectByTemplate(Object templateVO): " + e.toString());
-            throw new DataAccessException("Error in  BaseOjbPbDAO.findObjectByTemplate(Object templateVO): " + e.toString(),e);
-        }  catch (Exception e) {
-            log.error("Exception thrown in  BaseOjbPbDAO.findObjectByTemplate(Object templateVO): " + e.toString());
-            throw new DataAccessException("Error in  BaseOjbPbDAO.findObjectByTemplate(Object templateVO): " + e.toString(),e);
-        }finally {
-            try{
+		persistenceBrokerSupport.releasePersistenceBroker(pb);
 
-                persistenceBrokerSupport.releasePersistenceBroker(pb);
-
-            } catch(PersistenceBrokerSupportException e) {
-                log.error("PersistenceBrokerSupportException thrown in  BaseOjbPbDAO.findObjectByTemplate(Object templateVO) in the finally clause: " + e.toString());
-                throw new DataAccessException("Error in  BaseOjbPbDAO.findObjectByTemplate(Object templateVO) in the finally clause: " + e.toString(),e);
-            }
-        }
-        log.info("************Done with the  BaseOjbPbDAO.findObjectByTemplate(Object templateVO)***************");
-        return result;
+	    } catch (final PersistenceBrokerSupportException e) {
+		log.error("PersistenceBrokerSupportException thrown in  BaseOjbPbDAO.findObjectByTemplate(Object templateVO) in the finally clause: " + e.toString());
+		throw new DataAccessException("Error in  BaseOjbPbDAO.findObjectByTemplate(Object templateVO) in the finally clause: " + e.toString(), e);
+	    }
+	}
+	log.info("************Done with the  BaseOjbPbDAO.findObjectByTemplate(Object templateVO)***************");
+	return result;
     }
 
+    public Collection findCollectionByNullFields(Class realClass, String[] nullFields) throws DataAccessException {
+	log.info("************Entering the BaseOjbPbDAO.findCollectionByNullFields(Class realClass, String[] nullFields)***************");
+	PersistenceBroker pb = null;
+	Collection result = null;
+	try {
+	    pb = persistenceBrokerSupport.getPersistenceBroker();
+	    result = ojbPbCore.findCollectionByNullFields(realClass, nullFields, pb);
 
-    public Collection findCollectionByNullFields(Class realClass, String[] nullFields) throws DataAccessException{
-        log.info("************Entering the BaseOjbPbDAO.findCollectionByNullFields(Class realClass, String[] nullFields)***************");
-        PersistenceBroker pb = null;
-        Collection result = null;
-        try{
-            pb = persistenceBrokerSupport.getPersistenceBroker();
-            result =  ojbPbCore.findCollectionByNullFields(realClass, nullFields, pb);
+	} catch (final PersistenceBrokerSupportException e) {
+	    log.error("PersistenceBrokerSupportException thrown in  BaseOjbPbDAO.findCollectionByNullFields(Class realClass, String[] nullFields): " + e.toString());
+	    throw new DataAccessException("Error in  BaseOjbPbDAO.findCollectionByNullFields(Class realClass, String[] nullFields): " + e.toString(), e);
+	} catch (final OjbPbCoreException e) {
+	    log.error("OjbPbCoreException thrown in  BaseOjbPbDAO.findCollectionByNullFields(Class realClass, String[] nullFields): " + e.toString());
+	    throw new DataAccessException("Error in  BaseOjbPbDAO.findCollectionByNullFields(Class realClass, String[] nullFields): " + e.toString(), e);
+	} catch (final Exception e) {
+	    log.error("Exception thrown in  BaseOjbPbDAO.findCollectionByNullFields(Class realClass, String[] nullFields): " + e.toString());
+	    throw new DataAccessException("Error in  BaseOjbPbDAO.findCollectionByNullFields(Class realClass, String[] nullFields): " + e.toString(), e);
+	} finally {
+	    try {
 
-        } catch (PersistenceBrokerSupportException e) {
-            log.error("PersistenceBrokerSupportException thrown in  BaseOjbPbDAO.findCollectionByNullFields(Class realClass, String[] nullFields): " + e.toString());
-            throw new DataAccessException("Error in  BaseOjbPbDAO.findCollectionByNullFields(Class realClass, String[] nullFields): " + e.toString(),e);
-        } catch (OjbPbCoreException e) {
-            log.error("OjbPbCoreException thrown in  BaseOjbPbDAO.findCollectionByNullFields(Class realClass, String[] nullFields): " + e.toString());
-            throw new DataAccessException("Error in  BaseOjbPbDAO.findCollectionByNullFields(Class realClass, String[] nullFields): " + e.toString(),e);
-        } catch (Exception e) {
-            log.error("Exception thrown in  BaseOjbPbDAO.findCollectionByNullFields(Class realClass, String[] nullFields): " + e.toString());
-            throw new DataAccessException("Error in  BaseOjbPbDAO.findCollectionByNullFields(Class realClass, String[] nullFields): " + e.toString(),e);
-        } finally {
-            try{
+		persistenceBrokerSupport.releasePersistenceBroker(pb);
 
-                persistenceBrokerSupport.releasePersistenceBroker(pb);
-
-            } catch(PersistenceBrokerSupportException e) {
-                log.error("PersistenceBrokerSupportException thrown in  BaseOjbPbDAO.findCollectionByNullFields(Class realClass, String[] nullFields) in the finally clause: " + e.toString());
-                throw new DataAccessException("Error in  BaseOjbPbDAO.findCollectionByNullFields(Class realClass, String[] nullFields) in the finally clause: " + e.toString(),e);
-            }
-        }
-        log.info("************Done with the  BaseOjbPbDAO.findCollectionByNullFields(Class realClass, String[] nullFields)***************");
-        return result;
+	    } catch (final PersistenceBrokerSupportException e) {
+		log.error("PersistenceBrokerSupportException thrown in  BaseOjbPbDAO.findCollectionByNullFields(Class realClass, String[] nullFields) in the finally clause: " + e.toString());
+		throw new DataAccessException("Error in  BaseOjbPbDAO.findCollectionByNullFields(Class realClass, String[] nullFields) in the finally clause: " + e.toString(), e);
+	    }
+	}
+	log.info("************Done with the  BaseOjbPbDAO.findCollectionByNullFields(Class realClass, String[] nullFields)***************");
+	return result;
     }
 
+    public Collection findCollectionByTemplate(Object templateVO) throws DataAccessException {
+	log.info("************Entering the BaseOjbPbDAO.findCollectionByTemplate(Object templateVO) ***************");
+	PersistenceBroker pb = null;
+	Collection result = null;
+	try {
+	    pb = persistenceBrokerSupport.getPersistenceBroker();
+	    result = ojbPbCore.findCollectionByTemplate(templateVO, pb);
 
-    public Collection findCollectionByTemplate(Object templateVO) throws DataAccessException{
-        log.info("************Entering the BaseOjbPbDAO.findCollectionByTemplate(Object templateVO) ***************");
-        PersistenceBroker pb = null;
-        Collection result = null;
-        try{
-            pb = persistenceBrokerSupport.getPersistenceBroker();
-            result =  ojbPbCore.findCollectionByTemplate(templateVO,pb);
+	} catch (final PersistenceBrokerSupportException e) {
+	    log.error("PersistenceBrokerSupportException thrown in  BaseOjbPbDAO.findCollectionByTemplate(Object templateVO): " + e.toString());
+	    throw new DataAccessException("Error in  BaseOjbPbDAO.findCollectionByTemplate(Object templateVO): " + e.toString(), e);
+	} catch (final OjbPbCoreException e) {
+	    log.error("OjbPbCoreException thrown in  BaseOjbPbDAO.findCollectionByTemplate(Object templateVO): " + e.toString());
+	    throw new DataAccessException("Error in  BaseOjbPbDAO.findCollectionByTemplate(Object templateVO): " + e.toString(), e);
+	} catch (final Exception e) {
+	    log.error("Exception thrown in  BaseOjbPbDAO.findCollectionByTemplate(Object templateVO): " + e.toString());
+	    throw new DataAccessException("Error in  BaseOjbPbDAO.findCollectionByTemplate(Object templateVO): " + e.toString(), e);
+	} finally {
+	    try {
 
-        } catch (PersistenceBrokerSupportException e) {
-            log.error("PersistenceBrokerSupportException thrown in  BaseOjbPbDAO.findCollectionByTemplate(Object templateVO): " + e.toString());
-            throw new DataAccessException("Error in  BaseOjbPbDAO.findCollectionByTemplate(Object templateVO): " + e.toString(),e);
-        } catch (OjbPbCoreException e) {
-            log.error("OjbPbCoreException thrown in  BaseOjbPbDAO.findCollectionByTemplate(Object templateVO): " + e.toString());
-            throw new DataAccessException("Error in  BaseOjbPbDAO.findCollectionByTemplate(Object templateVO): " + e.toString(),e);
-        } catch (Exception e) {
-            log.error("Exception thrown in  BaseOjbPbDAO.findCollectionByTemplate(Object templateVO): " + e.toString());
-            throw new DataAccessException("Error in  BaseOjbPbDAO.findCollectionByTemplate(Object templateVO): " + e.toString(),e);
-        } finally {
-            try{
+		persistenceBrokerSupport.releasePersistenceBroker(pb);
 
-                persistenceBrokerSupport.releasePersistenceBroker(pb);
-
-            } catch(PersistenceBrokerSupportException e) {
-                log.error("PersistenceBrokerSupportException thrown in  BaseOjbPbDAO.findCollectionByTemplate(Object templateVO) in the finally clause: " + e.toString());
-                throw new DataAccessException("Error in  BaseOjbPbDAO.findCollectionByTemplate(Object templateVO) in the finally clause: " + e.toString(),e);
-            }
-        }
-        log.info("************Done with the  BaseOjbPbDAO.findCollectionByTemplate(ValueObject templateVO)***************");
-        return result;
+	    } catch (final PersistenceBrokerSupportException e) {
+		log.error("PersistenceBrokerSupportException thrown in  BaseOjbPbDAO.findCollectionByTemplate(Object templateVO) in the finally clause: " + e.toString());
+		throw new DataAccessException("Error in  BaseOjbPbDAO.findCollectionByTemplate(Object templateVO) in the finally clause: " + e.toString(), e);
+	    }
+	}
+	log.info("************Done with the  BaseOjbPbDAO.findCollectionByTemplate(ValueObject templateVO)***************");
+	return result;
     }
 
-    public Collection findCollectionByTemplate(Object templateVO, String orderingField, Boolean asc) throws DataAccessException{
-        log.info("************Entering the BaseOjbPbDAO.findCollectionByTemplate(Object templateVO, String orderingField, Boolean asc) ***************");
-        PersistenceBroker pb = null;
-        Collection result = null;
-        try{
-            pb = persistenceBrokerSupport.getPersistenceBroker();
-            result =  ojbPbCore.findCollectionByTemplate(templateVO, orderingField, asc,pb);
+    public Collection findCollectionByTemplate(Object templateVO, String orderingField, Boolean asc) throws DataAccessException {
+	log.info("************Entering the BaseOjbPbDAO.findCollectionByTemplate(Object templateVO, String orderingField, Boolean asc) ***************");
+	PersistenceBroker pb = null;
+	Collection result = null;
+	try {
+	    pb = persistenceBrokerSupport.getPersistenceBroker();
+	    result = ojbPbCore.findCollectionByTemplate(templateVO, orderingField, asc, pb);
 
-        } catch (PersistenceBrokerSupportException e) {
-            log.error("PersistenceBrokerSupportException thrown in  BaseOjbPbDAO.findCollectionByTemplate(Object templateVO, String orderingField, Boolean asc): " + e.toString());
-            throw new DataAccessException("Error in  BaseOjbPbDAO.findCollectionByTemplate(Object templateVO, String orderingField, Boolean asc): " + e.toString(),e);
-        } catch (OjbPbCoreException e) {
-            log.error("OjbPbCoreException thrown in  BaseOjbPbDAO.findCollectionByTemplate(Object templateVO, String orderingField, Boolean asc): " + e.toString());
-            throw new DataAccessException("Error in  BaseOjbPbDAO.findCollectionByTemplate(Object templateVO, String orderingField, Boolean asc): " + e.toString(),e);
-        } catch (Exception e) {
-            log.error("Exception thrown in  BaseOjbPbDAO.findCollectionByTemplate(Object templateVO, String orderingField, Boolean asc): " + e.toString());
-            throw new DataAccessException("Error in  BaseOjbPbDAO.findCollectionByTemplate(Object templateVO, String orderingField, Boolean asc): " + e.toString(),e);
-        } finally {
-            try{
+	} catch (final PersistenceBrokerSupportException e) {
+	    log.error("PersistenceBrokerSupportException thrown in  BaseOjbPbDAO.findCollectionByTemplate(Object templateVO, String orderingField, Boolean asc): " + e.toString());
+	    throw new DataAccessException("Error in  BaseOjbPbDAO.findCollectionByTemplate(Object templateVO, String orderingField, Boolean asc): " + e.toString(), e);
+	} catch (final OjbPbCoreException e) {
+	    log.error("OjbPbCoreException thrown in  BaseOjbPbDAO.findCollectionByTemplate(Object templateVO, String orderingField, Boolean asc): " + e.toString());
+	    throw new DataAccessException("Error in  BaseOjbPbDAO.findCollectionByTemplate(Object templateVO, String orderingField, Boolean asc): " + e.toString(), e);
+	} catch (final Exception e) {
+	    log.error("Exception thrown in  BaseOjbPbDAO.findCollectionByTemplate(Object templateVO, String orderingField, Boolean asc): " + e.toString());
+	    throw new DataAccessException("Error in  BaseOjbPbDAO.findCollectionByTemplate(Object templateVO, String orderingField, Boolean asc): " + e.toString(), e);
+	} finally {
+	    try {
 
-                persistenceBrokerSupport.releasePersistenceBroker(pb);
+		persistenceBrokerSupport.releasePersistenceBroker(pb);
 
-            } catch(PersistenceBrokerSupportException e) {
-                log.error("PersistenceBrokerSupportException thrown in  BaseOjbPbDAO.findCollectionByTemplate(Object templateVO, String orderingField, Boolean asc) in the finally clause: " + e.toString());
-                throw new DataAccessException("Error in  BaseOjbPbDAO.findCollectionByTemplate(Object templateVO, String orderingField, Boolean asc)in the finally clause: " + e.toString(),e);
-            }
-        }
-        log.info("************Done with the  BaseOjbPbDAO.findCollectionByTemplate(Object templateVO, String orderingField, Boolean asc)***************");
-        return result;
+	    } catch (final PersistenceBrokerSupportException e) {
+		log.error("PersistenceBrokerSupportException thrown in  BaseOjbPbDAO.findCollectionByTemplate(Object templateVO, String orderingField, Boolean asc) in the finally clause: "
+			+ e.toString());
+		throw new DataAccessException("Error in  BaseOjbPbDAO.findCollectionByTemplate(Object templateVO, String orderingField, Boolean asc)in the finally clause: " + e.toString(), e);
+	    }
+	}
+	log.info("************Done with the  BaseOjbPbDAO.findCollectionByTemplate(Object templateVO, String orderingField, Boolean asc)***************");
+	return result;
     }
 
     /**
-     * @deprecated use {@link #findCollectionByTemplate(Object templateVO, String orderingField, Boolean asc)}
+     * @deprecated use
+     *             {@link #findCollectionByTemplate(Object templateVO, String orderingField, Boolean asc)}
      */
-    public Collection findOrderedCollectionByTemplate(Object templateVO, String orderingField, boolean asc) throws DataAccessException{
-        return findCollectionByTemplate( templateVO,  orderingField,  new Boolean(asc));
+    @Deprecated
+    public Collection findOrderedCollectionByTemplate(Object templateVO, String orderingField, boolean asc) throws DataAccessException {
+	return findCollectionByTemplate(templateVO, orderingField, new Boolean(asc));
     }
 
-    public Collection findCollectionByLogicCondition(Class realClass,LogicCondition logicCondition) throws DataAccessException{
-        log.info("************Entering the BaseOjbPbDAO.findCollectionByLogicCondition(Class realClass,LogicCondition logicCondition) ***************");
-        PersistenceBroker pb = null;
-        Collection result = null;
-        try{
-            pb = persistenceBrokerSupport.getPersistenceBroker();
-            result =  ojbPbCore.findCollectionByLogicCondition(realClass, logicCondition, pb);
+    public Collection findCollectionByLogicCondition(Class realClass, LogicCondition logicCondition) throws DataAccessException {
+	log.info("************Entering the BaseOjbPbDAO.findCollectionByLogicCondition(Class realClass,LogicCondition logicCondition) ***************");
+	PersistenceBroker pb = null;
+	Collection result = null;
+	try {
+	    pb = persistenceBrokerSupport.getPersistenceBroker();
+	    result = ojbPbCore.findCollectionByLogicCondition(realClass, logicCondition, pb);
 
-        } catch (PersistenceBrokerSupportException e) {
-            log.error("PersistenceBrokerSupportException thrown in  BaseOjbPbDAO.findCollectionByLogicCondition(Class realClass,LogicCondition logicCondition): " + e.toString());
-            throw new DataAccessException("Error in  BaseOjbPbDAO.findCollectionByLogicCondition(Class realClass,LogicCondition logicCondition): " + e.toString(),e);
-        } catch (OjbPbCoreException e) {
-            log.error("OjbPbCoreException thrown in  BaseOjbPbDAO.findCollectionByLogicCondition(Class realClass,LogicCondition logicCondition): " + e.toString());
-            throw new DataAccessException("Error in  BaseOjbPbDAO.findCollectionByLogicCondition(Class realClass,LogicCondition logicCondition): " + e.toString(),e);
-        } catch (Exception e) {
-            log.error("Exception thrown in  BaseOjbPbDAO.findCollectionByLogicCondition(Class realClass,LogicCondition logicCondition): " + e.toString());
-            throw new DataAccessException("Error in  BaseOjbPbDAO.findCollectionByLogicCondition(Class realClass,LogicCondition logicCondition): " + e.toString(),e);
-        } finally {
-            try{
+	} catch (final PersistenceBrokerSupportException e) {
+	    log.error("PersistenceBrokerSupportException thrown in  BaseOjbPbDAO.findCollectionByLogicCondition(Class realClass,LogicCondition logicCondition): " + e.toString());
+	    throw new DataAccessException("Error in  BaseOjbPbDAO.findCollectionByLogicCondition(Class realClass,LogicCondition logicCondition): " + e.toString(), e);
+	} catch (final OjbPbCoreException e) {
+	    log.error("OjbPbCoreException thrown in  BaseOjbPbDAO.findCollectionByLogicCondition(Class realClass,LogicCondition logicCondition): " + e.toString());
+	    throw new DataAccessException("Error in  BaseOjbPbDAO.findCollectionByLogicCondition(Class realClass,LogicCondition logicCondition): " + e.toString(), e);
+	} catch (final Exception e) {
+	    log.error("Exception thrown in  BaseOjbPbDAO.findCollectionByLogicCondition(Class realClass,LogicCondition logicCondition): " + e.toString());
+	    throw new DataAccessException("Error in  BaseOjbPbDAO.findCollectionByLogicCondition(Class realClass,LogicCondition logicCondition): " + e.toString(), e);
+	} finally {
+	    try {
 
-                persistenceBrokerSupport.releasePersistenceBroker(pb);
+		persistenceBrokerSupport.releasePersistenceBroker(pb);
 
-            } catch(PersistenceBrokerSupportException e) {
-                log.error("PersistenceBrokerSupportException thrown in  BaseOjbPbDAO.findCollectionByLogicCondition(Class realClass,LogicCondition logicCondition) in the finally clause: " + e.toString());
-                throw new DataAccessException("Error in  BaseOjbPbDAO.findCollectionByLogicCondition(Class realClass,LogicCondition logicCondition)in the finally clause: " + e.toString(),e);
-            }
-        }
-        log.info("************Done with the  BaseOjbPbDAO.findCollectionByLogicCondition(Class realClass,LogicCondition logicCondition)***************");
-        return result;
+	    } catch (final PersistenceBrokerSupportException e) {
+		log.error("PersistenceBrokerSupportException thrown in  BaseOjbPbDAO.findCollectionByLogicCondition(Class realClass,LogicCondition logicCondition) in the finally clause: "
+			+ e.toString());
+		throw new DataAccessException("Error in  BaseOjbPbDAO.findCollectionByLogicCondition(Class realClass,LogicCondition logicCondition)in the finally clause: " + e.toString(), e);
+	    }
+	}
+	log.info("************Done with the  BaseOjbPbDAO.findCollectionByLogicCondition(Class realClass,LogicCondition logicCondition)***************");
+	return result;
     }
 
-    public Collection findCollectionByLogicCondition(Class realClass,LogicCondition logicCondition,String orderingField, Boolean asc,Integer startAtIndex, Integer endAtIndex) throws DataAccessException{
-        log.info("************Entering the BaseOjbPbDAO.findCollectionByLogicCondition(Class realClass,LogicCondition logicCondition,String orderingField, Boolean asc,Integer startAtIndex, Integer endAtIndex) ***************");
-        PersistenceBroker pb = null;
-        Collection result = null;
-        try{
-            pb = persistenceBrokerSupport.getPersistenceBroker();
-            result =  ojbPbCore.findCollectionByLogicCondition(realClass, logicCondition, orderingField,  asc, startAtIndex, endAtIndex, pb);
+    public Collection findCollectionByLogicCondition(Class realClass, LogicCondition logicCondition, String orderingField, Boolean asc, Integer startAtIndex, Integer endAtIndex)
+	    throws DataAccessException {
+	log.info(
+		"************Entering the BaseOjbPbDAO.findCollectionByLogicCondition(Class realClass,LogicCondition logicCondition,String orderingField, Boolean asc,Integer startAtIndex, Integer endAtIndex) ***************");
+	PersistenceBroker pb = null;
+	Collection result = null;
+	try {
+	    pb = persistenceBrokerSupport.getPersistenceBroker();
+	    result = ojbPbCore.findCollectionByLogicCondition(realClass, logicCondition, orderingField, asc, startAtIndex, endAtIndex, pb);
 
-        } catch (PersistenceBrokerSupportException e) {
-            log.error("PersistenceBrokerSupportException thrown in  BaseOjbPbDAO.findCollectionByLogicCondition(Class realClass,LogicCondition logicCondition,String orderingField, Boolean asc,Integer startAtIndex, Integer endAtIndex): " + e.toString());
-            throw new DataAccessException("Error in  BaseOjbPbDAO.findCollectionByLogicCondition(Class realClass,LogicCondition logicCondition,String orderingField, Boolean asc,Integer startAtIndex, Integer endAtIndex): " + e.toString(),e);
-        } catch (OjbPbCoreException e) {
-            log.error("OjbPbCoreException thrown in  BaseOjbPbDAO.findCollectionByLogicCondition(Class realClass,LogicCondition logicCondition,String orderingField, Boolean asc,Integer startAtIndex, Integer endAtIndex): " + e.toString());
-            throw new DataAccessException("Error in  BaseOjbPbDAO.findCollectionByLogicCondition(Class realClass,LogicCondition logicCondition,String orderingField, Boolean asc,Integer startAtIndex, Integer endAtIndex): " + e.toString(),e);
-        } catch (Exception e) {
-            log.error("Exception thrown in  BaseOjbPbDAO.findCollectionByLogicCondition(Class realClass,LogicCondition logicCondition,String orderingField, Boolean asc,Integer startAtIndex, Integer endAtIndex): " + e.toString());
-            throw new DataAccessException("Error in  BaseOjbPbDAO.findCollectionByLogicCondition(Class realClass,LogicCondition logicCondition,String orderingField, Boolean asc,Integer startAtIndex, Integer endAtIndex): " + e.toString(),e);
-        } finally {
-            try{
+	} catch (final PersistenceBrokerSupportException e) {
+	    log.error(
+		    "PersistenceBrokerSupportException thrown in  BaseOjbPbDAO.findCollectionByLogicCondition(Class realClass,LogicCondition logicCondition,String orderingField, Boolean asc,Integer startAtIndex, Integer endAtIndex): "
+			    + e.toString());
+	    throw new DataAccessException(
+		    "Error in  BaseOjbPbDAO.findCollectionByLogicCondition(Class realClass,LogicCondition logicCondition,String orderingField, Boolean asc,Integer startAtIndex, Integer endAtIndex): "
+			    + e.toString(),
+		    e);
+	} catch (final OjbPbCoreException e) {
+	    log.error(
+		    "OjbPbCoreException thrown in  BaseOjbPbDAO.findCollectionByLogicCondition(Class realClass,LogicCondition logicCondition,String orderingField, Boolean asc,Integer startAtIndex, Integer endAtIndex): "
+			    + e.toString());
+	    throw new DataAccessException(
+		    "Error in  BaseOjbPbDAO.findCollectionByLogicCondition(Class realClass,LogicCondition logicCondition,String orderingField, Boolean asc,Integer startAtIndex, Integer endAtIndex): "
+			    + e.toString(),
+		    e);
+	} catch (final Exception e) {
+	    log.error(
+		    "Exception thrown in  BaseOjbPbDAO.findCollectionByLogicCondition(Class realClass,LogicCondition logicCondition,String orderingField, Boolean asc,Integer startAtIndex, Integer endAtIndex): "
+			    + e.toString());
+	    throw new DataAccessException(
+		    "Error in  BaseOjbPbDAO.findCollectionByLogicCondition(Class realClass,LogicCondition logicCondition,String orderingField, Boolean asc,Integer startAtIndex, Integer endAtIndex): "
+			    + e.toString(),
+		    e);
+	} finally {
+	    try {
 
-                persistenceBrokerSupport.releasePersistenceBroker(pb);
+		persistenceBrokerSupport.releasePersistenceBroker(pb);
 
-            } catch(PersistenceBrokerSupportException e) {
-                log.error("PersistenceBrokerSupportException thrown in  BaseOjbPbDAO.findCollectionByLogicCondition(Class realClass,LogicCondition logicCondition,String orderingField,Boolean asc,Integer startAtIndex, Integer endAtIndex) in the finally clause: " + e.toString());
-                throw new DataAccessException("Error in  BaseOjbPbDAO.findCollectionByLogicCondition(Class realClass,LogicCondition logicCondition,String orderingField, Boolean asc,Integer startAtIndex, Integer endAtIndex)in the finally clause: " + e.toString(),e);
-            }
-        }
-        log.info("************Done with the  BaseOjbPbDAO.findCollectionByLogicCondition(Class realClass,LogicCondition logicCondition,String orderingField, Boolean asc,Integer startAtIndex, Integer endAtIndex)***************");
-        return result;
+	    } catch (final PersistenceBrokerSupportException e) {
+		log.error(
+			"PersistenceBrokerSupportException thrown in  BaseOjbPbDAO.findCollectionByLogicCondition(Class realClass,LogicCondition logicCondition,String orderingField,Boolean asc,Integer startAtIndex, Integer endAtIndex) in the finally clause: "
+				+ e.toString());
+		throw new DataAccessException(
+			"Error in  BaseOjbPbDAO.findCollectionByLogicCondition(Class realClass,LogicCondition logicCondition,String orderingField, Boolean asc,Integer startAtIndex, Integer endAtIndex)in the finally clause: "
+				+ e.toString(),
+			e);
+	    }
+	}
+	log.info(
+		"************Done with the  BaseOjbPbDAO.findCollectionByLogicCondition(Class realClass,LogicCondition logicCondition,String orderingField, Boolean asc,Integer startAtIndex, Integer endAtIndex)***************");
+	return result;
     }
-
-
-
 
     /**
-     * @deprecated use {@link #findCollectionByLogicCondition(Class realClass, it.aco.mandragora.query.LogicCondition logicCondition,String orderingField, Boolean asc, Integer startAtIndex, Integer endAtIndex)}
+     * @deprecated use
+     *             {@link #findCollectionByLogicCondition(Class realClass, it.aco.mandragora.query.LogicCondition logicCondition,String orderingField, Boolean asc, Integer startAtIndex, Integer endAtIndex)}
      */
-    public Collection findLimitedOrderedCollectionByLogicCondition(Class realClass,LogicCondition logicCondition,String orderingField, boolean asc,int startAtIndex, int endAtIndex) throws DataAccessException{
-        return findCollectionByLogicCondition(realClass, logicCondition, orderingField,  new Boolean(asc), new Integer(startAtIndex), new Integer(endAtIndex));
+    @Deprecated
+    public Collection findLimitedOrderedCollectionByLogicCondition(Class realClass, LogicCondition logicCondition, String orderingField, boolean asc, int startAtIndex, int endAtIndex)
+	    throws DataAccessException {
+	return findCollectionByLogicCondition(realClass, logicCondition, orderingField, new Boolean(asc), new Integer(startAtIndex), new Integer(endAtIndex));
     }
 
+    public Collection findCollectionByOrValues(Class realClass, String pAttributeName, Collection valuesCollection) throws DataAccessException {
+	log.info("************Entering the BaseOjbPbDAO.findCollectionByOrValues(Class realClass,String pAttributeName,Collection valuesCollection) ***************");
+	PersistenceBroker pb = null;
+	Collection result = null;
+	try {
+	    pb = persistenceBrokerSupport.getPersistenceBroker();
+	    result = ojbPbCore.findCollectionByOrValues(realClass, pAttributeName, valuesCollection, pb);
 
+	} catch (final PersistenceBrokerSupportException e) {
+	    log.error("PersistenceBrokerSupportException thrown in  BaseOjbPbDAOfindCollectionByOrValues(Class realClass,String pAttributeName,Collection valuesCollection): " + e.toString());
+	    throw new DataAccessException("Error in  BaseOjbPbDAO.findCollectionByOrValues(Class realClass,String pAttributeName,Collection valuesCollection): " + e.toString(), e);
+	} catch (final OjbPbCoreException e) {
+	    log.error("OjbPbCoreException thrown in  BaseOjbPbDAO.findCollectionByOrValues(Class realClass,String pAttributeName,Collection valuesCollection): " + e.toString());
+	    throw new DataAccessException("Error in  BaseOjbPbDAO.findCollectionByOrValues(Class realClass,String pAttributeName,Collection valuesCollection): " + e.toString(), e);
+	} catch (final Exception e) {
+	    log.error("Exception thrown in  BaseOjbPbDAO.findCollectionByOrValues(Class realClass,String pAttributeName,Collection valuesCollection): " + e.toString());
+	    throw new DataAccessException("Error in  BaseOjbPbDAO.findCollectionByOrValues(Class realClass,String pAttributeName,Collection valuesCollection): " + e.toString(), e);
+	} finally {
+	    try {
 
-    public Collection findCollectionByOrValues(Class realClass,String pAttributeName,Collection valuesCollection) throws DataAccessException{
-        log.info("************Entering the BaseOjbPbDAO.findCollectionByOrValues(Class realClass,String pAttributeName,Collection valuesCollection) ***************");
-        PersistenceBroker pb = null;
-        Collection result = null;
-        try{
-            pb = persistenceBrokerSupport.getPersistenceBroker();
-            result =  ojbPbCore.findCollectionByOrValues(realClass,pAttributeName, valuesCollection, pb);
+		persistenceBrokerSupport.releasePersistenceBroker(pb);
 
-        } catch (PersistenceBrokerSupportException e) {
-            log.error("PersistenceBrokerSupportException thrown in  BaseOjbPbDAOfindCollectionByOrValues(Class realClass,String pAttributeName,Collection valuesCollection): " + e.toString());
-            throw new DataAccessException("Error in  BaseOjbPbDAO.findCollectionByOrValues(Class realClass,String pAttributeName,Collection valuesCollection): " + e.toString(),e);
-        } catch (OjbPbCoreException e) {
-            log.error("OjbPbCoreException thrown in  BaseOjbPbDAO.findCollectionByOrValues(Class realClass,String pAttributeName,Collection valuesCollection): " + e.toString());
-            throw new DataAccessException("Error in  BaseOjbPbDAO.findCollectionByOrValues(Class realClass,String pAttributeName,Collection valuesCollection): " + e.toString(),e);
-        } catch (Exception e) {
-            log.error("Exception thrown in  BaseOjbPbDAO.findCollectionByOrValues(Class realClass,String pAttributeName,Collection valuesCollection): " + e.toString());
-            throw new DataAccessException("Error in  BaseOjbPbDAO.findCollectionByOrValues(Class realClass,String pAttributeName,Collection valuesCollection): " + e.toString(),e);
-        } finally {
-            try{
-
-                persistenceBrokerSupport.releasePersistenceBroker(pb);
-
-            } catch(PersistenceBrokerSupportException e) {
-                log.error("PersistenceBrokerSupportException thrown in  BaseOjbPbDAO.findCollectionByOrValues(Class realClass,String pAttributeName,Collection valuesCollection) in the finally clause: " + e.toString());
-                throw new DataAccessException("Error in  BaseOjbPbDAO.findCollectionByOrValues(Class realClass,String pAttributeName,Collection valuesCollection)in the finally clause: " + e.toString(),e);
-            }
-        }
-        log.info("************Done with the  BaseOjbPbDAO.findCollectionByOrValues(Class realClass,String pAttributeName,Collection valuesCollection)***************");
-        return result;
+	    } catch (final PersistenceBrokerSupportException e) {
+		log.error(
+			"PersistenceBrokerSupportException thrown in  BaseOjbPbDAO.findCollectionByOrValues(Class realClass,String pAttributeName,Collection valuesCollection) in the finally clause: "
+				+ e.toString());
+		throw new DataAccessException(
+			"Error in  BaseOjbPbDAO.findCollectionByOrValues(Class realClass,String pAttributeName,Collection valuesCollection)in the finally clause: " + e.toString(), e);
+	    }
+	}
+	log.info("************Done with the  BaseOjbPbDAO.findCollectionByOrValues(Class realClass,String pAttributeName,Collection valuesCollection)***************");
+	return result;
     }
 
-    public Collection findCollectionByFieldsNotEqualsToValues(Class realClass,String[] pAttributeNames,Object[] valuesArray) throws DataAccessException{
-        log.info("************Entering the BaseOjbPbDAO.findCollectionByFieldsNotEqualsToValues(Class realClass,String[] pAttributeNames,Object[] valuesArray)***************");
-        PersistenceBroker pb = null;
-        Collection result = null;
-        try{
-            pb = persistenceBrokerSupport.getPersistenceBroker();
-            result =  ojbPbCore.findCollectionByFieldsNotEqualsToValues(realClass, pAttributeNames, valuesArray, pb);
+    public Collection findCollectionByFieldsNotEqualsToValues(Class realClass, String[] pAttributeNames, Object[] valuesArray) throws DataAccessException {
+	log.info("************Entering the BaseOjbPbDAO.findCollectionByFieldsNotEqualsToValues(Class realClass,String[] pAttributeNames,Object[] valuesArray)***************");
+	PersistenceBroker pb = null;
+	Collection result = null;
+	try {
+	    pb = persistenceBrokerSupport.getPersistenceBroker();
+	    result = ojbPbCore.findCollectionByFieldsNotEqualsToValues(realClass, pAttributeNames, valuesArray, pb);
 
-        } catch (PersistenceBrokerSupportException e) {
-            log.error("PersistenceBrokerSupportException thrown in  BaseOjbPbDAO.findCollectionByFieldsNotEqualsToValues(Class realClass,String[] pAttributeNames,Object[] valuesArray): " + e.toString());
-            throw new DataAccessException("Error in  BaseOjbPbDAO.findCollectionByFieldsNotEqualsToValues(Class realClass,String[] pAttributeNames,Object[] valuesArray): " + e.toString(),e);
-        } catch (OjbPbCoreException e) {
-            log.error("OjbPbCoreException thrown in  BaseOjbPbDAO.findCollectionByFieldsNotEqualsToValues(Class realClass,String[] pAttributeNames,Object[] valuesArray): " + e.toString());
-            throw new DataAccessException("Error in  BaseOjbPbDAO.findCollectionByFieldsNotEqualsToValues(Class realClass,String[] pAttributeNames,Object[] valuesArray): " + e.toString(),e);
-        } catch (Exception e) {
-            log.error("Exception thrown in  BaseOjbPbDAO.findCollectionByFieldsNotEqualsToValues(Class realClass,String[] pAttributeNames,Object[] valuesArray): " + e.toString());
-            throw new DataAccessException("Error in  BaseOjbPbDAO.findCollectionByFieldsNotEqualsToValues(Class realClass,String[] pAttributeNames,Object[] valuesArray): " + e.toString(),e);
-        } finally {
-            try{
+	} catch (final PersistenceBrokerSupportException e) {
+	    log.error("PersistenceBrokerSupportException thrown in  BaseOjbPbDAO.findCollectionByFieldsNotEqualsToValues(Class realClass,String[] pAttributeNames,Object[] valuesArray): "
+		    + e.toString());
+	    throw new DataAccessException("Error in  BaseOjbPbDAO.findCollectionByFieldsNotEqualsToValues(Class realClass,String[] pAttributeNames,Object[] valuesArray): " + e.toString(), e);
+	} catch (final OjbPbCoreException e) {
+	    log.error("OjbPbCoreException thrown in  BaseOjbPbDAO.findCollectionByFieldsNotEqualsToValues(Class realClass,String[] pAttributeNames,Object[] valuesArray): " + e.toString());
+	    throw new DataAccessException("Error in  BaseOjbPbDAO.findCollectionByFieldsNotEqualsToValues(Class realClass,String[] pAttributeNames,Object[] valuesArray): " + e.toString(), e);
+	} catch (final Exception e) {
+	    log.error("Exception thrown in  BaseOjbPbDAO.findCollectionByFieldsNotEqualsToValues(Class realClass,String[] pAttributeNames,Object[] valuesArray): " + e.toString());
+	    throw new DataAccessException("Error in  BaseOjbPbDAO.findCollectionByFieldsNotEqualsToValues(Class realClass,String[] pAttributeNames,Object[] valuesArray): " + e.toString(), e);
+	} finally {
+	    try {
 
-                persistenceBrokerSupport.releasePersistenceBroker(pb);
+		persistenceBrokerSupport.releasePersistenceBroker(pb);
 
-            } catch(PersistenceBrokerSupportException e) {
-                log.error("PersistenceBrokerSupportException thrown in  BaseOjbPbDAO.findCollectionByFieldsNotEqualsToValues(Class realClass,String[] pAttributeNames,Object[] valuesArray) in the finally clause: " + e.toString());
-                throw new DataAccessException("Error in  BaseOjbPbDAO.findCollectionByFieldsNotEqualsToValues(Class realClass,String[] pAttributeNames,Object[] valuesArray) in the finally clause: " + e.toString(),e);
-            }
-        }
-        log.info("************Done with the  BaseOjbPbDAO.findCollectionByFieldsNotEqualsToValues(Class realClass,String[] pAttributeNames,Object[] valuesArray)*************");
-        return result;
+	    } catch (final PersistenceBrokerSupportException e) {
+		log.error(
+			"PersistenceBrokerSupportException thrown in  BaseOjbPbDAO.findCollectionByFieldsNotEqualsToValues(Class realClass,String[] pAttributeNames,Object[] valuesArray) in the finally clause: "
+				+ e.toString());
+		throw new DataAccessException(
+			"Error in  BaseOjbPbDAO.findCollectionByFieldsNotEqualsToValues(Class realClass,String[] pAttributeNames,Object[] valuesArray) in the finally clause: " + e.toString(), e);
+	    }
+	}
+	log.info("************Done with the  BaseOjbPbDAO.findCollectionByFieldsNotEqualsToValues(Class realClass,String[] pAttributeNames,Object[] valuesArray)*************");
+	return result;
     }
 
+    public Collection findCollectionByAndFieldsOperatorValues(Class realClass, String[] pAttributeNames, String[] operators, Object[] valuesArray) throws DataAccessException {
+	log.info("************Entering the BaseOjbPbDAO.findCollectionByAndFieldsOperatorValues(Class realClass,String[] pAttributeNames, String[] operators,Object[] valuesArray) ***************");
+	PersistenceBroker pb = null;
+	Collection result = null;
+	try {
+	    pb = persistenceBrokerSupport.getPersistenceBroker();
+	    result = ojbPbCore.findCollectionByAndFieldsOperatorValues(realClass, pAttributeNames, operators, valuesArray, pb);
 
-    public Collection findCollectionByAndFieldsOperatorValues(Class realClass,String[] pAttributeNames, String[] operators,Object[] valuesArray) throws DataAccessException{
-        log.info("************Entering the BaseOjbPbDAO.findCollectionByAndFieldsOperatorValues(Class realClass,String[] pAttributeNames, String[] operators,Object[] valuesArray) ***************");
-        PersistenceBroker pb = null;
-        Collection result = null;
-        try{
-            pb = persistenceBrokerSupport.getPersistenceBroker();
-            result =  ojbPbCore.findCollectionByAndFieldsOperatorValues(realClass, pAttributeNames, operators, valuesArray, pb);
+	} catch (final PersistenceBrokerSupportException e) {
+	    log.error(
+		    "PersistenceBrokerSupportException thrown in  BaseOjbPbDAO.findCollectionByAndFieldsOperatorValues(Class realClass,String[] pAttributeNames, String[] operators,Object[] valuesArray) : "
+			    + e.toString());
+	    throw new DataAccessException(
+		    "Error in  BaseOjbPbDAO.findCollectionByAndFieldsOperatorValues(Class realClass,String[] pAttributeNames, String[] operators,Object[] valuesArray): " + e.toString(), e);
+	} catch (final OjbPbCoreException e) {
+	    log.error("OjbPbCoreException thrown in  BaseOjbPbDAO.findCollectionByAndFieldsOperatorValues(Class realClass,String[] pAttributeNames, String[] operators,Object[] valuesArray): "
+		    + e.toString());
+	    throw new DataAccessException(
+		    "Error in  BaseOjbPbDAO.findCollectionByAndFieldsOperatorValues(Class realClass,String[] pAttributeNames, String[] operators,Object[] valuesArray): " + e.toString(), e);
+	} catch (final Exception e) {
+	    log.error("Exception thrown in  BaseOjbPbDAO.findCollectionByAndFieldsOperatorValues(Class realClass,String[] pAttributeNames, String[] operators,Object[] valuesArray): " + e.toString());
+	    throw new DataAccessException(
+		    "Error in  BaseOjbPbDAO.findCollectionByAndFieldsOperatorValues(Class realClass,String[] pAttributeNames, String[] operators,Object[] valuesArray): " + e.toString(), e);
+	} finally {
+	    try {
 
-        } catch (PersistenceBrokerSupportException e) {
-            log.error("PersistenceBrokerSupportException thrown in  BaseOjbPbDAO.findCollectionByAndFieldsOperatorValues(Class realClass,String[] pAttributeNames, String[] operators,Object[] valuesArray) : " + e.toString());
-            throw new DataAccessException("Error in  BaseOjbPbDAO.findCollectionByAndFieldsOperatorValues(Class realClass,String[] pAttributeNames, String[] operators,Object[] valuesArray): " + e.toString(),e);
-        } catch (OjbPbCoreException e) {
-            log.error("OjbPbCoreException thrown in  BaseOjbPbDAO.findCollectionByAndFieldsOperatorValues(Class realClass,String[] pAttributeNames, String[] operators,Object[] valuesArray): " + e.toString());
-            throw new DataAccessException("Error in  BaseOjbPbDAO.findCollectionByAndFieldsOperatorValues(Class realClass,String[] pAttributeNames, String[] operators,Object[] valuesArray): " + e.toString(),e);
-        } catch (Exception e) {
-            log.error("Exception thrown in  BaseOjbPbDAO.findCollectionByAndFieldsOperatorValues(Class realClass,String[] pAttributeNames, String[] operators,Object[] valuesArray): " + e.toString());
-            throw new DataAccessException("Error in  BaseOjbPbDAO.findCollectionByAndFieldsOperatorValues(Class realClass,String[] pAttributeNames, String[] operators,Object[] valuesArray): " + e.toString(),e);
-        } finally {
-            try{
+		persistenceBrokerSupport.releasePersistenceBroker(pb);
 
-                persistenceBrokerSupport.releasePersistenceBroker(pb);
-
-            } catch(PersistenceBrokerSupportException e) {
-                log.error("PersistenceBrokerSupportException thrown in  BaseOjbPbDAO.findCollectionByAndFieldsOperatorValues(Class realClass,String[] pAttributeNames, String[] operators,Object[] valuesArray) in the finally clause: " + e.toString());
-                throw new DataAccessException("Error in  BaseOjbPbDAO.findCollectionByAndFieldsOperatorValues(Class realClass,String[] pAttributeNames, String[] operators,Object[] valuesArray) in the finally clause: " + e.toString(),e);
-            }
-        }
-        log.info("************Done with the  BaseOjbPbDAO.findCollectionByAndFieldsOperatorValues(Class realClass,String[] pAttributeNames, String[] operators,Object[] valuesArray)*************");
-        return result;
+	    } catch (final PersistenceBrokerSupportException e) {
+		log.error(
+			"PersistenceBrokerSupportException thrown in  BaseOjbPbDAO.findCollectionByAndFieldsOperatorValues(Class realClass,String[] pAttributeNames, String[] operators,Object[] valuesArray) in the finally clause: "
+				+ e.toString());
+		throw new DataAccessException(
+			"Error in  BaseOjbPbDAO.findCollectionByAndFieldsOperatorValues(Class realClass,String[] pAttributeNames, String[] operators,Object[] valuesArray) in the finally clause: "
+				+ e.toString(),
+			e);
+	    }
+	}
+	log.info("************Done with the  BaseOjbPbDAO.findCollectionByAndFieldsOperatorValues(Class realClass,String[] pAttributeNames, String[] operators,Object[] valuesArray)*************");
+	return result;
     }
 
+    public Collection findCollectionByArrayOfFieldsOperatorsMatrixAndOrValues(Class realClass, String[] pAttributeNames, String[] operators, Object[][] valuesMatrix) throws DataAccessException {
+	log.info(
+		"************Entering the BaseOjbPbDAO.findCollectionByArrayOfFieldsOperatorsMatrixAndOrValues(Class realClass,String[] pAttributeNames, String[] operators,Object[][] valuesMatrix )***************");
+	PersistenceBroker pb = null;
+	Collection result = null;
+	try {
+	    pb = persistenceBrokerSupport.getPersistenceBroker();
+	    result = ojbPbCore.findCollectionByArrayOfFieldsOperatorsMatrixAndOrValues(realClass, pAttributeNames, operators, valuesMatrix, pb);
 
-    public Collection findCollectionByArrayOfFieldsOperatorsMatrixAndOrValues(Class realClass,String[] pAttributeNames, String[] operators, Object[][] valuesMatrix) throws DataAccessException{
-        log.info("************Entering the BaseOjbPbDAO.findCollectionByArrayOfFieldsOperatorsMatrixAndOrValues(Class realClass,String[] pAttributeNames, String[] operators,Object[][] valuesMatrix )***************");
-        PersistenceBroker pb = null;
-        Collection result = null;
-        try{
-            pb = persistenceBrokerSupport.getPersistenceBroker();
-            result =  ojbPbCore.findCollectionByArrayOfFieldsOperatorsMatrixAndOrValues(realClass, pAttributeNames, operators, valuesMatrix, pb);
+	} catch (final PersistenceBrokerSupportException e) {
+	    log.error(
+		    "PersistenceBrokerSupportException thrown in  BaseOjbPbDAO.findCollectionByArrayOfFieldsOperatorsMatrixAndOrValues(Class realClass,String[] pAttributeNames, String[] operators, Object[][] valuesMatrix): "
+			    + e.toString());
+	    throw new DataAccessException(
+		    "Error in  BaseOjbPbDAO.findCollectionByArrayOfFieldsOperatorsMatrixAndOrValues(Class realClass,String[] pAttributeNames, String[] operators, Object[][] valuesMatrix): "
+			    + e.toString(),
+		    e);
+	} catch (final OjbPbCoreException e) {
+	    log.error(
+		    "OjbPbCoreException thrown in  BaseOjbPbDAO.findCollectionByArrayOfFieldsOperatorsMatrixAndOrValues(Class realClass,String[] pAttributeNames, String[] operators, Object[][] valuesMatrix): "
+			    + e.toString());
+	    throw new DataAccessException(
+		    "Error in  BaseOjbPbDAO.findCollectionByArrayOfFieldsOperatorsMatrixAndOrValues(Class realClass,String[] pAttributeNames, String[] operators, Object[][] valuesMatrix): "
+			    + e.toString(),
+		    e);
+	} catch (final Exception e) {
+	    log.error(
+		    "Exception thrown in  BaseOjbPbDAO.findCollectionByArrayOfFieldsOperatorsMatrixAndOrValues(Class realClass,String[] pAttributeNames, String[] operators, Object[][] valuesMatrix): "
+			    + e.toString());
+	    throw new DataAccessException(
+		    "Error in  BaseOjbPbDAO.findCollectionByArrayOfFieldsOperatorsMatrixAndOrValues(Class realClass,String[] pAttributeNames, String[] operators, Object[][] valuesMatrix): "
+			    + e.toString(),
+		    e);
+	} finally {
+	    try {
 
-        } catch (PersistenceBrokerSupportException e) {
-            log.error("PersistenceBrokerSupportException thrown in  BaseOjbPbDAO.findCollectionByArrayOfFieldsOperatorsMatrixAndOrValues(Class realClass,String[] pAttributeNames, String[] operators, Object[][] valuesMatrix): " + e.toString());
-            throw new DataAccessException("Error in  BaseOjbPbDAO.findCollectionByArrayOfFieldsOperatorsMatrixAndOrValues(Class realClass,String[] pAttributeNames, String[] operators, Object[][] valuesMatrix): " + e.toString(),e);
-        } catch (OjbPbCoreException e) {
-            log.error("OjbPbCoreException thrown in  BaseOjbPbDAO.findCollectionByArrayOfFieldsOperatorsMatrixAndOrValues(Class realClass,String[] pAttributeNames, String[] operators, Object[][] valuesMatrix): " + e.toString());
-            throw new DataAccessException("Error in  BaseOjbPbDAO.findCollectionByArrayOfFieldsOperatorsMatrixAndOrValues(Class realClass,String[] pAttributeNames, String[] operators, Object[][] valuesMatrix): " + e.toString(),e);
-        } catch (Exception e) {
-            log.error("Exception thrown in  BaseOjbPbDAO.findCollectionByArrayOfFieldsOperatorsMatrixAndOrValues(Class realClass,String[] pAttributeNames, String[] operators, Object[][] valuesMatrix): " + e.toString());
-            throw new DataAccessException("Error in  BaseOjbPbDAO.findCollectionByArrayOfFieldsOperatorsMatrixAndOrValues(Class realClass,String[] pAttributeNames, String[] operators, Object[][] valuesMatrix): " + e.toString(),e);
-        } finally {
-            try{
+		persistenceBrokerSupport.releasePersistenceBroker(pb);
 
-                persistenceBrokerSupport.releasePersistenceBroker(pb);
-
-            } catch(PersistenceBrokerSupportException e) {
-                log.error("PersistenceBrokerSupportException thrown in  BaseOjbPbDAO.findCollectionByArrayOfFieldsOperatorsMatrixAndOrValues(Class realClass,String[] pAttributeNames, String[] operators, Object[][] valuesMatrix) in the finally clause: " + e.toString());
-                throw new DataAccessException("Error in  BaseOjbPbDAO.findCollectionByArrayOfFieldsOperatorsMatrixAndOrValues(Class realClass,String[] pAttributeNames, String[] operators, Object[][] valuesMatrix) in the finally clause: " + e.toString(),e);
-            }
-        }
-        log.info("************Done with the  BaseOjbPbDAO.findCollectionByArrayOfFieldsOperatorsMatrixAndOrValues(Class realClass,String[] pAttributeNames, String[] operators, Object[][] valuesMatrix)*************");
-        return result;
+	    } catch (final PersistenceBrokerSupportException e) {
+		log.error(
+			"PersistenceBrokerSupportException thrown in  BaseOjbPbDAO.findCollectionByArrayOfFieldsOperatorsMatrixAndOrValues(Class realClass,String[] pAttributeNames, String[] operators, Object[][] valuesMatrix) in the finally clause: "
+				+ e.toString());
+		throw new DataAccessException(
+			"Error in  BaseOjbPbDAO.findCollectionByArrayOfFieldsOperatorsMatrixAndOrValues(Class realClass,String[] pAttributeNames, String[] operators, Object[][] valuesMatrix) in the finally clause: "
+				+ e.toString(),
+			e);
+	    }
+	}
+	log.info(
+		"************Done with the  BaseOjbPbDAO.findCollectionByArrayOfFieldsOperatorsMatrixAndOrValues(Class realClass,String[] pAttributeNames, String[] operators, Object[][] valuesMatrix)*************");
+	return result;
     }
 
+    public Collection findCollectionByFieldInCollection(Class realClass, String pAttributeName, Collection valuesCollection) throws DataAccessException {
+	log.info("************Entering the BaseOjbPbDAO.findCollectionByFieldInCollection(Class realClass, String pAttributeName,Collection valuesCollection)***************");
+	PersistenceBroker pb = null;
+	Collection result = null;
+	try {
+	    pb = persistenceBrokerSupport.getPersistenceBroker();
+	    result = ojbPbCore.findCollectionByFieldInCollection(realClass, pAttributeName, valuesCollection, pb);
 
+	} catch (final PersistenceBrokerSupportException e) {
+	    log.error(
+		    "PersistenceBrokerSupportException thrown in  BaseOjbPbDAO.findCollectionByFieldInCollection(Class realClass,String pAttributeName,Collection valuesCollection): " + e.toString());
+	    throw new DataAccessException("Error in  BaseOjbPbDAO.findCollectionByFieldInCollection(Class realClass,String pAttributeName,Collection valuesCollection): " + e.toString(), e);
+	} catch (final OjbPbCoreException e) {
+	    log.error("OjbPbCoreException thrown in  BaseOjbPbDAO.findCollectionByFieldInCollection(Class realClass,String pAttributeName,Collection valuesCollection): " + e.toString());
+	    throw new DataAccessException("Error in  BaseOjbPbDAO.findCollectionByFieldInCollection(Class realClass,String pAttributeName,Collection valuesCollection): " + e.toString(), e);
+	} catch (final Exception e) {
+	    log.error("Exception thrown in  BaseOjbPbDAO.findCollectionByFieldInCollection(Class realClass,String pAttributeName,Collection valuesCollection): " + e.toString());
+	    throw new DataAccessException("Error in  BaseOjbPbDAO.findCollectionByFieldInCollection(Class realClass,String pAttributeName,Collection valuesCollection): " + e.toString(), e);
+	} finally {
+	    try {
 
-    public Collection findCollectionByFieldInCollection(Class realClass,String pAttributeName,Collection valuesCollection) throws DataAccessException{
-        log.info("************Entering the BaseOjbPbDAO.findCollectionByFieldInCollection(Class realClass, String pAttributeName,Collection valuesCollection)***************");
-        PersistenceBroker pb = null;
-        Collection result = null;
-        try{
-            pb = persistenceBrokerSupport.getPersistenceBroker();
-            result =  ojbPbCore.findCollectionByFieldInCollection(realClass, pAttributeName, valuesCollection, pb);
+		persistenceBrokerSupport.releasePersistenceBroker(pb);
 
-        } catch (PersistenceBrokerSupportException e) {
-            log.error("PersistenceBrokerSupportException thrown in  BaseOjbPbDAO.findCollectionByFieldInCollection(Class realClass,String pAttributeName,Collection valuesCollection): " + e.toString());
-            throw new DataAccessException("Error in  BaseOjbPbDAO.findCollectionByFieldInCollection(Class realClass,String pAttributeName,Collection valuesCollection): " + e.toString(),e);
-        } catch (OjbPbCoreException e) {
-            log.error("OjbPbCoreException thrown in  BaseOjbPbDAO.findCollectionByFieldInCollection(Class realClass,String pAttributeName,Collection valuesCollection): " + e.toString());
-            throw new DataAccessException("Error in  BaseOjbPbDAO.findCollectionByFieldInCollection(Class realClass,String pAttributeName,Collection valuesCollection): " + e.toString(),e);
-        } catch (Exception e) {
-            log.error("Exception thrown in  BaseOjbPbDAO.findCollectionByFieldInCollection(Class realClass,String pAttributeName,Collection valuesCollection): " + e.toString());
-            throw new DataAccessException("Error in  BaseOjbPbDAO.findCollectionByFieldInCollection(Class realClass,String pAttributeName,Collection valuesCollection): " + e.toString(),e);
-        } finally {
-            try{
-
-                persistenceBrokerSupport.releasePersistenceBroker(pb);
-
-            } catch(PersistenceBrokerSupportException e) {
-                log.error("PersistenceBrokerSupportException thrown in  BaseOjbPbDAO.findCollectionByFieldInCollection(Class realClass,String pAttributeName,Collection valuesCollection) in the finally clause: " + e.toString());
-                throw new DataAccessException("Error in  BaseOjbPbDAO.findCollectionByFieldInCollection(Class realClass,String pAttributeName,Collection valuesCollection) in the finally clause: " + e.toString(),e);
-            }
-        }
-        log.info("************Done with the  BaseOjbPbDAO.findCollectionByFieldInCollection(Class realClass,String pAttributeName,Collection valuesCollection)*************");
-        return result;
+	    } catch (final PersistenceBrokerSupportException e) {
+		log.error(
+			"PersistenceBrokerSupportException thrown in  BaseOjbPbDAO.findCollectionByFieldInCollection(Class realClass,String pAttributeName,Collection valuesCollection) in the finally clause: "
+				+ e.toString());
+		throw new DataAccessException(
+			"Error in  BaseOjbPbDAO.findCollectionByFieldInCollection(Class realClass,String pAttributeName,Collection valuesCollection) in the finally clause: " + e.toString(), e);
+	    }
+	}
+	log.info("************Done with the  BaseOjbPbDAO.findCollectionByFieldInCollection(Class realClass,String pAttributeName,Collection valuesCollection)*************");
+	return result;
     }
 
+    public Collection searchValueInFields(Class realClass, String[] pAttributeNames, Object value) throws DataAccessException {
+	log.info("************Entering the BaseOjbPbDAO.searchValueInFields(Class realClass, String[] pAttributeNames, Object value)***************");
+	PersistenceBroker pb = null;
+	Collection result = null;
+	try {
+	    pb = persistenceBrokerSupport.getPersistenceBroker();
+	    result = ojbPbCore.searchValueInFields(realClass, pAttributeNames, value, pb);
 
-    public Collection searchValueInFields(Class realClass, String[] pAttributeNames, Object value) throws DataAccessException{
-        log.info("************Entering the BaseOjbPbDAO.searchValueInFields(Class realClass, String[] pAttributeNames, Object value)***************");
-        PersistenceBroker pb = null;
-        Collection result = null;
-        try{
-            pb = persistenceBrokerSupport.getPersistenceBroker();
-            result =  ojbPbCore.searchValueInFields(realClass, pAttributeNames, value, pb);
+	} catch (final PersistenceBrokerSupportException e) {
+	    log.error("PersistenceBrokerSupportException thrown in  BaseOjbPbDAO.searchValueInFields(Class realClass, String[] pAttributeNames, Object value): " + e.toString());
+	    throw new DataAccessException("Error in  BaseOjbPbDAO.searchValueInFields(Class realClass, String[] pAttributeNames, Object value): " + e.toString(), e);
+	} catch (final OjbPbCoreException e) {
+	    log.error("OjbPbCoreException thrown in  BaseOjbPbDAO.searchValueInFields(Class realClass, String[] pAttributeNames, Object value): " + e.toString());
+	    throw new DataAccessException("Error in  BaseOjbPbDAO.searchValueInFields(Class realClass, String[] pAttributeNames, Object value): " + e.toString(), e);
+	} catch (final Exception e) {
+	    log.error("Exception thrown in  BaseOjbPbDAO.searchValueInFields(Class realClass, String[] pAttributeNames, Object value): " + e.toString());
+	    throw new DataAccessException("Error in  BaseOjbPbDAO.searchValueInFields(Class realClass, String[] pAttributeNames, Object value): " + e.toString(), e);
+	} finally {
+	    try {
 
-        } catch (PersistenceBrokerSupportException e) {
-            log.error("PersistenceBrokerSupportException thrown in  BaseOjbPbDAO.searchValueInFields(Class realClass, String[] pAttributeNames, Object value): " + e.toString());
-            throw new DataAccessException("Error in  BaseOjbPbDAO.searchValueInFields(Class realClass, String[] pAttributeNames, Object value): " + e.toString(),e);
-        } catch (OjbPbCoreException e) {
-            log.error("OjbPbCoreException thrown in  BaseOjbPbDAO.searchValueInFields(Class realClass, String[] pAttributeNames, Object value): " + e.toString());
-            throw new DataAccessException("Error in  BaseOjbPbDAO.searchValueInFields(Class realClass, String[] pAttributeNames, Object value): " + e.toString(),e);
-        } catch (Exception e) {
-            log.error("Exception thrown in  BaseOjbPbDAO.searchValueInFields(Class realClass, String[] pAttributeNames, Object value): " + e.toString());
-            throw new DataAccessException("Error in  BaseOjbPbDAO.searchValueInFields(Class realClass, String[] pAttributeNames, Object value): " + e.toString(),e);
-        } finally {
-            try{
+		persistenceBrokerSupport.releasePersistenceBroker(pb);
 
-                persistenceBrokerSupport.releasePersistenceBroker(pb);
-
-            } catch(PersistenceBrokerSupportException e) {
-                log.error("PersistenceBrokerSupportException thrown in  BaseOjbPbDAO.searchValueInFields(Class realClass, String[] pAttributeNames, Object value) in the finally clause: " + e.toString());
-                throw new DataAccessException("Error in  BaseOjbPbDAO.searchValueInFields(Class realClass, String[] pAttributeNames, Object value) in the finally clause: " + e.toString(),e);
-            }
-        }
-        log.info("************Done with the  BaseOjbPbDAO.searchValueInFields(Class realClass, String[] pAttributeNames, Object value)*************");
-        return result;
+	    } catch (final PersistenceBrokerSupportException e) {
+		log.error("PersistenceBrokerSupportException thrown in  BaseOjbPbDAO.searchValueInFields(Class realClass, String[] pAttributeNames, Object value) in the finally clause: "
+			+ e.toString());
+		throw new DataAccessException("Error in  BaseOjbPbDAO.searchValueInFields(Class realClass, String[] pAttributeNames, Object value) in the finally clause: " + e.toString(), e);
+	    }
+	}
+	log.info("************Done with the  BaseOjbPbDAO.searchValueInFields(Class realClass, String[] pAttributeNames, Object value)*************");
+	return result;
     }
 
-     public Collection getCollectionOfStoredItemsNotInBean(Object pInstance, String pAttributeName) throws DataAccessException{
-        log.info("************Entering the BaseOjbPbDAO.getCollectionOfStoredItemsNotInBean(Object pInstance, String pAttributeName)***************");
-        PersistenceBroker pb = null;
-        Collection result=null;
-        try{
-            pb = persistenceBrokerSupport.getPersistenceBroker();
-            result = ojbPbCore.getCollectionOfStoredItemsNotInBean(pInstance, pAttributeName, pb);
+    public Collection getCollectionOfStoredItemsNotInBean(Object pInstance, String pAttributeName) throws DataAccessException {
+	log.info("************Entering the BaseOjbPbDAO.getCollectionOfStoredItemsNotInBean(Object pInstance, String pAttributeName)***************");
+	PersistenceBroker pb = null;
+	Collection result = null;
+	try {
+	    pb = persistenceBrokerSupport.getPersistenceBroker();
+	    result = ojbPbCore.getCollectionOfStoredItemsNotInBean(pInstance, pAttributeName, pb);
 
-        } catch (PersistenceBrokerSupportException e) {
-            log.error("PersistenceBrokerSupportException thrown in  BaseOjbPbDAO.getCollectionOfStoredItemsNotInBean(Object pInstance, String pAttributeName): " + e.toString());
-            throw new DataAccessException("Error in  BaseOjbPbDAO.getCollectionOfStoredItemsNotInBean(Object pInstance, String pAttributeName): " + e.toString(),e);
-        } catch (OjbPbCoreException e) {
-            log.error("OjbPbCoreException thrown in  BaseOjbPbDAO.getCollectionOfStoredItemsNotInBean(Object pInstance, String pAttributeName): " + e.toString());
-            throw new DataAccessException("Error in  BaseOjbPbDAO.getCollectionOfStoredItemsNotInBean(Object pInstance, String pAttributeName): " + e.toString(),e);
-        } catch (Exception e) {
-            log.error("Exception thrown in  BaseOjbPbDAO.getCollectionOfStoredItemsNotInBean(Object pInstance, String pAttributeName): " + e.toString());
-            throw new DataAccessException("Error in  BaseOjbPbDAO.getCollectionOfStoredItemsNotInBean(Object pInstance, String pAttributeName): " + e.toString(),e);
-        } finally {
-            try{
+	} catch (final PersistenceBrokerSupportException e) {
+	    log.error("PersistenceBrokerSupportException thrown in  BaseOjbPbDAO.getCollectionOfStoredItemsNotInBean(Object pInstance, String pAttributeName): " + e.toString());
+	    throw new DataAccessException("Error in  BaseOjbPbDAO.getCollectionOfStoredItemsNotInBean(Object pInstance, String pAttributeName): " + e.toString(), e);
+	} catch (final OjbPbCoreException e) {
+	    log.error("OjbPbCoreException thrown in  BaseOjbPbDAO.getCollectionOfStoredItemsNotInBean(Object pInstance, String pAttributeName): " + e.toString());
+	    throw new DataAccessException("Error in  BaseOjbPbDAO.getCollectionOfStoredItemsNotInBean(Object pInstance, String pAttributeName): " + e.toString(), e);
+	} catch (final Exception e) {
+	    log.error("Exception thrown in  BaseOjbPbDAO.getCollectionOfStoredItemsNotInBean(Object pInstance, String pAttributeName): " + e.toString());
+	    throw new DataAccessException("Error in  BaseOjbPbDAO.getCollectionOfStoredItemsNotInBean(Object pInstance, String pAttributeName): " + e.toString(), e);
+	} finally {
+	    try {
 
-                persistenceBrokerSupport.releasePersistenceBroker(pb);
+		persistenceBrokerSupport.releasePersistenceBroker(pb);
 
-            } catch(PersistenceBrokerSupportException e) {
-                log.error("PersistenceBrokerSupportException thrown in  BaseOjbPbDAO.getCollectionOfStoredItemsNotInBean(Object pInstance, String pAttributeName) in the finally clause: " + e.toString());
-                throw new DataAccessException("Error in  BaseOjbPbDAO.getCollectionOfStoredItemsNotInBean(Object pInstance, String pAttributeName) in the finally clause: " + e.toString(),e);
-            }
-        }
-        log.info("************Done with the  BaseOjbPbDAO.getCollectionOfStoredItemsNotInBean(Object pInstance, String pAttributeName)*************");
-        return result;
+	    } catch (final PersistenceBrokerSupportException e) {
+		log.error("PersistenceBrokerSupportException thrown in  BaseOjbPbDAO.getCollectionOfStoredItemsNotInBean(Object pInstance, String pAttributeName) in the finally clause: "
+			+ e.toString());
+		throw new DataAccessException("Error in  BaseOjbPbDAO.getCollectionOfStoredItemsNotInBean(Object pInstance, String pAttributeName) in the finally clause: " + e.toString(), e);
+	    }
+	}
+	log.info("************Done with the  BaseOjbPbDAO.getCollectionOfStoredItemsNotInBean(Object pInstance, String pAttributeName)*************");
+	return result;
     }
 
+    public Collection getStoredCollection(Object pInstance, String pAttributeName) throws DataAccessException {
+	log.info("************Entering the BaseOjbPbDAO.getStoredCollection(Object pInstance, String pAttributeName)***************");
+	PersistenceBroker pb = null;
+	Collection result = null;
+	try {
+	    pb = persistenceBrokerSupport.getPersistenceBroker();
+	    result = ojbPbCore.getStoredCollection(pInstance, pAttributeName, pb);
 
+	} catch (final PersistenceBrokerSupportException e) {
+	    log.error("PersistenceBrokerSupportException thrown in  BaseOjbPbDAO.getStoredCollection(Object pInstance, String pAttributeName): " + e.toString());
+	    throw new DataAccessException("Error in  BaseOjbPbDAO.getStoredCollection(Object pInstance, String pAttributeName): " + e.toString(), e);
+	} catch (final OjbPbCoreException e) {
+	    log.error("OjbPbCoreException thrown in  BaseOjbPbDAO.getStoredCollection(Object pInstance, String pAttributeName): " + e.toString());
+	    throw new DataAccessException("Error in  BaseOjbPbDAO.getStoredCollection(Object pInstance, String pAttributeName): " + e.toString(), e);
+	} catch (final Exception e) {
+	    log.error("Exception thrown in  BaseOjbPbDAO.getStoredCollection(Object pInstance, String pAttributeName): " + e.toString());
+	    throw new DataAccessException("Error in  BaseOjbPbDAO.getStoredCollection(Object pInstance, String pAttributeName): " + e.toString(), e);
+	} finally {
+	    try {
 
+		persistenceBrokerSupport.releasePersistenceBroker(pb);
 
-    public Collection getStoredCollection(Object pInstance, String pAttributeName) throws DataAccessException{
-        log.info("************Entering the BaseOjbPbDAO.getStoredCollection(Object pInstance, String pAttributeName)***************");
-        PersistenceBroker pb = null;
-        Collection result=null;
-        try{
-            pb = persistenceBrokerSupport.getPersistenceBroker();
-            result = ojbPbCore.getStoredCollection(pInstance, pAttributeName, pb);
-
-        } catch (PersistenceBrokerSupportException e) {
-            log.error("PersistenceBrokerSupportException thrown in  BaseOjbPbDAO.getStoredCollection(Object pInstance, String pAttributeName): " + e.toString());
-            throw new DataAccessException("Error in  BaseOjbPbDAO.getStoredCollection(Object pInstance, String pAttributeName): " + e.toString(),e);
-        } catch (OjbPbCoreException e) {
-            log.error("OjbPbCoreException thrown in  BaseOjbPbDAO.getStoredCollection(Object pInstance, String pAttributeName): " + e.toString());
-            throw new DataAccessException("Error in  BaseOjbPbDAO.getStoredCollection(Object pInstance, String pAttributeName): " + e.toString(),e);
-        } catch (Exception e) {
-            log.error("Exception thrown in  BaseOjbPbDAO.getStoredCollection(Object pInstance, String pAttributeName): " + e.toString());
-            throw new DataAccessException("Error in  BaseOjbPbDAO.getStoredCollection(Object pInstance, String pAttributeName): " + e.toString(),e);
-        } finally {
-            try{
-
-                persistenceBrokerSupport.releasePersistenceBroker(pb);
-
-            } catch(PersistenceBrokerSupportException e) {
-                log.error("PersistenceBrokerSupportException thrown in  BaseOjbPbDAO.getStoredCollection(Object pInstance, String pAttributeName) in the finally clause: " + e.toString());
-                throw new DataAccessException("Error in  BaseOjbPbDAO.getStoredCollection(Object pInstance, String pAttributeName) in the finally clause: " + e.toString(),e);
-            }
-        }
-        log.info("************Done with the  BaseOjbPbDAO.getStoredCollection(Object pInstance, String pAttributeName)*************");
-        return result;
+	    } catch (final PersistenceBrokerSupportException e) {
+		log.error("PersistenceBrokerSupportException thrown in  BaseOjbPbDAO.getStoredCollection(Object pInstance, String pAttributeName) in the finally clause: " + e.toString());
+		throw new DataAccessException("Error in  BaseOjbPbDAO.getStoredCollection(Object pInstance, String pAttributeName) in the finally clause: " + e.toString(), e);
+	    }
+	}
+	log.info("************Done with the  BaseOjbPbDAO.getStoredCollection(Object pInstance, String pAttributeName)*************");
+	return result;
     }
 
+    public Iterator getReportQueryIterator(Class realClass, LogicCondition logicCondition, String[] pAttributeNames, String[] groupBy) throws DataAccessException {
+	log.info("************Entering the BaseOjbPbDAO.getReportQueryIterator(Class realClass,LogicCondition logicCondition, String[] pAttributeNames, String[] groupBy)***************");
+	PersistenceBroker pb = null;
+	Iterator iterator = null;
+	try {
+	    pb = persistenceBrokerSupport.getPersistenceBroker();
+	    iterator = ojbPbCore.getReportQueryIterator(realClass, logicCondition, pAttributeNames, groupBy, pb);
 
+	} catch (final PersistenceBrokerSupportException e) {
+	    log.error("PersistenceBrokerSupportException thrown in  BaseOjbPbDAO.getReportQueryIterator(Class realClass,LogicCondition logicCondition, String[] pAttributeNames, String[] groupBy): "
+		    + e.toString());
+	    throw new DataAccessException("Error in  BaseOjbPbDAO.getReportQueryIterator(Class realClass,LogicCondition logicCondition, String[] pAttributeNames, String[] groupBy): " + e.toString(),
+		    e);
+	} catch (final OjbPbCoreException e) {
+	    log.error("OjbPbCoreException thrown in  BaseOjbPbDAO.getReportQueryIterator(Class realClass,LogicCondition logicCondition, String[] pAttributeNames, String[] groupBy): " + e.toString());
+	    throw new DataAccessException("Error in  BaseOjbPbDAO.getReportQueryIterator(Class realClass,LogicCondition logicCondition, String[] pAttributeNames, String[] groupBy): " + e.toString(),
+		    e);
+	} catch (final Exception e) {
+	    log.error("Exception thrown in  BaseOjbPbDAO.getReportQueryIterator(Class realClass,LogicCondition logicCondition, String[] pAttributeNames, String[] groupBy): " + e.toString());
+	    throw new DataAccessException("Error in  BaseOjbPbDAO.getReportQueryIterator(Class realClass,LogicCondition logicCondition, String[] pAttributeNames, String[] groupBy): " + e.toString(),
+		    e);
+	} finally {
+	    try {
 
+		persistenceBrokerSupport.releasePersistenceBroker(pb);
 
-
-    public Iterator getReportQueryIterator(Class realClass, LogicCondition logicCondition, String[] pAttributeNames, String[] groupBy) throws DataAccessException{
-        log.info("************Entering the BaseOjbPbDAO.getReportQueryIterator(Class realClass,LogicCondition logicCondition, String[] pAttributeNames, String[] groupBy)***************");
-        PersistenceBroker pb = null;
-        Iterator iterator = null;
-        try{
-            pb = persistenceBrokerSupport.getPersistenceBroker();
-            iterator = ojbPbCore.getReportQueryIterator(realClass, logicCondition, pAttributeNames, groupBy, pb);
-
-        } catch (PersistenceBrokerSupportException e) {
-            log.error("PersistenceBrokerSupportException thrown in  BaseOjbPbDAO.getReportQueryIterator(Class realClass,LogicCondition logicCondition, String[] pAttributeNames, String[] groupBy): " + e.toString());
-            throw new DataAccessException("Error in  BaseOjbPbDAO.getReportQueryIterator(Class realClass,LogicCondition logicCondition, String[] pAttributeNames, String[] groupBy): " + e.toString(),e);
-        } catch (OjbPbCoreException e) {
-            log.error("OjbPbCoreException thrown in  BaseOjbPbDAO.getReportQueryIterator(Class realClass,LogicCondition logicCondition, String[] pAttributeNames, String[] groupBy): " + e.toString());
-            throw new DataAccessException("Error in  BaseOjbPbDAO.getReportQueryIterator(Class realClass,LogicCondition logicCondition, String[] pAttributeNames, String[] groupBy): " + e.toString(),e);
-        } catch (Exception e) {
-            log.error("Exception thrown in  BaseOjbPbDAO.getReportQueryIterator(Class realClass,LogicCondition logicCondition, String[] pAttributeNames, String[] groupBy): " + e.toString());
-            throw new DataAccessException("Error in  BaseOjbPbDAO.getReportQueryIterator(Class realClass,LogicCondition logicCondition, String[] pAttributeNames, String[] groupBy): " + e.toString(),e);
-        } finally {
-            try{
-
-                persistenceBrokerSupport.releasePersistenceBroker(pb);
-
-            } catch(PersistenceBrokerSupportException e) {
-                log.error("PersistenceBrokerSupportException thrown in  BaseOjbPbDAO.getReportQueryIterator(Class realClass,LogicCondition logicCondition, String[] pAttributeNames, String[] groupBy) in the finally clause: " + e.toString());
-                throw new DataAccessException("Error in  BaseOjbPbDAO.getReportQueryIterator(Class realClass,LogicCondition logicCondition, String[] pAttributeNames, String[] groupBy) in the finally clause: " + e.toString(),e);
-            }
-        }
-        log.info("************Done with the  BaseOjbPbDAO.getReportQueryIterator(Class realClass,LogicCondition logicCondition, String[] pAttributeNames, String[] groupBy)*************");
-        return iterator;
+	    } catch (final PersistenceBrokerSupportException e) {
+		log.error(
+			"PersistenceBrokerSupportException thrown in  BaseOjbPbDAO.getReportQueryIterator(Class realClass,LogicCondition logicCondition, String[] pAttributeNames, String[] groupBy) in the finally clause: "
+				+ e.toString());
+		throw new DataAccessException(
+			"Error in  BaseOjbPbDAO.getReportQueryIterator(Class realClass,LogicCondition logicCondition, String[] pAttributeNames, String[] groupBy) in the finally clause: "
+				+ e.toString(),
+			e);
+	    }
+	}
+	log.info("************Done with the  BaseOjbPbDAO.getReportQueryIterator(Class realClass,LogicCondition logicCondition, String[] pAttributeNames, String[] groupBy)*************");
+	return iterator;
     }
 
+    public void retrieveReference(Object pInstance, String pAttributeName) throws DataAccessException {
+	log.info("************Entering the BaseOjbPbDAO.retrieveReference(Object pInstance, pAttributeName)***************");
+	PersistenceBroker pb = null;
+	try {
+	    pb = persistenceBrokerSupport.getPersistenceBroker();
+	    ojbPbCore.retrieveReference(pInstance, pAttributeName, pb);
+	} catch (final PersistenceBrokerSupportException e) {
+	    log.error("PersistenceBrokerSupportException thrown in  BaseOjbPbDAO.retrieveReference(Object pInstance, pAttributeName): " + e.toString());
+	    throw new DataAccessException("Error in  BaseOjbPbDAO.retrieveReference(Object pInstance, pAttributeName): " + e.toString(), e);
+	} catch (final OjbPbCoreException e) {
+	    log.error("OjbPbCoreException thrown in  BaseOjbPbDAO.retrieveReference(Object pInstance, pAttributeName): " + e.toString());
+	    throw new DataAccessException("Error in  BaseOjbPbDAO.retrieveReference(Object pInstance, pAttributeName): " + e.toString(), e);
+	} catch (final Exception e) {
+	    log.error("Exception thrown in  BaseOjbPbDAO.retrieveReference(Object pInstance, pAttributeName): " + e.toString());
+	    throw new DataAccessException("Error in  BaseOjbPbDAO.retrieveReference(Object pInstance, pAttributeName): " + e.toString(), e);
+	} finally {
+	    try {
 
-    public void retrieveReference(Object pInstance, String pAttributeName) throws DataAccessException{
-        log.info("************Entering the BaseOjbPbDAO.retrieveReference(Object pInstance, pAttributeName)***************");
-        PersistenceBroker pb = null;
-        try{
-            pb = persistenceBrokerSupport.getPersistenceBroker();
-            ojbPbCore.retrieveReference(pInstance,pAttributeName,pb);
-        } catch (PersistenceBrokerSupportException e) {
-            log.error("PersistenceBrokerSupportException thrown in  BaseOjbPbDAO.retrieveReference(Object pInstance, pAttributeName): " + e.toString());
-            throw new DataAccessException("Error in  BaseOjbPbDAO.retrieveReference(Object pInstance, pAttributeName): " + e.toString(),e);
-        } catch (OjbPbCoreException e) {
-            log.error("OjbPbCoreException thrown in  BaseOjbPbDAO.retrieveReference(Object pInstance, pAttributeName): " + e.toString());
-            throw new DataAccessException("Error in  BaseOjbPbDAO.retrieveReference(Object pInstance, pAttributeName): " + e.toString(),e);
-        } catch (Exception e) {
-            log.error("Exception thrown in  BaseOjbPbDAO.retrieveReference(Object pInstance, pAttributeName): " + e.toString());
-            throw new DataAccessException("Error in  BaseOjbPbDAO.retrieveReference(Object pInstance, pAttributeName): " + e.toString(),e);
-        } finally {
-            try{
+		persistenceBrokerSupport.releasePersistenceBroker(pb);
 
-                persistenceBrokerSupport.releasePersistenceBroker(pb);
-
-            } catch(PersistenceBrokerSupportException e) {
-                log.error("PersistenceBrokerSupportException thrown in  BaseOjbPbDAO.retrieveReference(Object pInstance, pAttributeName) in the finally clause: " + e.toString());
-                throw new DataAccessException("Error in  BaseOjbPbDAO.retrieveReference(Object pInstance, pAttributeName) in the finally clause: " + e.toString(),e);
-            }
-        }
-        log.info("************Done with the  BaseOjbPbDAO.retrieveReference(Object pInstance, pAttributeName)***************");
+	    } catch (final PersistenceBrokerSupportException e) {
+		log.error("PersistenceBrokerSupportException thrown in  BaseOjbPbDAO.retrieveReference(Object pInstance, pAttributeName) in the finally clause: " + e.toString());
+		throw new DataAccessException("Error in  BaseOjbPbDAO.retrieveReference(Object pInstance, pAttributeName) in the finally clause: " + e.toString(), e);
+	    }
+	}
+	log.info("************Done with the  BaseOjbPbDAO.retrieveReference(Object pInstance, pAttributeName)***************");
     }
 
+    public void retrieveAllReferences(Object pInstance) throws DataAccessException {
+	log.info("************Entering the BaseOjbPbDAO.retrieveAllReferences(Object pInstance)***************");
+	PersistenceBroker pb = null;
+	try {
+	    pb = persistenceBrokerSupport.getPersistenceBroker();
+	    ojbPbCore.retrieveAllReferences(pInstance, pb);
+	} catch (final PersistenceBrokerSupportException e) {
+	    log.error("PersistenceBrokerSupportException thrown in  BaseOjbPbDAO.retrieveAllReferences(Object pInstance): " + e.toString());
+	    throw new DataAccessException("Error in  BaseOjbPbDAO.retrieveAllReferences(Object pInstance): " + e.toString(), e);
+	} catch (final OjbPbCoreException e) {
+	    log.error("OjbPbCoreException thrown in  BaseOjbPbDAO.retrieveAllReferences(Object pInstance): " + e.toString());
+	    throw new DataAccessException("Error in  BaseOjbPbDAO.retrieveAllReferences(Object pInstance): " + e.toString(), e);
+	} catch (final Exception e) {
+	    log.error("Exception thrown in  BaseOjbPbDAO.retrieveAllReferences(Object pInstance): " + e.toString());
+	    throw new DataAccessException("Error in  BaseOjbPbDAO.retrieveAllReferences(Object pInstance): " + e.toString(), e);
+	} finally {
+	    try {
 
-    public void retrieveAllReferences(Object pInstance) throws DataAccessException{
-        log.info("************Entering the BaseOjbPbDAO.retrieveAllReferences(Object pInstance)***************");
-        PersistenceBroker pb = null;
-        try{
-            pb = persistenceBrokerSupport.getPersistenceBroker();
-            ojbPbCore.retrieveAllReferences(pInstance,pb);
-        }  catch (PersistenceBrokerSupportException e) {
-            log.error("PersistenceBrokerSupportException thrown in  BaseOjbPbDAO.retrieveAllReferences(Object pInstance): " + e.toString());
-            throw new DataAccessException("Error in  BaseOjbPbDAO.retrieveAllReferences(Object pInstance): " + e.toString(),e);
-        } catch (OjbPbCoreException e) {
-            log.error("OjbPbCoreException thrown in  BaseOjbPbDAO.retrieveAllReferences(Object pInstance): " + e.toString());
-            throw new DataAccessException("Error in  BaseOjbPbDAO.retrieveAllReferences(Object pInstance): " + e.toString(),e);
-        } catch (Exception e) {
-            log.error("Exception thrown in  BaseOjbPbDAO.retrieveAllReferences(Object pInstance): " + e.toString());
-            throw new DataAccessException("Error in  BaseOjbPbDAO.retrieveAllReferences(Object pInstance): " + e.toString(),e);
-        } finally {
-            try{
+		persistenceBrokerSupport.releasePersistenceBroker(pb);
 
-                persistenceBrokerSupport.releasePersistenceBroker(pb);
-
-            } catch(PersistenceBrokerSupportException e) {
-                log.error("PersistenceBrokerSupportException thrown in  BaseOjbPbDAO.retrieveAllReferences(Object pInstance) in the finally clause: " + e.toString());
-                throw new DataAccessException("Error in  BaseOjbPbDAO.retrieveAllReferences(Object pInstance) in the finally clause: " + e.toString(),e);
-            }
-        }
-        log.info("************Done with the  BaseOjbPbDAO.retrieveAllReferences(Object pInstance)***************");
+	    } catch (final PersistenceBrokerSupportException e) {
+		log.error("PersistenceBrokerSupportException thrown in  BaseOjbPbDAO.retrieveAllReferences(Object pInstance) in the finally clause: " + e.toString());
+		throw new DataAccessException("Error in  BaseOjbPbDAO.retrieveAllReferences(Object pInstance) in the finally clause: " + e.toString(), e);
+	    }
+	}
+	log.info("************Done with the  BaseOjbPbDAO.retrieveAllReferences(Object pInstance)***************");
     }
 
+    public void retrieveAllReferencesInCollection(Collection valueObjectsCollection) throws DataAccessException {
+	log.info("************Entering the BaseOjbPbDAO.retrieveAllReferencesInCollection(Collection valueObjectsCollection)***************");
+	PersistenceBroker pb = null;
+	try {
+	    pb = persistenceBrokerSupport.getPersistenceBroker();
+	    ojbPbCore.retrieveAllReferencesInCollection(valueObjectsCollection, pb);
+	} catch (final PersistenceBrokerSupportException e) {
+	    log.error("PersistenceBrokerSupportException thrown in  BaseOjbPbDAO.retrieveAllReferencesInCollection(Collection valueObjectsCollection): " + e.toString());
+	    throw new DataAccessException("Error in  BaseOjbPbDAO.retrieveAllReferencesInCollection(Collection valueObjectsCollection): " + e.toString(), e);
+	} catch (final OjbPbCoreException e) {
+	    log.error("OjbPbCoreException thrown in  BaseOjbPbDAO.retrieveAllReferencesInCollection(Collection valueObjectsCollection): " + e.toString());
+	    throw new DataAccessException("Error in  BaseOjbPbDAO.retrieveAllReferencesInCollection(Collection valueObjectsCollection): " + e.toString(), e);
+	} catch (final Exception e) {
+	    log.error("Exception thrown in  BaseOjbPbDAO.retrieveAllReferencesInCollection(Collection valueObjectsCollection): " + e.toString());
+	    throw new DataAccessException("Error in  BaseOjbPbDAO.retrieveAllReferencesInCollection(Collection valueObjectsCollection): " + e.toString(), e);
+	} finally {
+	    try {
 
+		persistenceBrokerSupport.releasePersistenceBroker(pb);
 
-
-
-    public void retrieveAllReferencesInCollection(Collection valueObjectsCollection) throws DataAccessException{
-        log.info("************Entering the BaseOjbPbDAO.retrieveAllReferencesInCollection(Collection valueObjectsCollection)***************");
-        PersistenceBroker pb = null;
-        try{
-            pb = persistenceBrokerSupport.getPersistenceBroker();
-            ojbPbCore.retrieveAllReferencesInCollection(valueObjectsCollection,pb);
-        }  catch (PersistenceBrokerSupportException e) {
-            log.error("PersistenceBrokerSupportException thrown in  BaseOjbPbDAO.retrieveAllReferencesInCollection(Collection valueObjectsCollection): " + e.toString());
-            throw new DataAccessException("Error in  BaseOjbPbDAO.retrieveAllReferencesInCollection(Collection valueObjectsCollection): " + e.toString(),e);
-        } catch (OjbPbCoreException e) {
-            log.error("OjbPbCoreException thrown in  BaseOjbPbDAO.retrieveAllReferencesInCollection(Collection valueObjectsCollection): " + e.toString());
-            throw new DataAccessException("Error in  BaseOjbPbDAO.retrieveAllReferencesInCollection(Collection valueObjectsCollection): " + e.toString(),e);
-        } catch (Exception e) {
-            log.error("Exception thrown in  BaseOjbPbDAO.retrieveAllReferencesInCollection(Collection valueObjectsCollection): " + e.toString());
-            throw new DataAccessException("Error in  BaseOjbPbDAO.retrieveAllReferencesInCollection(Collection valueObjectsCollection): " + e.toString(),e);
-        } finally {
-            try{
-
-                persistenceBrokerSupport.releasePersistenceBroker(pb);
-
-            } catch(PersistenceBrokerSupportException e) {
-                log.error("PersistenceBrokerSupportException thrown in  BaseOjbPbDAO.retrieveAllReferencesInCollection(Collection valueObjectsCollection) in the finally clause: " + e.toString());
-                throw new DataAccessException("Error in  BaseOjbPbDAO.retrieveAllReferencesInCollection(Collection valueObjectsCollection) in the finally clause: " + e.toString(),e);
-            }
-        }
-        log.info("************Done with the  BaseOjbPbDAO.retrieveAllReferencesInCollection(Collection valueObjectsCollection)***************");
+	    } catch (final PersistenceBrokerSupportException e) {
+		log.error("PersistenceBrokerSupportException thrown in  BaseOjbPbDAO.retrieveAllReferencesInCollection(Collection valueObjectsCollection) in the finally clause: " + e.toString());
+		throw new DataAccessException("Error in  BaseOjbPbDAO.retrieveAllReferencesInCollection(Collection valueObjectsCollection) in the finally clause: " + e.toString(), e);
+	    }
+	}
+	log.info("************Done with the  BaseOjbPbDAO.retrieveAllReferencesInCollection(Collection valueObjectsCollection)***************");
     }
 
+    public void retrieveReferenceInCollection(Collection valueObjectsCollection, String pAttributeName) throws DataAccessException {
+	log.info("************Entering the BaseOjbPbDAO.retrieveReferenceInCollection(Collection valueObjectsCollection, String pAttributeName)***************");
+	PersistenceBroker pb = null;
+	try {
+	    pb = persistenceBrokerSupport.getPersistenceBroker();
+	    ojbPbCore.retrieveReferenceInCollection(valueObjectsCollection, pAttributeName, pb);
+	} catch (final PersistenceBrokerSupportException e) {
+	    log.error("PersistenceBrokerSupportException thrown in  BaseOjbPbDAO.retrieveReferenceInCollection(Collection valueObjectsCollection, String pAttributeName): " + e.toString());
+	    throw new DataAccessException("Error in  BaseOjbPbDAO.retrieveReferenceInCollection(Collection valueObjectsCollection, String pAttributeName): " + e.toString(), e);
+	} catch (final OjbPbCoreException e) {
+	    log.error("OjbPbCoreException thrown in  BaseOjbPbDAO.retrieveReferenceInCollection(Collection valueObjectsCollection, String pAttributeName): " + e.toString());
+	    throw new DataAccessException("Error in  BaseOjbPbDAO.retrieveReferenceInCollection(Collection valueObjectsCollection, String pAttributeName): " + e.toString(), e);
+	} catch (final Exception e) {
+	    log.error("Exception thrown in  BaseOjbPbDAO.retrieveReferenceInCollection(Collection valueObjectsCollection, String pAttributeName): " + e.toString());
+	    throw new DataAccessException("Error in  BaseOjbPbDAO.retrieveReferenceInCollection(Collection valueObjectsCollection, String pAttributeName): " + e.toString(), e);
+	} finally {
+	    try {
 
+		persistenceBrokerSupport.releasePersistenceBroker(pb);
 
-
-    public void retrieveReferenceInCollection(Collection valueObjectsCollection, String pAttributeName) throws DataAccessException{
-        log.info("************Entering the BaseOjbPbDAO.retrieveReferenceInCollection(Collection valueObjectsCollection, String pAttributeName)***************");
-        PersistenceBroker pb = null;
-        try{
-            pb = persistenceBrokerSupport.getPersistenceBroker();
-            ojbPbCore.retrieveReferenceInCollection(valueObjectsCollection,pAttributeName,pb);
-        }  catch (PersistenceBrokerSupportException e) {
-            log.error("PersistenceBrokerSupportException thrown in  BaseOjbPbDAO.retrieveReferenceInCollection(Collection valueObjectsCollection, String pAttributeName): " + e.toString());
-            throw new DataAccessException("Error in  BaseOjbPbDAO.retrieveReferenceInCollection(Collection valueObjectsCollection, String pAttributeName): " + e.toString(),e);
-        } catch (OjbPbCoreException e) {
-            log.error("OjbPbCoreException thrown in  BaseOjbPbDAO.retrieveReferenceInCollection(Collection valueObjectsCollection, String pAttributeName): " + e.toString());
-            throw new DataAccessException("Error in  BaseOjbPbDAO.retrieveReferenceInCollection(Collection valueObjectsCollection, String pAttributeName): " + e.toString(),e);
-        } catch (Exception e) {
-            log.error("Exception thrown in  BaseOjbPbDAO.retrieveReferenceInCollection(Collection valueObjectsCollection, String pAttributeName): " + e.toString());
-            throw new DataAccessException("Error in  BaseOjbPbDAO.retrieveReferenceInCollection(Collection valueObjectsCollection, String pAttributeName): " + e.toString(),e);
-        } finally {
-            try{
-
-                persistenceBrokerSupport.releasePersistenceBroker(pb);
-
-            } catch(PersistenceBrokerSupportException e) {
-                log.error("PersistenceBrokerSupportException thrown in  BaseOjbPbDAO.retrieveReferenceInCollection(Collection valueObjectsCollection, String pAttributeName) in the finally clause: " + e.toString());
-                throw new DataAccessException("Error in  BaseOjbPbDAO.retrieveReferenceInCollection(Collection valueObjectsCollection, String pAttributeName) in the finally clause: " + e.toString(),e);
-            }
-        }
-        log.info("************Done with the  BaseOjbPbDAO.retrieveAllReferencesInCollection(Collection valueObjectsCollection)***************");
+	    } catch (final PersistenceBrokerSupportException e) {
+		log.error("PersistenceBrokerSupportException thrown in  BaseOjbPbDAO.retrieveReferenceInCollection(Collection valueObjectsCollection, String pAttributeName) in the finally clause: "
+			+ e.toString());
+		throw new DataAccessException("Error in  BaseOjbPbDAO.retrieveReferenceInCollection(Collection valueObjectsCollection, String pAttributeName) in the finally clause: " + e.toString(),
+			e);
+	    }
+	}
+	log.info("************Done with the  BaseOjbPbDAO.retrieveAllReferencesInCollection(Collection valueObjectsCollection)***************");
     }
 
-    public void retrieveNullReference(Object pInstance, String pAttributeName) throws DataAccessException{
-        log.info("************Entering the BaseOjbPbDAO.retrieveNullReference(Object pInstance, pAttributeName)***************");
-        PersistenceBroker pb = null;
-        try{
-            pb = persistenceBrokerSupport.getPersistenceBroker();
-            ojbPbCore.retrieveNullReference(pInstance,pAttributeName,pb);
-        } catch (PersistenceBrokerSupportException e) {
-            log.error("PersistenceBrokerSupportException thrown in  BaseOjbPbDAO.retrieveNullReference(Object pInstance, pAttributeName): " + e.toString());
-            throw new DataAccessException("Error in  BaseOjbPbDAO.retrieveNullReference(Object pInstance, pAttributeName): " + e.toString(),e);
-        } catch (OjbPbCoreException e) {
-            log.error("OjbPbCoreException thrown in  BaseOjbPbDAO.retrieveNullReference(Object pInstance, pAttributeName): " + e.toString());
-            throw new DataAccessException("Error in  BaseOjbPbDAO.retrieveNullReference(Object pInstance, pAttributeName): " + e.toString(),e);
-        } catch (Exception e) {
-            log.error("Exception thrown in  BaseOjbPbDAO.retrieveNullReference(Object pInstance, pAttributeName): " + e.toString());
-            throw new DataAccessException("Error in  BaseOjbPbDAO.retrieveNullReference(Object pInstance, pAttributeName): " + e.toString(),e);
-        } finally {
-            try{
+    public void retrieveNullReference(Object pInstance, String pAttributeName) throws DataAccessException {
+	log.info("************Entering the BaseOjbPbDAO.retrieveNullReference(Object pInstance, pAttributeName)***************");
+	PersistenceBroker pb = null;
+	try {
+	    pb = persistenceBrokerSupport.getPersistenceBroker();
+	    ojbPbCore.retrieveNullReference(pInstance, pAttributeName, pb);
+	} catch (final PersistenceBrokerSupportException e) {
+	    log.error("PersistenceBrokerSupportException thrown in  BaseOjbPbDAO.retrieveNullReference(Object pInstance, pAttributeName): " + e.toString());
+	    throw new DataAccessException("Error in  BaseOjbPbDAO.retrieveNullReference(Object pInstance, pAttributeName): " + e.toString(), e);
+	} catch (final OjbPbCoreException e) {
+	    log.error("OjbPbCoreException thrown in  BaseOjbPbDAO.retrieveNullReference(Object pInstance, pAttributeName): " + e.toString());
+	    throw new DataAccessException("Error in  BaseOjbPbDAO.retrieveNullReference(Object pInstance, pAttributeName): " + e.toString(), e);
+	} catch (final Exception e) {
+	    log.error("Exception thrown in  BaseOjbPbDAO.retrieveNullReference(Object pInstance, pAttributeName): " + e.toString());
+	    throw new DataAccessException("Error in  BaseOjbPbDAO.retrieveNullReference(Object pInstance, pAttributeName): " + e.toString(), e);
+	} finally {
+	    try {
 
-                persistenceBrokerSupport.releasePersistenceBroker(pb);
+		persistenceBrokerSupport.releasePersistenceBroker(pb);
 
-            } catch(PersistenceBrokerSupportException e) {
-                log.error("PersistenceBrokerSupportException thrown in  BaseOjbPbDAO.retrieveNullReference(Object pInstance, pAttributeName) in the finally clause: " + e.toString());
-                throw new DataAccessException("Error in  BaseOjbPbDAO.retrieveNullReference(Object pInstance, pAttributeName) in the finally clause: " + e.toString(),e);
-            }
-        }
-        log.info("************Done with the  BaseOjbPbDAO.retrieveNullReference(Object pInstance, pAttributeName)***************");
+	    } catch (final PersistenceBrokerSupportException e) {
+		log.error("PersistenceBrokerSupportException thrown in  BaseOjbPbDAO.retrieveNullReference(Object pInstance, pAttributeName) in the finally clause: " + e.toString());
+		throw new DataAccessException("Error in  BaseOjbPbDAO.retrieveNullReference(Object pInstance, pAttributeName) in the finally clause: " + e.toString(), e);
+	    }
+	}
+	log.info("************Done with the  BaseOjbPbDAO.retrieveNullReference(Object pInstance, pAttributeName)***************");
     }
 
-    public void retrieveAllNullReferences(Object pInstance) throws DataAccessException{
-        log.info("************Entering the BaseOjbPbDAO.retrieveAllNullReferences(Object pInstance)***************");
-        PersistenceBroker pb = null;
-        try{
-            pb = persistenceBrokerSupport.getPersistenceBroker();
-            ojbPbCore.retrieveAllNullReferences(pInstance,pb);
-        } catch (PersistenceBrokerSupportException e) {
-            log.error("PersistenceBrokerSupportException thrown in  BaseOjbPbDAO.retrieveAllNullReferences(Object pInstance): " + e.toString());
-            throw new DataAccessException("Error in  BaseOjbPbDAO.retrieveAllNullReferences(Object pInstance): " + e.toString(),e);
-        } catch (OjbPbCoreException e) {
-            log.error("OjbPbCoreException thrown in  BaseOjbPbDAO.retrieveAllNullReferences(Object pInstance): " + e.toString());
-            throw new DataAccessException("Error in  BaseOjbPbDAO.retrieveAllNullReferences(Object pInstance): " + e.toString(),e);
-        } catch (Exception e) {
-            log.error("Exception thrown in  BaseOjbPbDAO.retrieveAllNullReferences(Object pInstance): " + e.toString());
-            throw new DataAccessException("Error in  BaseOjbPbDAO.retrieveAllNullReferences(Object pInstance): " + e.toString(),e);
-        } finally {
-            try{
+    public void retrieveAllNullReferences(Object pInstance) throws DataAccessException {
+	log.info("************Entering the BaseOjbPbDAO.retrieveAllNullReferences(Object pInstance)***************");
+	PersistenceBroker pb = null;
+	try {
+	    pb = persistenceBrokerSupport.getPersistenceBroker();
+	    ojbPbCore.retrieveAllNullReferences(pInstance, pb);
+	} catch (final PersistenceBrokerSupportException e) {
+	    log.error("PersistenceBrokerSupportException thrown in  BaseOjbPbDAO.retrieveAllNullReferences(Object pInstance): " + e.toString());
+	    throw new DataAccessException("Error in  BaseOjbPbDAO.retrieveAllNullReferences(Object pInstance): " + e.toString(), e);
+	} catch (final OjbPbCoreException e) {
+	    log.error("OjbPbCoreException thrown in  BaseOjbPbDAO.retrieveAllNullReferences(Object pInstance): " + e.toString());
+	    throw new DataAccessException("Error in  BaseOjbPbDAO.retrieveAllNullReferences(Object pInstance): " + e.toString(), e);
+	} catch (final Exception e) {
+	    log.error("Exception thrown in  BaseOjbPbDAO.retrieveAllNullReferences(Object pInstance): " + e.toString());
+	    throw new DataAccessException("Error in  BaseOjbPbDAO.retrieveAllNullReferences(Object pInstance): " + e.toString(), e);
+	} finally {
+	    try {
 
-                persistenceBrokerSupport.releasePersistenceBroker(pb);
+		persistenceBrokerSupport.releasePersistenceBroker(pb);
 
-            } catch(PersistenceBrokerSupportException e) {
-                log.error("PersistenceBrokerSupportException thrown in  BaseOjbPbDAO.retrieveAllNullReferences(Object pInstance) in the finally clause: " + e.toString());
-                throw new DataAccessException("Error in  BaseOjbPbDAO.retrieveAllNullReferences(Object pInstance) in the finally clause: " + e.toString(),e);
-            }
-        }
-        log.info("************Done with the  BaseOjbPbDAO.retrieveAllNullReferences(Object pInstance)***************");
+	    } catch (final PersistenceBrokerSupportException e) {
+		log.error("PersistenceBrokerSupportException thrown in  BaseOjbPbDAO.retrieveAllNullReferences(Object pInstance) in the finally clause: " + e.toString());
+		throw new DataAccessException("Error in  BaseOjbPbDAO.retrieveAllNullReferences(Object pInstance) in the finally clause: " + e.toString(), e);
+	    }
+	}
+	log.info("************Done with the  BaseOjbPbDAO.retrieveAllNullReferences(Object pInstance)***************");
     }
 
-    public void retrievePathReference(Object valueobjectOrCollection, String path) throws DataAccessException{
-        log.info("************Entering the BaseOjbPbDAO.retrievePathReference(Object valueobjectOrCollection, String path)***************");
-        PersistenceBroker pb = null;
-        try{
-            pb = persistenceBrokerSupport.getPersistenceBroker();
-            ojbPbCore.retrievePathReference(valueobjectOrCollection, path, pb);
+    public void retrievePathReference(Object valueobjectOrCollection, String path) throws DataAccessException {
+	log.info("************Entering the BaseOjbPbDAO.retrievePathReference(Object valueobjectOrCollection, String path)***************");
+	PersistenceBroker pb = null;
+	try {
+	    pb = persistenceBrokerSupport.getPersistenceBroker();
+	    ojbPbCore.retrievePathReference(valueobjectOrCollection, path, pb);
 
-        } catch (PersistenceBrokerSupportException e) {
-            log.error("PersistenceBrokerSupportException thrown in  BaseOjbPbDAO.retrievePathReference(Object valueobjectOrCollection, String path): " + e.toString());
-            throw new DataAccessException("Error in  BaseOjbPbDAO.retrievePathReference(Object valueobjectOrCollection, String path): " + e.toString(),e);
-        } catch (OjbPbCoreException e) {
-            log.error("OjbPbCoreException thrown in  BaseOjbPbDAO.retrievePathReference(Object valueobjectOrCollection, String path): " + e.toString());
-            throw new DataAccessException("Error in  BaseOjbPbDAO.retrievePathReference(Object valueobjectOrCollection, String path): " + e.toString(),e);
-        } catch (Exception e) {
-            log.error("Exception thrown in  BaseOjbPbDAO.retrievePathReference(Object valueobjectOrCollection, String path): " + e.toString());
-            throw new DataAccessException("Error in  BaseOjbPbDAO.retrievePathReference(Object valueobjectOrCollection, String path): " + e.toString(),e);
-        } finally {
-            try{
+	} catch (final PersistenceBrokerSupportException e) {
+	    log.error("PersistenceBrokerSupportException thrown in  BaseOjbPbDAO.retrievePathReference(Object valueobjectOrCollection, String path): " + e.toString());
+	    throw new DataAccessException("Error in  BaseOjbPbDAO.retrievePathReference(Object valueobjectOrCollection, String path): " + e.toString(), e);
+	} catch (final OjbPbCoreException e) {
+	    log.error("OjbPbCoreException thrown in  BaseOjbPbDAO.retrievePathReference(Object valueobjectOrCollection, String path): " + e.toString());
+	    throw new DataAccessException("Error in  BaseOjbPbDAO.retrievePathReference(Object valueobjectOrCollection, String path): " + e.toString(), e);
+	} catch (final Exception e) {
+	    log.error("Exception thrown in  BaseOjbPbDAO.retrievePathReference(Object valueobjectOrCollection, String path): " + e.toString());
+	    throw new DataAccessException("Error in  BaseOjbPbDAO.retrievePathReference(Object valueobjectOrCollection, String path): " + e.toString(), e);
+	} finally {
+	    try {
 
-                persistenceBrokerSupport.releasePersistenceBroker(pb);
+		persistenceBrokerSupport.releasePersistenceBroker(pb);
 
-            } catch(PersistenceBrokerSupportException e) {
-                log.error("PersistenceBrokerSupportException thrown in  BaseOjbPbDAO.retrievePathReference(Object valueobjectOrCollection, String path) in the finally clause: " + e.toString());
-                throw new DataAccessException("Error in  BaseOjbPbDAO.retrievePathReference(Object valueobjectOrCollection, String path) in the finally clause: " + e.toString(),e);
-            }
-        }
-        log.info("************Done with the  BaseOjbPbDAO.retrievePathReference(Object valueobjectOrCollection, String path)*************");
-
-    }
-
-
-
-    public void retrieveNullPathReference(Object valueobjectOrCollection, String path) throws DataAccessException{
-        log.info("************Entering the BaseOjbPbDAO.retrieveNullPathReference(Object valueobjectOrCollection, String path)***************");
-        PersistenceBroker pb = null;
-        try{
-            pb = persistenceBrokerSupport.getPersistenceBroker();
-            ojbPbCore.retrieveNullPathReference(valueobjectOrCollection, path, pb);
-
-        } catch (PersistenceBrokerSupportException e) {
-            log.error("PersistenceBrokerSupportException thrown in  BaseOjbPbDAO.retrieveNullPathReference(Object valueobjectOrCollection, String path): " + e.toString());
-            throw new DataAccessException("Error in  BaseOjbPbDAO.retrieveNullPathReference(Object valueobjectOrCollection, String path): " + e.toString(),e);
-        } catch (OjbPbCoreException e) {
-            log.error("OjbPbCoreException thrown in  BaseOjbPbDAO.retrieveNullPathReference(Object valueobjectOrCollection, String path): " + e.toString());
-            throw new DataAccessException("Error in  BaseOjbPbDAO.retrieveNullPathReference(Object valueobjectOrCollection, String path): " + e.toString(),e);
-        } catch (Exception e) {
-            log.error("Exception thrown in  BaseOjbPbDAO.retrieveNullPathReference(Object valueobjectOrCollection, String path): " + e.toString());
-            throw new DataAccessException("Error in  BaseOjbPbDAO.retrieveNullPathReference(Object valueobjectOrCollection, String path): " + e.toString(),e);
-        } finally {
-            try{
-
-                persistenceBrokerSupport.releasePersistenceBroker(pb);
-
-            } catch(PersistenceBrokerSupportException e) {
-                log.error("PersistenceBrokerSupportException thrown in  BaseOjbPbDAO.retrieveNullPathReference(Object valueobjectOrCollection, String path) in the finally clause: " + e.toString());
-                throw new DataAccessException("Error in  BaseOjbPbDAO.retrieveNullPathReference(Object valueobjectOrCollection, String path) in the finally clause: " + e.toString(),e);
-            }
-        }
-        log.info("************Done with the  BaseOjbPbDAO.retrieveNullPathReference(Object valueobjectOrCollection, String path)*************");
-
-    }
-
-    @SuppressWarnings("finally")
-	public void delete(Object deleteVO) throws DataAccessException, DataOptimisticLockException{
-        log.info("************Entering the BaseOjbPbDAO.delete(Object deleteVO)***************");
-        if(deleteVO==null) throw new DataAccessException("Error in BaseOjbPbDAO.delete(Object deleteVO): deleteVO can't be null. ");
-        PersistenceBroker pb = null;
-        try{
-            pb = persistenceBrokerSupport.getPersistenceBroker();
-            persistenceBrokerSupport.beginTransaction(pb);
-            ojbPbCore.delete(deleteVO,pb);
-            persistenceBrokerSupport.commit(pb);
-
-        } catch (OptimisticLockException e) {
-        	try{
-                persistenceBrokerSupport.rollback(pb); // change of policy. Now the if OptimisticLockException is rolled back , depends as other Exceptions, on if the environment is
-                                                   // managed or not.
-            } catch (PersistenceBrokerSupportException pbsEx){
-                log.error("PersistenceBrokerSupportException thrown in the catch block of the OptimisticLockException in BaseOjbPbDAO.delete(Object deleteVO): " + pbsEx.toString());
-            } finally{
-                log.error("OptimisticLockException thrown in BaseOjbPbDAO.delete(Object deleteVO): " + e.toString());
-                throw new DataOptimisticLockException("Error in BaseOjbPbDAO.delete(Object deleteVO): " + e.toString(),e);
-            }
-        } catch (PersistenceBrokerSupportException e) {
-            try{
-                persistenceBrokerSupport.rollback(pb);
-            } catch (PersistenceBrokerSupportException pbsEx){
-                log.error("PersistenceBrokerSupportException thrown in the catch block of the PersistenceBrokerSupportException in BaseOjbPbDAO.delete(Object deleteVO): " + pbsEx.toString());
-            } finally{
-                log.error("PersistenceBrokerSupportException thrown in BaseOjbPbDAO.delete(Object deleteVO): " + e.toString());
-                //throw new DataOptimisticLockException("Error in BaseOjbPbDAO.delete(Object deleteVO): " + e.toString(),e);
-                throw new DataAccessException("Error in BaseOjbPbDAO.delete(Object deleteVO): " + e.toString(),e);
-            }
-        } catch (OjbPbCoreException e) {
-            try{
-                persistenceBrokerSupport.rollback(pb);
-            } catch (PersistenceBrokerSupportException pbsEx){
-                log.error("PersistenceBrokerSupportException thrown in the catch block of the OjbPbCoreException in BaseOjbPbDAO.delete(Object deleteVO): " + pbsEx.toString());
-            } finally{
-                log.error("OjbPbCoreException thrown in BaseOjbPbDAO.delete(Object deleteVO): " + e.toString());
-                //throw new DataOptimisticLockException("Error in BaseOjbPbDAO.delete(Object deleteVO): " + e.toString(),e);
-                throw new DataAccessException("Error in BaseOjbPbDAO.delete(Object deleteVO): " + e.toString(),e);
-            }
-        } catch (Exception e) {
-            try{
-                persistenceBrokerSupport.rollback(pb);
-            } catch (PersistenceBrokerSupportException pbsEx){
-                log.error("PersistenceBrokerSupportException thrown in the catch block of the Exception in BaseOjbPbDAO.delete(Object deleteVO): " + pbsEx.toString());
-            } finally{
-                log.error("Exception thrown in BaseOjbPbDAO.delete(Object deleteVO): " + e.toString());
-                //throw new DataOptimisticLockException("Error in BaseOjbPbDAO.delete(Object deleteVO): " + e.toString(),e);
-                throw new DataAccessException("Error in BaseOjbPbDAO.delete(Object deleteVO): " + e.toString(),e);
-            }
-        } finally {
-            try{
-
-                persistenceBrokerSupport.releasePersistenceBroker(pb);
-
-            } catch(PersistenceBrokerSupportException e) {
-                log.error("PersistenceBrokerSupportException thrown in  BaseOjbPbDAO.delete(Object deleteVO) in the finally clause: " + e.toString());
-                throw new DataAccessException("Error in  BaseOjbPbDAO.delete(Object deleteVO) in the finally clause: " + e.toString(),e);
-            }
-        }
-        log.info("************Done with the BaseOjbPbDAO.delete(Object deleteVO)***************");
+	    } catch (final PersistenceBrokerSupportException e) {
+		log.error("PersistenceBrokerSupportException thrown in  BaseOjbPbDAO.retrievePathReference(Object valueobjectOrCollection, String path) in the finally clause: " + e.toString());
+		throw new DataAccessException("Error in  BaseOjbPbDAO.retrievePathReference(Object valueobjectOrCollection, String path) in the finally clause: " + e.toString(), e);
+	    }
+	}
+	log.info("************Done with the  BaseOjbPbDAO.retrievePathReference(Object valueobjectOrCollection, String path)*************");
 
     }
 
+    public void retrieveNullPathReference(Object valueobjectOrCollection, String path) throws DataAccessException {
+	log.info("************Entering the BaseOjbPbDAO.retrieveNullPathReference(Object valueobjectOrCollection, String path)***************");
+	PersistenceBroker pb = null;
+	try {
+	    pb = persistenceBrokerSupport.getPersistenceBroker();
+	    ojbPbCore.retrieveNullPathReference(valueobjectOrCollection, path, pb);
 
+	} catch (final PersistenceBrokerSupportException e) {
+	    log.error("PersistenceBrokerSupportException thrown in  BaseOjbPbDAO.retrieveNullPathReference(Object valueobjectOrCollection, String path): " + e.toString());
+	    throw new DataAccessException("Error in  BaseOjbPbDAO.retrieveNullPathReference(Object valueobjectOrCollection, String path): " + e.toString(), e);
+	} catch (final OjbPbCoreException e) {
+	    log.error("OjbPbCoreException thrown in  BaseOjbPbDAO.retrieveNullPathReference(Object valueobjectOrCollection, String path): " + e.toString());
+	    throw new DataAccessException("Error in  BaseOjbPbDAO.retrieveNullPathReference(Object valueobjectOrCollection, String path): " + e.toString(), e);
+	} catch (final Exception e) {
+	    log.error("Exception thrown in  BaseOjbPbDAO.retrieveNullPathReference(Object valueobjectOrCollection, String path): " + e.toString());
+	    throw new DataAccessException("Error in  BaseOjbPbDAO.retrieveNullPathReference(Object valueobjectOrCollection, String path): " + e.toString(), e);
+	} finally {
+	    try {
 
-    @SuppressWarnings("finally")
-	public void deleteCollection(Collection deleteVOs) throws DataAccessException, DataOptimisticLockException{
-        log.info("************Entering the BaseOjbPbDAO.deleteCollection(Collection deleteVOs)***************");
-        PersistenceBroker pb = null;
-        try{
-            if(deleteVOs==null) return;
-            pb = persistenceBrokerSupport.getPersistenceBroker();
-            persistenceBrokerSupport.beginTransaction(pb);
-            ojbPbCore.deleteCollection(deleteVOs,pb);
-            persistenceBrokerSupport.commit(pb);
+		persistenceBrokerSupport.releasePersistenceBroker(pb);
 
-        } catch (OptimisticLockException e) {
-            try{
-                persistenceBrokerSupport.rollback(pb); // change of policy. Now the if OptimisticLockException is rolled back , depends as other Exceptions, on if the environment is
-                                                   // managed or not.
-            } catch (PersistenceBrokerSupportException pbsEx){
-                log.error("PersistenceBrokerSupportException thrown in the catch block of the OptimisticLockException in BaseOjbPbDAO.deleteCollection(Collection deleteVOs) : " + pbsEx.toString());
-            } finally{
-                log.error("OptimisticLockException thrown in BaseOjbPbDAO.deleteCollection(Collection deleteVOs) : " + e.toString());
-                throw new DataOptimisticLockException("Error in BaseOjbPbDAO.deleteCollection(Collection deleteVOs) : " + e.toString(),e);
-            }
-        } catch (PersistenceBrokerSupportException e) {
-            try{
-                persistenceBrokerSupport.rollback(pb);
-            } catch (PersistenceBrokerSupportException pbsEx){
-                log.error("PersistenceBrokerSupportException thrown in the catch block of the PersistenceBrokerSupportException in BaseOjbPbDAO.deleteCollection(Collection deleteVOs) : " + pbsEx.toString());
-            } finally{
-                log.error("PersistenceBrokerSupportException thrown in BaseOjbPbDAO.deleteCollection(Collection deleteVOs) : " + e.toString());
-                //throw new DataOptimisticLockException("Error in BaseOjbPbDAO.deleteCollection(Collection deleteVOs) : " + e.toString(),e);
-                throw new DataAccessException("Error in BaseOjbPbDAO.deleteCollection(Collection deleteVOs) : " + e.toString(),e);
-            }
-        } catch (OjbPbCoreException e) {
-            try{
-                persistenceBrokerSupport.rollback(pb);
-            } catch (PersistenceBrokerSupportException pbsEx){
-                log.error("PersistenceBrokerSupportException thrown in the catch block of the OjbPbCoreException in BaseOjbPbDAO.deleteCollection(Collection deleteVOs) : " + pbsEx.toString());
-            } finally{
-                log.error("OjbPbCoreException thrown in BaseOjbPbDAO.deleteCollection(Collection deleteVOs) : " + e.toString());
-                //throw new DataOptimisticLockException("Error in BaseOjbPbDAO.deleteCollection(Collection deleteVOs) : " + e.toString(),e);
-                throw new DataAccessException("Error in BaseOjbPbDAO.deleteCollection(Collection deleteVOs) : " + e.toString(),e);
-            }
-        } catch (Exception e) {
-            try{
-                persistenceBrokerSupport.rollback(pb);
-            } catch (PersistenceBrokerSupportException pbsEx){
-                log.error("PersistenceBrokerSupportException thrown in the catch block of the Exception in BaseOjbPbDAO.deleteCollection(Collection deleteVOs) : " + pbsEx.toString());
-            } finally{
-                log.error("Exception thrown in BaseOjbPbDAO.deleteCollection(Collection deleteVOs) : " + e.toString());
-                //throw new DataOptimisticLockException("Error in BaseOjbPbDAO.deleteCollection(Collection deleteVOs) : " + e.toString(),e);
-                throw new DataAccessException("Error in BaseOjbPbDAO.deleteCollection(Collection deleteVOs) : " + e.toString(),e);
-            }
-        } finally {
-            try{
-
-                persistenceBrokerSupport.releasePersistenceBroker(pb);
-
-            } catch(PersistenceBrokerSupportException e) {
-                log.error("PersistenceBrokerSupportException thrown in  BaseOjbPbDAO.deleteCollection(Collection deleteVOs)  in the finally clause: " + e.toString());
-                throw new DataAccessException("Error in  BaseOjbPbDAO.deleteCollection(Collection deleteVOs)  in the finally clause: " + e.toString(),e);
-            }
-        }
-        log.info("************Done with the BaseOjbPbDAO.deleteCollection(Collection deleteVOs) ***************");
-
-    }
-
-
-    @SuppressWarnings("finally")
-	public void deleteMToNRelationshipCollection(Object left, String leftFieldName, Collection rightCollection) throws DataAccessException{
-        log.info("************Entering the BaseOjbPbDAO.deleteMToNRelationshipCollection(Object left, String leftFieldName, Collection rightCollection) ***************");
-        PersistenceBroker pb = null;
-        try{
-            pb = persistenceBrokerSupport.getPersistenceBroker();
-            persistenceBrokerSupport.beginTransaction(pb);
-            ojbPbCore.deleteMToNRelationshipCollection(left, leftFieldName, rightCollection, pb);
-            persistenceBrokerSupport.commit(pb);
-
-        }catch (PersistenceBrokerSupportException e) {
-            try{
-                persistenceBrokerSupport.rollback(pb);
-            } catch (PersistenceBrokerSupportException pbsEx){
-                log.error("PersistenceBrokerSupportException thrown in the catch block of the PersistenceBrokerSupportException in BaseOjbPbDAO.deleteMToNRelationshipCollection(Object left, String leftFieldName, Collection rightCollection) : " + pbsEx.toString());
-            } finally{
-                log.error("PersistenceBrokerSupportException thrown in BaseOjbPbDAO.deleteMToNRelationshipCollection(Object left, String leftFieldName, Collection rightCollection) : " + e.toString());
-                throw new DataAccessException("Error in BaseOjbPbDAO.deleteMToNRelationshipCollection(Object left, String leftFieldName, Collection rightCollection) : " + e.toString(),e);
-            }
-        } catch (OjbPbCoreException e) {
-            try{
-                persistenceBrokerSupport.rollback(pb);
-            } catch (PersistenceBrokerSupportException pbsEx){
-                log.error("PersistenceBrokerSupportException thrown in the catch block of the OjbPbCoreException in BaseOjbPbDAO.deleteMToNRelationshipCollection(Object left, String leftFieldName, Collection rightCollection): " + pbsEx.toString());
-            } finally{
-                log.error("OjbPbCoreException thrown in BaseOjbPbDAO.deleteMToNRelationshipCollection(Object left, String leftFieldName, Collection rightCollection): " + e.toString());
-                throw new DataAccessException("Error in BaseOjbPbDAO.deleteMToNRelationshipCollection(Object left, String leftFieldName, Collection rightCollection) : " + e.toString(),e);
-            }
-        } catch (Exception e) {
-            try{
-                persistenceBrokerSupport.rollback(pb);
-            } catch (PersistenceBrokerSupportException pbsEx){
-                log.error("PersistenceBrokerSupportException thrown in the catch block of the Exception in BaseOjbPbDAO.deleteMToNRelationshipCollection(Object left, String leftFieldName, Collection rightCollection): " + pbsEx.toString());
-            } finally{
-                log.error("Exception thrown in BaseOjbPbDAO.deleteMToNRelationshipCollection(Object left, String leftFieldName, Collection rightCollection): " + e.toString());
-                throw new DataAccessException("Error in BaseOjbPbDAO.deleteMToNRelationshipCollection(Object left, String leftFieldName, Collection rightCollection): " + e.toString(),e);
-            }
-        } finally {
-            try{
-
-                persistenceBrokerSupport.releasePersistenceBroker(pb);
-
-            } catch(PersistenceBrokerSupportException e) {
-                log.error("PersistenceBrokerSupportException thrown in  BaseOjbPbDAO.deleteMToNRelationshipCollection(Object left, String leftFieldName, Collection rightCollection)  in the finally clause: " + e.toString());
-                throw new DataAccessException("Error in  BaseOjbPbDAO.deleteMToNRelationshipCollection(Object left, String leftFieldName, Collection rightCollection) in the finally clause: " + e.toString(),e);
-            }
-        }
-        log.info("************Done with the BaseOjbPbDAO.deleteMToNRelationshipCollection(Object left, String leftFieldName, Collection rightCollection) ***************");
+	    } catch (final PersistenceBrokerSupportException e) {
+		log.error("PersistenceBrokerSupportException thrown in  BaseOjbPbDAO.retrieveNullPathReference(Object valueobjectOrCollection, String path) in the finally clause: " + e.toString());
+		throw new DataAccessException("Error in  BaseOjbPbDAO.retrieveNullPathReference(Object valueobjectOrCollection, String path) in the finally clause: " + e.toString(), e);
+	    }
+	}
+	log.info("************Done with the  BaseOjbPbDAO.retrieveNullPathReference(Object valueobjectOrCollection, String path)*************");
 
     }
 
     @SuppressWarnings("finally")
-	public void deleteItemsNotInCollectionsInPath(Object rootVO, String path, Boolean applyDeletePathCascade, Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) throws DataAccessException{
-        log.info("************Entering the BaseOjbPbDAO.deleteItemsNotInCollectionsInPath(Object rootVO, String path, Boolean applyDeletePathCascade, Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) ***************");
-        PersistenceBroker pb = null;
-        try{
-            pb = persistenceBrokerSupport.getPersistenceBroker();
-            persistenceBrokerSupport.beginTransaction(pb);
-            ojbPbCore.deleteItemsNotInCollectionsInPath(rootVO, path, applyDeletePathCascade, ifM2NDeleteOnlyRelationship, deleteOneToOne,pb);
-            persistenceBrokerSupport.commit(pb);
+    public void delete(Object deleteVO) throws DataAccessException, DataOptimisticLockException {
+	log.info("************Entering the BaseOjbPbDAO.delete(Object deleteVO)***************");
+	if (deleteVO == null) {
+	    throw new DataAccessException("Error in BaseOjbPbDAO.delete(Object deleteVO): deleteVO can't be null. ");
+	}
+	PersistenceBroker pb = null;
+	try {
+	    pb = persistenceBrokerSupport.getPersistenceBroker();
+	    persistenceBrokerSupport.beginTransaction(pb);
+	    ojbPbCore.delete(deleteVO, pb);
+	    persistenceBrokerSupport.commit(pb);
 
-        }catch (PersistenceBrokerSupportException e) {
-            try{
-                persistenceBrokerSupport.rollback(pb);
-            } catch (PersistenceBrokerSupportException pbsEx){
-                log.error("PersistenceBrokerSupportException thrown in the catch block of the PersistenceBrokerSupportException in BaseOjbPbDAO.deleteItemsNotInCollectionsInPath(Object rootVO, String path, Boolean applyDeletePathCascade, Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) : " + pbsEx.toString());
-            } finally{
-                log.error("PersistenceBrokerSupportException thrown in BaseOjbPbDAO.deleteItemsNotInCollectionsInPath(Object rootVO, String path, Boolean applyDeletePathCascade, Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) : " + e.toString());
-                throw new DataAccessException("Error in BaseOjbPbDAO.deleteItemsNotInCollectionsInPath(Object rootVO, String path, Boolean applyDeletePathCascade, Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) : " + e.toString(),e);
-            }
-        } catch (OjbPbCoreException e) {
-            try{
-                persistenceBrokerSupport.rollback(pb);
-            } catch (PersistenceBrokerSupportException pbsEx){
-                log.error("PersistenceBrokerSupportException thrown in the catch block of the OjbPbCoreException in BaseOjbPbDAO.deleteItemsNotInCollectionsInPath(Object rootVO, String path, Boolean applyDeletePathCascade, Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne): " + pbsEx.toString());
-            } finally{
-                log.error("OjbPbCoreException thrown in BaseOjbPbDAO.deleteItemsNotInCollectionsInPath(Object rootVO, String path, Boolean applyDeletePathCascade, Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne): " + e.toString());
-                throw new DataAccessException("Error in BaseOjbPbDAO.deleteItemsNotInCollectionsInPath(Object rootVO, String path, Boolean applyDeletePathCascade, Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) : " + e.toString(),e);
-            }
-        } catch (Exception e) {
-            try{
-                persistenceBrokerSupport.rollback(pb);
-            } catch (PersistenceBrokerSupportException pbsEx){
-                log.error("PersistenceBrokerSupportException thrown in the catch block of the Exception in BaseOjbPbDAO.deleteItemsNotInCollectionsInPath(Object rootVO, String path, Boolean applyDeletePathCascade, Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne): " + pbsEx.toString());
-            } finally{
-                log.error("Exception thrown in BaseOjbPbDAO.deleteItemsNotInCollectionsInPath(Object rootVO, String path, Boolean applyDeletePathCascade, Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne): " + e.toString());
-                throw new DataAccessException("Error in BaseOjbPbDAO.deleteItemsNotInCollectionsInPath(Object rootVO, String path, Boolean applyDeletePathCascade, Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne): " + e.toString(),e);
-            }
-        } finally {
-            try{
+	} catch (final OptimisticLockException e) {
+	    try {
+		persistenceBrokerSupport.rollback(pb); // change of policy. Now
+						       // the if
+						       // OptimisticLockException
+						       // is rolled back ,
+						       // depends as other
+						       // Exceptions, on if the
+						       // environment is
+		// managed or not.
+	    } catch (final PersistenceBrokerSupportException pbsEx) {
+		log.error("PersistenceBrokerSupportException thrown in the catch block of the OptimisticLockException in BaseOjbPbDAO.delete(Object deleteVO): " + pbsEx.toString());
+	    } finally {
+		log.error("OptimisticLockException thrown in BaseOjbPbDAO.delete(Object deleteVO): " + e.toString());
+		throw new DataOptimisticLockException("Error in BaseOjbPbDAO.delete(Object deleteVO): " + e.toString(), e);
+	    }
+	} catch (final PersistenceBrokerSupportException e) {
+	    try {
+		persistenceBrokerSupport.rollback(pb);
+	    } catch (final PersistenceBrokerSupportException pbsEx) {
+		log.error("PersistenceBrokerSupportException thrown in the catch block of the PersistenceBrokerSupportException in BaseOjbPbDAO.delete(Object deleteVO): " + pbsEx.toString());
+	    } finally {
+		log.error("PersistenceBrokerSupportException thrown in BaseOjbPbDAO.delete(Object deleteVO): " + e.toString());
+		// throw new DataOptimisticLockException("Error in
+		// BaseOjbPbDAO.delete(Object deleteVO): " + e.toString(),e);
+		throw new DataAccessException("Error in BaseOjbPbDAO.delete(Object deleteVO): " + e.toString(), e);
+	    }
+	} catch (final OjbPbCoreException e) {
+	    try {
+		persistenceBrokerSupport.rollback(pb);
+	    } catch (final PersistenceBrokerSupportException pbsEx) {
+		log.error("PersistenceBrokerSupportException thrown in the catch block of the OjbPbCoreException in BaseOjbPbDAO.delete(Object deleteVO): " + pbsEx.toString());
+	    } finally {
+		log.error("OjbPbCoreException thrown in BaseOjbPbDAO.delete(Object deleteVO): " + e.toString());
+		// throw new DataOptimisticLockException("Error in
+		// BaseOjbPbDAO.delete(Object deleteVO): " + e.toString(),e);
+		throw new DataAccessException("Error in BaseOjbPbDAO.delete(Object deleteVO): " + e.toString(), e);
+	    }
+	} catch (final Exception e) {
+	    try {
+		persistenceBrokerSupport.rollback(pb);
+	    } catch (final PersistenceBrokerSupportException pbsEx) {
+		log.error("PersistenceBrokerSupportException thrown in the catch block of the Exception in BaseOjbPbDAO.delete(Object deleteVO): " + pbsEx.toString());
+	    } finally {
+		log.error("Exception thrown in BaseOjbPbDAO.delete(Object deleteVO): " + e.toString());
+		// throw new DataOptimisticLockException("Error in
+		// BaseOjbPbDAO.delete(Object deleteVO): " + e.toString(),e);
+		throw new DataAccessException("Error in BaseOjbPbDAO.delete(Object deleteVO): " + e.toString(), e);
+	    }
+	} finally {
+	    try {
 
-                persistenceBrokerSupport.releasePersistenceBroker(pb);
+		persistenceBrokerSupport.releasePersistenceBroker(pb);
 
-            } catch(PersistenceBrokerSupportException e) {
-                log.error("PersistenceBrokerSupportException thrown in  BaseOjbPbDAO.deleteItemsNotInCollectionsInPath(Object rootVO, String path, Boolean applyDeletePathCascade, Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne)  in the finally clause: " + e.toString());
-                throw new DataAccessException("Error in  BaseOjbPbDAO.deleteItemsNotInCollectionsInPath(Object rootVO, String path, Boolean applyDeletePathCascade, Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) in the finally clause: " + e.toString(),e);
-            }
-        }
-        log.info("************Done with the BaseOjbPbDAO.deleteItemsNotInCollectionsInPath(Object rootVO, String path, Boolean applyDeletePathCascade, Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) ***************");
+	    } catch (final PersistenceBrokerSupportException e) {
+		log.error("PersistenceBrokerSupportException thrown in  BaseOjbPbDAO.delete(Object deleteVO) in the finally clause: " + e.toString());
+		throw new DataAccessException("Error in  BaseOjbPbDAO.delete(Object deleteVO) in the finally clause: " + e.toString(), e);
+	    }
+	}
+	log.info("************Done with the BaseOjbPbDAO.delete(Object deleteVO)***************");
 
     }
 
     @SuppressWarnings("finally")
-	public void deleteItemsNotInCollectionsInPath(Object rootVO, String path) throws DataAccessException{
-        log.info("************Entering the BaseOjbPbDAO.deleteItemsNotInCollectionsInPath(Object rootVO, String path) ***************");
-        PersistenceBroker pb = null;
-        try{
-            pb = persistenceBrokerSupport.getPersistenceBroker();
-            persistenceBrokerSupport.beginTransaction(pb);
-            ojbPbCore.deleteItemsNotInCollectionsInPath(rootVO, path, pb);
-            persistenceBrokerSupport.commit(pb);
+    public void deleteCollection(Collection deleteVOs) throws DataAccessException, DataOptimisticLockException {
+	log.info("************Entering the BaseOjbPbDAO.deleteCollection(Collection deleteVOs)***************");
+	PersistenceBroker pb = null;
+	try {
+	    if (deleteVOs == null) {
+		return;
+	    }
+	    pb = persistenceBrokerSupport.getPersistenceBroker();
+	    persistenceBrokerSupport.beginTransaction(pb);
+	    ojbPbCore.deleteCollection(deleteVOs, pb);
+	    persistenceBrokerSupport.commit(pb);
 
-        }catch (PersistenceBrokerSupportException e) {
-            try{
-                persistenceBrokerSupport.rollback(pb);
-            } catch (PersistenceBrokerSupportException pbsEx){
-                log.error("PersistenceBrokerSupportException thrown in the catch block of the PersistenceBrokerSupportException in BaseOjbPbDAO.deleteItemsNotInCollectionsInPath(Object rootVO, String path) : " + pbsEx.toString());
-            } finally{
-                log.error("PersistenceBrokerSupportException thrown in BaseOjbPbDAO.deleteItemsNotInCollectionsInPath(Object rootVO, String path) : " + e.toString());
-                throw new DataAccessException("Error in BaseOjbPbDAO.deleteItemsNotInCollectionsInPath(Object rootVO, String path) : " + e.toString(),e);
-            }
-        } catch (OjbPbCoreException e) {
-            try{
-                persistenceBrokerSupport.rollback(pb);
-            } catch (PersistenceBrokerSupportException pbsEx){
-                log.error("PersistenceBrokerSupportException thrown in the catch block of the OjbPbCoreException in BaseOjbPbDAO.deleteItemsNotInCollectionsInPath(Object rootVO, String path): " + pbsEx.toString());
-            } finally{
-                log.error("OjbPbCoreException thrown in BaseOjbPbDAO.deleteItemsNotInCollectionsInPath(Object rootVO, String path): " + e.toString());
-                throw new DataAccessException("Error in BaseOjbPbDAO.deleteItemsNotInCollectionsInPath(Object rootVO, String path) : " + e.toString(),e);
-            }
-        } catch (Exception e) {
-            try{
-                persistenceBrokerSupport.rollback(pb);
-            } catch (PersistenceBrokerSupportException pbsEx){
-                log.error("PersistenceBrokerSupportException thrown in the catch block of the Exception in BaseOjbPbDAO.deleteItemsNotInCollectionsInPath(Object rootVO, String path): " + pbsEx.toString());
-            } finally{
-                log.error("Exception thrown in BaseOjbPbDAO.deleteItemsNotInCollectionsInPath(Object rootVO, String path): " + e.toString());
-                throw new DataAccessException("Error in BaseOjbPbDAO.deleteItemsNotInCollectionsInPath(Object rootVO): " + e.toString(),e);
-            }
-        } finally {
-            try{
+	} catch (final OptimisticLockException e) {
+	    try {
+		persistenceBrokerSupport.rollback(pb); // change of policy. Now
+						       // the if
+						       // OptimisticLockException
+						       // is rolled back ,
+						       // depends as other
+						       // Exceptions, on if the
+						       // environment is
+		// managed or not.
+	    } catch (final PersistenceBrokerSupportException pbsEx) {
+		log.error("PersistenceBrokerSupportException thrown in the catch block of the OptimisticLockException in BaseOjbPbDAO.deleteCollection(Collection deleteVOs) : " + pbsEx.toString());
+	    } finally {
+		log.error("OptimisticLockException thrown in BaseOjbPbDAO.deleteCollection(Collection deleteVOs) : " + e.toString());
+		throw new DataOptimisticLockException("Error in BaseOjbPbDAO.deleteCollection(Collection deleteVOs) : " + e.toString(), e);
+	    }
+	} catch (final PersistenceBrokerSupportException e) {
+	    try {
+		persistenceBrokerSupport.rollback(pb);
+	    } catch (final PersistenceBrokerSupportException pbsEx) {
+		log.error("PersistenceBrokerSupportException thrown in the catch block of the PersistenceBrokerSupportException in BaseOjbPbDAO.deleteCollection(Collection deleteVOs) : "
+			+ pbsEx.toString());
+	    } finally {
+		log.error("PersistenceBrokerSupportException thrown in BaseOjbPbDAO.deleteCollection(Collection deleteVOs) : " + e.toString());
+		// throw new DataOptimisticLockException("Error in
+		// BaseOjbPbDAO.deleteCollection(Collection deleteVOs) : " +
+		// e.toString(),e);
+		throw new DataAccessException("Error in BaseOjbPbDAO.deleteCollection(Collection deleteVOs) : " + e.toString(), e);
+	    }
+	} catch (final OjbPbCoreException e) {
+	    try {
+		persistenceBrokerSupport.rollback(pb);
+	    } catch (final PersistenceBrokerSupportException pbsEx) {
+		log.error("PersistenceBrokerSupportException thrown in the catch block of the OjbPbCoreException in BaseOjbPbDAO.deleteCollection(Collection deleteVOs) : " + pbsEx.toString());
+	    } finally {
+		log.error("OjbPbCoreException thrown in BaseOjbPbDAO.deleteCollection(Collection deleteVOs) : " + e.toString());
+		// throw new DataOptimisticLockException("Error in
+		// BaseOjbPbDAO.deleteCollection(Collection deleteVOs) : " +
+		// e.toString(),e);
+		throw new DataAccessException("Error in BaseOjbPbDAO.deleteCollection(Collection deleteVOs) : " + e.toString(), e);
+	    }
+	} catch (final Exception e) {
+	    try {
+		persistenceBrokerSupport.rollback(pb);
+	    } catch (final PersistenceBrokerSupportException pbsEx) {
+		log.error("PersistenceBrokerSupportException thrown in the catch block of the Exception in BaseOjbPbDAO.deleteCollection(Collection deleteVOs) : " + pbsEx.toString());
+	    } finally {
+		log.error("Exception thrown in BaseOjbPbDAO.deleteCollection(Collection deleteVOs) : " + e.toString());
+		// throw new DataOptimisticLockException("Error in
+		// BaseOjbPbDAO.deleteCollection(Collection deleteVOs) : " +
+		// e.toString(),e);
+		throw new DataAccessException("Error in BaseOjbPbDAO.deleteCollection(Collection deleteVOs) : " + e.toString(), e);
+	    }
+	} finally {
+	    try {
 
-                persistenceBrokerSupport.releasePersistenceBroker(pb);
+		persistenceBrokerSupport.releasePersistenceBroker(pb);
 
-            } catch(PersistenceBrokerSupportException e) {
-                log.error("PersistenceBrokerSupportException thrown in  BaseOjbPbDAO.deleteItemsNotInCollectionsInPath(Object rootVO, String path)  in the finally clause: " + e.toString());
-                throw new DataAccessException("Error in  BaseOjbPbDAO.deleteItemsNotInCollectionsInPath(Object rootVO, String path) in the finally clause: " + e.toString(),e);
-            }
-        }
-        log.info("************Done with the BaseOjbPbDAO.deleteItemsNotInCollectionsInPath(Object rootVO, String path) ***************");
+	    } catch (final PersistenceBrokerSupportException e) {
+		log.error("PersistenceBrokerSupportException thrown in  BaseOjbPbDAO.deleteCollection(Collection deleteVOs)  in the finally clause: " + e.toString());
+		throw new DataAccessException("Error in  BaseOjbPbDAO.deleteCollection(Collection deleteVOs)  in the finally clause: " + e.toString(), e);
+	    }
+	}
+	log.info("************Done with the BaseOjbPbDAO.deleteCollection(Collection deleteVOs) ***************");
+
     }
 
     @SuppressWarnings("finally")
-	public void deleteItemsNotInCollectionsInPath(Object rootVO, String path,Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) throws DataAccessException{
-        log.info("************Entering the BaseOjbPbDAO.deleteItemsNotInCollectionsInPath(Object rootVO, String path,Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) ***************");
-        PersistenceBroker pb = null;
-        try{
-            pb = persistenceBrokerSupport.getPersistenceBroker();
-            persistenceBrokerSupport.beginTransaction(pb);
-            ojbPbCore.deleteItemsNotInCollectionsInPath(rootVO, path, ifM2NDeleteOnlyRelationship,  deleteOneToOne, pb);
-            persistenceBrokerSupport.commit(pb);
+    public void deleteMToNRelationshipCollection(Object left, String leftFieldName, Collection rightCollection) throws DataAccessException {
+	log.info("************Entering the BaseOjbPbDAO.deleteMToNRelationshipCollection(Object left, String leftFieldName, Collection rightCollection) ***************");
+	PersistenceBroker pb = null;
+	try {
+	    pb = persistenceBrokerSupport.getPersistenceBroker();
+	    persistenceBrokerSupport.beginTransaction(pb);
+	    ojbPbCore.deleteMToNRelationshipCollection(left, leftFieldName, rightCollection, pb);
+	    persistenceBrokerSupport.commit(pb);
 
-        }catch (PersistenceBrokerSupportException e) {
-            try{
-                persistenceBrokerSupport.rollback(pb);
-            } catch (PersistenceBrokerSupportException pbsEx){
-                log.error("PersistenceBrokerSupportException thrown in the catch block of the PersistenceBrokerSupportException in BaseOjbPbDAO.deleteItemsNotInCollectionsInPath(Object rootVO, String path,Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) : " + pbsEx.toString());
-            } finally{
-                log.error("PersistenceBrokerSupportException thrown in BaseOjbPbDAO.deleteItemsNotInCollectionsInPath(Object rootVO, String path,Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) : " + e.toString());
-                throw new DataAccessException("Error in BaseOjbPbDAO.deleteItemsNotInCollectionsInPath(Object rootVO, String path,Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) : " + e.toString(),e);
-            }
-        } catch (OjbPbCoreException e) {
-            try{
-                persistenceBrokerSupport.rollback(pb);
-            } catch (PersistenceBrokerSupportException pbsEx){
-                log.error("PersistenceBrokerSupportException thrown in the catch block of the OjbPbCoreException in BaseOjbPbDAO.deleteItemsNotInCollectionsInPath(Object rootVO, String path,Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne): " + pbsEx.toString());
-            } finally{
-                log.error("OjbPbCoreException thrown in BaseOjbPbDAO.deleteItemsNotInCollectionsInPath(Object rootVO, String path,Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne): " + e.toString());
-                throw new DataAccessException("Error in BaseOjbPbDAO.deleteItemsNotInCollectionsInPath(Object rootVO, String path,Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) : " + e.toString(),e);
-            }
-        } catch (Exception e) {
-            try{
-                persistenceBrokerSupport.rollback(pb);
-            } catch (PersistenceBrokerSupportException pbsEx){
-                log.error("PersistenceBrokerSupportException thrown in the catch block of the Exception in BaseOjbPbDAO.deleteItemsNotInCollectionsInPath(Object rootVO, String path,Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne): " + pbsEx.toString());
-            } finally{
-                log.error("Exception thrown in BaseOjbPbDAO.deleteItemsNotInCollectionsInPath(Object rootVO, String path,Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne): " + e.toString());
-                throw new DataAccessException("Error in BaseOjbPbDAO.deleteItemsNotInCollectionsInPath(Object rootVO,Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne): " + e.toString(),e);
-            }
-        } finally {
-            try{
+	} catch (final PersistenceBrokerSupportException e) {
+	    try {
+		persistenceBrokerSupport.rollback(pb);
+	    } catch (final PersistenceBrokerSupportException pbsEx) {
+		log.error(
+			"PersistenceBrokerSupportException thrown in the catch block of the PersistenceBrokerSupportException in BaseOjbPbDAO.deleteMToNRelationshipCollection(Object left, String leftFieldName, Collection rightCollection) : "
+				+ pbsEx.toString());
+	    } finally {
+		log.error("PersistenceBrokerSupportException thrown in BaseOjbPbDAO.deleteMToNRelationshipCollection(Object left, String leftFieldName, Collection rightCollection) : " + e.toString());
+		throw new DataAccessException("Error in BaseOjbPbDAO.deleteMToNRelationshipCollection(Object left, String leftFieldName, Collection rightCollection) : " + e.toString(), e);
+	    }
+	} catch (final OjbPbCoreException e) {
+	    try {
+		persistenceBrokerSupport.rollback(pb);
+	    } catch (final PersistenceBrokerSupportException pbsEx) {
+		log.error(
+			"PersistenceBrokerSupportException thrown in the catch block of the OjbPbCoreException in BaseOjbPbDAO.deleteMToNRelationshipCollection(Object left, String leftFieldName, Collection rightCollection): "
+				+ pbsEx.toString());
+	    } finally {
+		log.error("OjbPbCoreException thrown in BaseOjbPbDAO.deleteMToNRelationshipCollection(Object left, String leftFieldName, Collection rightCollection): " + e.toString());
+		throw new DataAccessException("Error in BaseOjbPbDAO.deleteMToNRelationshipCollection(Object left, String leftFieldName, Collection rightCollection) : " + e.toString(), e);
+	    }
+	} catch (final Exception e) {
+	    try {
+		persistenceBrokerSupport.rollback(pb);
+	    } catch (final PersistenceBrokerSupportException pbsEx) {
+		log.error(
+			"PersistenceBrokerSupportException thrown in the catch block of the Exception in BaseOjbPbDAO.deleteMToNRelationshipCollection(Object left, String leftFieldName, Collection rightCollection): "
+				+ pbsEx.toString());
+	    } finally {
+		log.error("Exception thrown in BaseOjbPbDAO.deleteMToNRelationshipCollection(Object left, String leftFieldName, Collection rightCollection): " + e.toString());
+		throw new DataAccessException("Error in BaseOjbPbDAO.deleteMToNRelationshipCollection(Object left, String leftFieldName, Collection rightCollection): " + e.toString(), e);
+	    }
+	} finally {
+	    try {
 
-                persistenceBrokerSupport.releasePersistenceBroker(pb);
+		persistenceBrokerSupport.releasePersistenceBroker(pb);
 
-            } catch(PersistenceBrokerSupportException e) {
-                log.error("PersistenceBrokerSupportException thrown in  BaseOjbPbDAO.deleteItemsNotInCollectionsInPath(Object rootVO, String path,Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne)  in the finally clause: " + e.toString());
-                throw new DataAccessException("Error in  BaseOjbPbDAO.deleteItemsNotInCollectionsInPath(Object rootVO, String path,Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) in the finally clause: " + e.toString(),e);
-            }
-        }
-        log.info("************Done with the BaseOjbPbDAO.deleteItemsNotInCollectionsInPath(Object rootVO, String path,Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) ***************");
-    }
-
-
-    public void deleteItemsNotInCollectionsInPaths(Object rootVO, Collection paths,  Boolean applyDeletePathCascade, Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) throws DataAccessException{
-        log.info("************Entering the BaseOjbPbDAO.deleteItemsNotInCollectionsInPaths(Object rootVO, Collection paths, Boolean applyDeletePathCascade, Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) ***************");
-        PersistenceBroker pb = null;
-        try{
-            pb = persistenceBrokerSupport.getPersistenceBroker();
-            persistenceBrokerSupport.beginTransaction(pb);
-            ojbPbCore.deleteItemsNotInCollectionsInPaths(rootVO, paths, Boolean.TRUE, applyDeletePathCascade, ifM2NDeleteOnlyRelationship, deleteOneToOne,pb);
-            persistenceBrokerSupport.commit(pb);
-
-        } catch (PersistenceBrokerSupportException e) {
-            try{
-                persistenceBrokerSupport.rollback(pb);
-            } catch (PersistenceBrokerSupportException pbsEx){
-                log.error("PersistenceBrokerSupportException thrown in the catch block of the PersistenceBrokerSupportException in BaseOjbPbDAO.deleteItemsNotInCollectionsInPath(Object rootVO, Collection paths, Boolean applyDeletePathCascade, Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) : " + pbsEx.toString());
-            } finally{
-                log.error("PersistenceBrokerSupportException thrown in BaseOjbPbDAO.deleteItemsNotInCollectionsInPaths(Object rootVO, Collection paths,  Boolean applyDeletePathCascade, Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne)  : " + e.toString());
-                throw new DataAccessException("Error in BaseOjbPbDAO.deleteItemsNotInCollectionsInPaths(Object rootVO, Collection paths,  Boolean applyDeletePathCascade, Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne)  : " + e.toString(),e);
-            }
-        } catch (OjbPbCoreException e) {
-            try{
-                persistenceBrokerSupport.rollback(pb);
-            } catch (PersistenceBrokerSupportException pbsEx){
-                log.error("PersistenceBrokerSupportException thrown in the catch block of the OjbPbCoreException in BaseOjbPbDAO.deleteItemsNotInCollectionsInPaths(Object rootVO, Collection paths, Boolean pathsHasToBeSorted, Boolean applyDeletePathCascade, Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) : " + pbsEx.toString());
-            } finally{
-                log.error("OjbPbCoreException thrown in BaseOjbPbDAO.deleteItemsNotInCollectionsInPaths(Object rootVO, Collection paths, Boolean applyDeletePathCascade, Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) : " + e.toString());
-                throw new DataAccessException("Error in BaseOjbPbDAO.deleteItemsNotInCollectionsInPaths(Object rootVO, Collection paths, Boolean applyDeletePathCascade, Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) : " + e.toString(),e);
-            }
-        } catch (Exception e) {
-            try{
-                persistenceBrokerSupport.rollback(pb);
-            } catch (PersistenceBrokerSupportException pbsEx){
-                log.error("PersistenceBrokerSupportException thrown in the catch block of the Exception in BaseOjbPbDAO.deleteItemsNotInCollectionsInPaths(Object rootVO, Collection paths,  Boolean applyDeletePathCascade, Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) : " + pbsEx.toString());
-            } finally{
-                log.error("Exception thrown in BaseOjbPbDAO.deleteItemsNotInCollectionsInPaths(Object rootVO, Collection paths, Boolean applyDeletePathCascade, Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) : " + e.toString());
-                throw new DataAccessException("Error in BaseOjbPbDAO.deleteItemsNotInCollectionsInPaths(Object rootVO, Collection paths,  Boolean applyDeletePathCascade, Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) : " + e.toString(),e);
-            }
-        } finally {
-            try{
-
-                persistenceBrokerSupport.releasePersistenceBroker(pb);
-
-            } catch(PersistenceBrokerSupportException e) {
-                log.error("PersistenceBrokerSupportException thrown in  BaseOjbPbDAO.deleteItemsNotInCollectionsInPaths(Object rootVO, Collection paths, Boolean applyDeletePathCascade, Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne)  in the finally clause: " + e.toString());
-                throw new DataAccessException("Error in  BaseOjbPbDAO.deleteItemsNotInCollectionsInPaths(Object rootVO, Collection paths,  Boolean applyDeletePathCascade, Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) in the finally clause: " + e.toString(),e);
-            }
-        }
-        log.info("************Done with the BaseOjbPbDAO.deleteItemsNotInCollectionsInPaths(Object rootVO, Collection paths,  Boolean applyDeletePathCascade, Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne)  ***************");
+	    } catch (final PersistenceBrokerSupportException e) {
+		log.error(
+			"PersistenceBrokerSupportException thrown in  BaseOjbPbDAO.deleteMToNRelationshipCollection(Object left, String leftFieldName, Collection rightCollection)  in the finally clause: "
+				+ e.toString());
+		throw new DataAccessException(
+			"Error in  BaseOjbPbDAO.deleteMToNRelationshipCollection(Object left, String leftFieldName, Collection rightCollection) in the finally clause: " + e.toString(), e);
+	    }
+	}
+	log.info("************Done with the BaseOjbPbDAO.deleteMToNRelationshipCollection(Object left, String leftFieldName, Collection rightCollection) ***************");
 
     }
 
-    public void deletePathCascade(Object parentVO,String path,Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) throws DataAccessException{
-        log.info("************Entering the BaseOjbPbDAO.deletePathCascade(Object parentVO,String path,Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) ***************");
-            PersistenceBroker pb = null;
-            try{
-                pb = persistenceBrokerSupport.getPersistenceBroker();
-                persistenceBrokerSupport.beginTransaction(pb);
-                ojbPbCore.deletePathCascade(parentVO, path, ifM2NDeleteOnlyRelationship,  deleteOneToOne,pb);
-                persistenceBrokerSupport.commit(pb);
+    @SuppressWarnings("finally")
+    public void deleteItemsNotInCollectionsInPath(Object rootVO, String path, Boolean applyDeletePathCascade, Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) throws DataAccessException {
+	log.info(
+		"************Entering the BaseOjbPbDAO.deleteItemsNotInCollectionsInPath(Object rootVO, String path, Boolean applyDeletePathCascade, Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) ***************");
+	PersistenceBroker pb = null;
+	try {
+	    pb = persistenceBrokerSupport.getPersistenceBroker();
+	    persistenceBrokerSupport.beginTransaction(pb);
+	    ojbPbCore.deleteItemsNotInCollectionsInPath(rootVO, path, applyDeletePathCascade, ifM2NDeleteOnlyRelationship, deleteOneToOne, pb);
+	    persistenceBrokerSupport.commit(pb);
 
-            } catch (PersistenceBrokerSupportException e) {
-                try{
-                    persistenceBrokerSupport.rollback(pb);
-                } catch (PersistenceBrokerSupportException pbsEx){
-                    log.error("PersistenceBrokerSupportException thrown in the catch block of the PersistenceBrokerSupportException in BaseOjbPbDAO.deletePathCascade(Object parentVO,String path,Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) : " + pbsEx.toString());
-                } finally{
-                    log.error("PersistenceBrokerSupportException thrown in BaseOjbPbDAO.deletePathCascade(Object parentVO,String path,Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) : " + e.toString());
-                    throw new DataAccessException("Error in BaseOjbPbDAO.deletePathCascade(Object parentVO,String path,Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) : " + e.toString(),e);
-                }
-            } catch (OjbPbCoreException e) {
-                try{
-                    persistenceBrokerSupport.rollback(pb);
-                } catch (PersistenceBrokerSupportException pbsEx){
-                    log.error("PersistenceBrokerSupportException thrown in the catch block of the OjbPbCoreException in BaseOjbPbDAO.deletePathCascade(Object parentVO,String path,Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne): " + pbsEx.toString());
-                } finally{
-                    log.error("OjbPbCoreException thrown in BaseOjbPbDAO.deletePathCascade(Object parentVO,String path,Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne): " + e.toString());
-                    throw new DataAccessException("Error in BaseOjbPbDAO.deletePathCascade(Object parentVO,String path,Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) : " + e.toString(),e);
-                }
-            } catch (Exception e) {
-                try{
-                    persistenceBrokerSupport.rollback(pb);
-                } catch (PersistenceBrokerSupportException pbsEx){
-                    log.error("PersistenceBrokerSupportException thrown in the catch block of the Exception in BaseOjbPbDAO.deletePathCascade(Object parentVO,String path,Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) : " + pbsEx.toString());
-                } finally{
-                    log.error("Exception thrown in BaseOjbPbDAO.deletePathCascade(Object parentVO,String path,Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) : " + e.toString());
-                    throw new DataAccessException("Error in BaseOjbPbDAO.deletePathCascade(Object parentVO,String path,Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) : " + e.toString(),e);
-                }
-            } finally {
-                try{
+	} catch (final PersistenceBrokerSupportException e) {
+	    try {
+		persistenceBrokerSupport.rollback(pb);
+	    } catch (final PersistenceBrokerSupportException pbsEx) {
+		log.error(
+			"PersistenceBrokerSupportException thrown in the catch block of the PersistenceBrokerSupportException in BaseOjbPbDAO.deleteItemsNotInCollectionsInPath(Object rootVO, String path, Boolean applyDeletePathCascade, Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) : "
+				+ pbsEx.toString());
+	    } finally {
+		log.error(
+			"PersistenceBrokerSupportException thrown in BaseOjbPbDAO.deleteItemsNotInCollectionsInPath(Object rootVO, String path, Boolean applyDeletePathCascade, Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) : "
+				+ e.toString());
+		throw new DataAccessException(
+			"Error in BaseOjbPbDAO.deleteItemsNotInCollectionsInPath(Object rootVO, String path, Boolean applyDeletePathCascade, Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) : "
+				+ e.toString(),
+			e);
+	    }
+	} catch (final OjbPbCoreException e) {
+	    try {
+		persistenceBrokerSupport.rollback(pb);
+	    } catch (final PersistenceBrokerSupportException pbsEx) {
+		log.error(
+			"PersistenceBrokerSupportException thrown in the catch block of the OjbPbCoreException in BaseOjbPbDAO.deleteItemsNotInCollectionsInPath(Object rootVO, String path, Boolean applyDeletePathCascade, Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne): "
+				+ pbsEx.toString());
+	    } finally {
+		log.error(
+			"OjbPbCoreException thrown in BaseOjbPbDAO.deleteItemsNotInCollectionsInPath(Object rootVO, String path, Boolean applyDeletePathCascade, Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne): "
+				+ e.toString());
+		throw new DataAccessException(
+			"Error in BaseOjbPbDAO.deleteItemsNotInCollectionsInPath(Object rootVO, String path, Boolean applyDeletePathCascade, Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) : "
+				+ e.toString(),
+			e);
+	    }
+	} catch (final Exception e) {
+	    try {
+		persistenceBrokerSupport.rollback(pb);
+	    } catch (final PersistenceBrokerSupportException pbsEx) {
+		log.error(
+			"PersistenceBrokerSupportException thrown in the catch block of the Exception in BaseOjbPbDAO.deleteItemsNotInCollectionsInPath(Object rootVO, String path, Boolean applyDeletePathCascade, Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne): "
+				+ pbsEx.toString());
+	    } finally {
+		log.error(
+			"Exception thrown in BaseOjbPbDAO.deleteItemsNotInCollectionsInPath(Object rootVO, String path, Boolean applyDeletePathCascade, Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne): "
+				+ e.toString());
+		throw new DataAccessException(
+			"Error in BaseOjbPbDAO.deleteItemsNotInCollectionsInPath(Object rootVO, String path, Boolean applyDeletePathCascade, Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne): "
+				+ e.toString(),
+			e);
+	    }
+	} finally {
+	    try {
 
-                    persistenceBrokerSupport.releasePersistenceBroker(pb);
+		persistenceBrokerSupport.releasePersistenceBroker(pb);
 
-                } catch(PersistenceBrokerSupportException e) {
-                    log.error("PersistenceBrokerSupportException thrown in  BaseOjbPbDAO.deletePathCascade(Object parentVO,String path,Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne)   in the finally clause: " + e.toString());
-                    throw new DataAccessException("Error in  BaseOjbPbDAO.deletePathCascade(Object parentVO,String path,Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne)  in the finally clause: " + e.toString(),e);
-                }
-            }
-            log.info("************Done with the BaseOjbPbDAO.deletePathCascade(Object parentVO,String path,Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne)  ***************");
-
-    }
-
-    public void deletePathsCascade(Object parentVO,Collection paths,Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) throws DataAccessException{
-        log.info("************Entering the BaseOjbPbDAO.deletePathsCascade(Object parentVO,Collection paths,Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne)  ***************");
-        PersistenceBroker pb = null;
-        try{
-            pb = persistenceBrokerSupport.getPersistenceBroker();
-            persistenceBrokerSupport.beginTransaction(pb);
-            ojbPbCore.deletePathsCascade(parentVO, paths, ifM2NDeleteOnlyRelationship, deleteOneToOne,pb);
-            persistenceBrokerSupport.commit(pb);
-
-        } catch (PersistenceBrokerSupportException e) {
-            try{
-                persistenceBrokerSupport.rollback(pb);
-            } catch (PersistenceBrokerSupportException pbsEx){
-                log.error("PersistenceBrokerSupportException thrown in the catch block of the PersistenceBrokerSupportException in BaseOjbPbDAO.deletePathsCascade(Object parentVO,Collection paths,Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) throws DataAccessException: " + pbsEx.toString());
-            } finally{
-                log.error("PersistenceBrokerSupportException thrown in BaseOjbPbDAO.deletePathsCascade(Object parentVO,Collection paths,Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) throws DataAccessException: " + e.toString());
-                throw new DataAccessException("Error in BaseOjbPbDAO.deletePathsCascade(Object parentVO,Collection paths,Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) throws DataAccessException : " + e.toString(),e);
-            }
-        } catch (OjbPbCoreException e) {
-            try{
-                persistenceBrokerSupport.rollback(pb);
-            } catch (PersistenceBrokerSupportException pbsEx){
-                log.error("PersistenceBrokerSupportException thrown in the catch block of the OjbPbCoreException in BaseOjbPbDAO.deletePathsCascade(Object parentVO,Collection paths,Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) throws DataAccessException: " + pbsEx.toString());
-            } finally{
-                log.error("OjbPbCoreException thrown in BaseOjbPbDAO.deletePathsCascade(Object parentVO,Collection paths,Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) throws DataAccessException: " + e.toString());
-                throw new DataAccessException("Error in BaseOjbPbDAO.deletePathsCascade(Object parentVO,Collection paths,Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) throws DataAccessException : " + e.toString(),e);
-            }
-        } catch (Exception e) {
-            try{
-                persistenceBrokerSupport.rollback(pb);
-            } catch (PersistenceBrokerSupportException pbsEx){
-                log.error("PersistenceBrokerSupportException thrown in the catch block of the Exception in BaseOjbPbDAO.deletePathsCascade(Object parentVO,Collection paths,Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) throws DataAccessException: " + pbsEx.toString());
-            } finally{
-                log.error("Exception thrown in BaseOjbPbDAO.deletePathsCascade(Object parentVO,Collection paths,Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) throws DataAccessException : " + e.toString());
-                throw new DataAccessException("Error in BaseOjbPbDAO.deletePathsCascade(Object parentVO,Collection paths,Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) throws DataAccessException : " + e.toString(),e);
-            }
-        } finally {
-            try{
-
-                persistenceBrokerSupport.releasePersistenceBroker(pb);
-
-            } catch(PersistenceBrokerSupportException e) {
-                log.error("PersistenceBrokerSupportException thrown in  BaseOjbPbDAO.deletePathsCascade(Object parentVO,Collection paths,Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) throws DataAccessException in the finally clause: " + e.toString());
-                throw new DataAccessException("Error in  BaseOjbPbDAO.deletePathsCascade(Object parentVO,Collection paths,Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) throws DataAccessException in the finally clause: " + e.toString(),e);
-            }
-        }
-        log.info("************Done with the BaseOjbPbDAO.deletePathsCascade(Object parentVO,Collection paths,Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) ***************");
-    }
-
-
-    public Object insert(Object storeVO) throws DataAccessException, DataOptimisticLockException{
-        log.info("************Entering the BaseOjbPbDAO.insert(Object storeVO)***************");
-        try{
-            store(storeVO,ObjectModification.INSERT);
-        } catch (DataOptimisticLockException e) {
-            log.error("DataOptimisticLockException thrown in BaseOjbPbDAO.insert(Object storeVO): " + e.toString());
-            throw new DataOptimisticLockException("Error in BaseOjbPbDAO.insert(Object storeVO): " + e.toString(),e);
-        } catch (DataAccessException e) {
-            log.error("DataAccessException thrown in BaseOjbPbDAO.insert(Object storeVO): " + e.toString());
-            throw new DataAccessException("Error in BaseOjbPbDAO.insert(Object storeVO): " + e.toString(),e);
-        }
-        log.info("************Done with the BaseOjbPbDAO.insert(Object storeVO)***************");
-        return storeVO;
-    }
-
-
-    public Object update(Object storeVO) throws DataAccessException, DataOptimisticLockException{
-        log.info("************Entering the BaseOjbPbDAO.update(Object storeVO)***************");
-        try{
-            storeVO = store(storeVO,ObjectModification.UPDATE);
-        } catch (DataOptimisticLockException e) {
-            log.error("DataOptimisticLockException thrown in BaseOjbPbDAO.update(Object storeVO): " + e.toString());
-            throw new DataOptimisticLockException("Error in BaseOjbPbDAO.update(Object storeVO): " + e.toString(),e);
-        } catch (DataAccessException e) {
-            log.error("DataAccessException thrown in BaseOjbPbDAO.update(Object storeVO): " + e.toString());
-            throw new DataAccessException("Error in BaseOjbPbDAO.update(Object storeVO): " + e.toString(),e);
-        }
-        log.info("************Done with the BaseOjbPbDAO.update(Object storeVO)***************");
-        return storeVO;
-    }
-
-
-    public void updateCollection(Collection storeVOs) throws DataAccessException, DataOptimisticLockException{
-        log.info("************Entering the BaseOjbPbDAO.updateCollection(Collection storeVOs)***************");
-        try{
-            storeCollection(storeVOs);
-        } catch (DataOptimisticLockException e) {
-            log.error("DataOptimisticLockException thrown in BaseOjbPbDAO.updateCollection(Collection storeVOs): " + e.toString());
-            throw new DataOptimisticLockException("Error in BaseOjbPbDAO.updateCollection(Collection storeVOs): " + e.toString(),e);
-        } catch (DataAccessException e) {
-            log.error("DataAccessException thrown in BaseOjbPbDAO.updateCollection(Collection storeVOs): " + e.toString());
-            throw new DataAccessException("Error in BaseOjbPbDAO.updateCollection(Collection storeVOs): " + e.toString(),e);
-        }
-        log.info("************Done with the BaseOjbPbDAO.updateCollection(Collection storeVOs)***************");
-    }
-
-
-
-    protected Object store(Object storeVO,ObjectModification modification) throws DataAccessException, DataOptimisticLockException{
-        log.info("************Entering the BaseOjbPbDAO.store(Object storeVO,ObjectModification modification)***************");
-        if(storeVO==null) throw new DataAccessException("Error in BaseOjbPbDAO.store(Object storeVO,ObjectModification modification): storeVO can't be null. ");
-        PersistenceBroker pb = null;
-        try{
-            pb = persistenceBrokerSupport.getPersistenceBroker();
-            persistenceBrokerSupport.beginTransaction(pb);
-            storeVO = ojbPbCore.store(storeVO,modification,pb);
-            persistenceBrokerSupport.commit(pb);
-
-        } catch (OptimisticLockException e) {
-        	try{
-                persistenceBrokerSupport.rollback(pb); // change of policy. Now the if OptimisticLockException is rolled back , depends as other Exceptions, on if the environment is
-                                                   // managed or not.
-            } catch (PersistenceBrokerSupportException pbsEx){
-                log.error("PersistenceBrokerSupportException thrown in the catch block of the OptimisticLockException in BaseOjbPbDAO.store(Object storeVO,ObjectModification modification): " + pbsEx.toString());
-                //throw new DataOptimisticLockException("Error in the catch block of the OptimisticLockException of BaseOjbPbDAO.store(Object storeVO,ObjectModification modification): " + pbsEx.toString(),pbsEx);
-
-            } finally{
-                log.error("OptimisticLockException thrown in BaseOjbPbDAO.store(Object storeVO,ObjectModification modification): " + e.toString());
-                throw new DataOptimisticLockException("Error in BaseOjbPbDAO.store(Object storeVO,ObjectModification modification): " + e.toString(),e);
-            }
-        } catch (PersistenceBrokerSupportException e) {
-            try{
-                persistenceBrokerSupport.rollback(pb);
-            } catch (PersistenceBrokerSupportException pbsEx){
-                log.error("PersistenceBrokerSupportException thrown in the catch block of the PersistenceBrokerSupportException in BaseOjbPbDAO.store(Object storeVO,ObjectModification modification): " + pbsEx.toString());
-            } finally{
-                log.error("PersistenceBrokerSupportException thrown in BaseOjbPbDAO.store(Object storeVO,ObjectModification modification): " + e.toString());
-                //throw new DataOptimisticLockException("Error in BaseOjbPbDAO.store(Object storeVO,ObjectModification modification): " + e.toString(),e);
-                throw new DataAccessException("Error in BaseOjbPbDAO.store(Object storeVO,ObjectModification modification): " + e.toString(),e);
-            }
-        } catch (OjbPbCoreException e) {
-            try{
-                persistenceBrokerSupport.rollback(pb);
-            } catch (PersistenceBrokerSupportException pbsEx){
-                log.error("PersistenceBrokerSupportException thrown in the catch block of the OjbPbCoreException in BaseOjbPbDAO.store(Object storeVO,ObjectModification modification): " + pbsEx.toString());
-            } finally{
-                log.error("OjbPbCoreException thrown in BaseOjbPbDAO.store(Object storeVO,ObjectModification modification): " + e.toString());
-                //throw new DataOptimisticLockException("Error in BaseOjbPbDAO.store(Object storeVO,ObjectModification modification): " + e.toString(),e);
-                throw new DataAccessException("Error in BaseOjbPbDAO.store(Object storeVO,ObjectModification modification): " + e.toString(),e);
-            }
-        } catch (Exception e) {
-            try{
-                persistenceBrokerSupport.rollback(pb);
-            } catch (PersistenceBrokerSupportException pbsEx){
-                log.error("PersistenceBrokerSupportException thrown in the catch block of the Exception in BaseOjbPbDAO.store(Object storeVO,ObjectModification modification): " + pbsEx.toString());
-            } finally{
-                log.error("Exception thrown in BaseOjbPbDAO.store(Object storeVO,ObjectModification modification): " + e.toString());
-                //throw new DataOptimisticLockException("Error in BaseOjbPbDAO.store(Object storeVO,ObjectModification modification): " + e.toString(),e);
-                throw new DataAccessException("Error in BaseOjbPbDAO.store(Object storeVO,ObjectModification modification): " + e.toString(),e);
-            }
-        } finally {
-            try{
-
-                persistenceBrokerSupport.releasePersistenceBroker(pb);
-
-            } catch(PersistenceBrokerSupportException e) {
-                log.error("PersistenceBrokerSupportException thrown in  BaseOjbPbDAO.store(Object storeVO,ObjectModification modification) in the finally clause: " + e.toString());
-                throw new DataAccessException("Error in  BaseOjbPbDAO.store(Object storeVO,ObjectModification modification) in the finally clause: " + e.toString(),e);
-            }
-        }
-        log.info("************Done with the BaseOjbPbDAO.store(Object storeVO,ObjectModification modification)***************");
-        return storeVO;
-    }
-
-
-
-    protected void storeCollection(Collection storeVOs) throws DataAccessException, DataOptimisticLockException{
-        log.info("************Entering the BaseOjbPbDAO.storeCollection(Collection storeVOs) ***************");
-        if(storeVOs==null) throw new DataAccessException("Error in BaseOjbPbDAO.storeCollection(Collection storeVOs): storeVOs can't be null. ");
-        PersistenceBroker pb = null;
-        try{
-            pb = persistenceBrokerSupport.getPersistenceBroker();
-            persistenceBrokerSupport.beginTransaction(pb);
-            ojbPbCore.storeCollection(storeVOs,pb);
-            persistenceBrokerSupport.commit(pb);
-        } catch (OptimisticLockException e) {
-        	try{
-                persistenceBrokerSupport.rollback(pb); // change of policy. Now the if OptimisticLockException is rolled back , depends as other Exceptions, on if the environment is
-                                                   // managed or not.
-            } catch (PersistenceBrokerSupportException pbsEx){
-                log.error("PersistenceBrokerSupportException thrown in the catch block of the OptimisticLockException in BaseOjbPbDAO.storeCollection(Collection storeVOs): " + pbsEx.toString());
-            } finally{
-                log.error("OptimisticLockException thrown in BaseOjbPbDAO.storeCollection(Collection storeVOs): " + e.toString());
-                throw new DataOptimisticLockException("Error in BaseOjbPbDAO.storeCollection(Collection storeVOs): " + e.toString(),e);
-            }
-        } catch (PersistenceBrokerSupportException e) {
-            try{
-                persistenceBrokerSupport.rollback(pb);
-            } catch (PersistenceBrokerSupportException pbsEx){
-                log.error("PersistenceBrokerSupportException thrown in the catch block of the PersistenceBrokerSupportException in BaseOjbPbDAO.storeCollection(Collection storeVOs): " + pbsEx.toString());
-            } finally{
-                log.error("PersistenceBrokerSupportException thrown in BaseOjbPbDAO.storeCollection(Collection storeVOs): " + e.toString());
-                //throw new DataOptimisticLockException("Error in BaseOjbPbDAO.storeCollection(Collection storeVOs): " + e.toString(),e);
-                throw new DataAccessException("Error in BaseOjbPbDAO.storeCollection(Collection storeVOs): " + e.toString(),e);
-            }
-        } catch (OjbPbCoreException e) {
-            try{
-                persistenceBrokerSupport.rollback(pb);
-            } catch (PersistenceBrokerSupportException pbsEx){
-                log.error("PersistenceBrokerSupportException thrown in the catch block of the OjbPbCoreException in BaseOjbPbDAO.storeCollection(Collection storeVOs): " + pbsEx.toString());
-            } finally{
-                log.error("OjbPbCoreException thrown in BaseOjbPbDAO.storeCollection(Collection storeVOs): " + e.toString());
-                //throw new DataOptimisticLockException("Error in BaseOjbPbDAO.storeCollection(Collection storeVOs): " + e.toString(),e);
-                throw new DataAccessException("Error in BaseOjbPbDAO.storeCollection(Collection storeVOs): " + e.toString(),e);
-            }
-        } catch (Exception e) {
-            try{
-                persistenceBrokerSupport.rollback(pb);
-            } catch (PersistenceBrokerSupportException pbsEx){
-                log.error("PersistenceBrokerSupportException thrown in the catch block of the Exception in BaseOjbPbDAO.storeCollection(Collection storeVOs): " + pbsEx.toString());
-            } finally{
-                log.error("Exception thrown in BaseOjbPbDAO.storeCollection(Collection storeVOs): " + e.toString());
-                //throw new DataOptimisticLockException("Error in BaseOjbPbDAO.storeCollection(Collection storeVOs): " + e.toString(),e);
-                throw new DataAccessException("Error in BaseOjbPbDAO.storeCollection(Collection storeVOs): " + e.toString(),e);
-            }
-        } finally {
-            try{
-
-                persistenceBrokerSupport.releasePersistenceBroker(pb);
-
-            } catch(PersistenceBrokerSupportException e) {
-                log.error("PersistenceBrokerSupportException thrown in  BaseOjbPbDAO.storeCollection(Collection storeVOs) in the finally clause: " + e.toString());
-                throw new DataAccessException("Error in  BaseOjbPbDAO.storeCollection(Collection storeVOs) in the finally clause: " + e.toString(),e);
-            }
-        }
-        log.info("************Done with the BaseOjbPbDAO.storeCollection(Collection storeVOs)***************");
-    }
-
-
-
-
-
-
-
-    public Object updateCollectionReference(Object storeVO, String pAttributeName) throws DataAccessException, DataOptimisticLockException{
-        log.info("************Entering the BaseOjbPbDAO.updateCollectionReference(Object storeVO, String pAttributeName)***************");
-        PersistenceBroker pb = null;
-        try{
-            pb = persistenceBrokerSupport.getPersistenceBroker();
-            persistenceBrokerSupport.beginTransaction(pb);
-            ojbPbCore.updateCollectionReference(storeVO, pAttributeName, pb);
-            persistenceBrokerSupport.commit(pb);
-
-        } catch (OptimisticLockException e) {
-        	try{
-                persistenceBrokerSupport.rollback(pb); // change of policy. Now the if OptimisticLockException is rolled back , depends as other Exceptions, on if the environment is
-                                                   // managed or not.
-            } catch (PersistenceBrokerSupportException pbsEx){
-                log.error("PersistenceBrokerSupportException thrown in the catch block of the OptimisticLockException in BaseOjbPbDAO.updateCollectionReference(Object storeVO, String pAttributeName): " + pbsEx.toString());
-            } finally{
-                log.error("OptimisticLockException thrown in BaseOjbPbDAO.updateCollectionReference(Object storeVO, String pAttributeName): " + e.toString());
-                throw new DataOptimisticLockException("Error in BaseOjbPbDAO.updateCollectionReference(Object storeVO, String pAttributeName): " + e.toString(),e);
-            }
-        } catch (PersistenceBrokerSupportException e) {
-            try{
-                persistenceBrokerSupport.rollback(pb);
-            } catch (PersistenceBrokerSupportException pbsEx){
-                log.error("PersistenceBrokerSupportException thrown in the catch block of the PersistenceBrokerSupportException in BaseOjbPbDAO.updateCollectionReference(Object storeVO, String pAttributeName): " + pbsEx.toString());
-            } finally{
-                log.error("PersistenceBrokerSupportException thrown in BaseOjbPbDAO.updateCollectionReference(Object storeVO, String pAttributeName): " + e.toString());
-                //throw new DataOptimisticLockException("Error in BaseOjbPbDAO.updateCollectionReference(Object storeVO, String pAttributeName): " + e.toString(),e);
-                throw new DataAccessException("Error in BaseOjbPbDAO.updateCollectionReference(Object storeVO, String pAttributeName): " + e.toString(),e);
-            }
-        } catch (OjbPbCoreException e) {
-            try{
-                persistenceBrokerSupport.rollback(pb);
-            } catch (PersistenceBrokerSupportException pbsEx){
-                log.error("PersistenceBrokerSupportException thrown in the catch block of the OjbPbCoreException in BaseOjbPbDAO.updateCollectionReference(Object storeVO, String pAttributeName): " + pbsEx.toString());
-            } finally{
-                log.error("OjbPbCoreException thrown in BaseOjbPbDAO.updateCollectionReference(Object storeVO, String pAttributeName): " + e.toString());
-                //throw new DataOptimisticLockException("Error in BaseOjbPbDAO.updateCollectionReference(Object storeVO, String pAttributeName): " + e.toString(),e);
-                throw new DataAccessException("Error in BaseOjbPbDAO.updateCollectionReference(Object storeVO, String pAttributeName): " + e.toString(),e);
-            }
-        } catch (Exception e) {
-            try{
-                persistenceBrokerSupport.rollback(pb);
-            } catch (PersistenceBrokerSupportException pbsEx){
-                log.error("PersistenceBrokerSupportException thrown in the catch block of the Exception in BaseOjbPbDAO.updateCollectionReference(Object storeVO, String pAttributeName): " + pbsEx.toString());
-            } finally{
-                log.error("Exception thrown in BaseOjbPbDAO.updateCollectionReference(Object storeVO, String pAttributeName): " + e.toString());
-                //throw new DataOptimisticLockException("Error in BaseOjbPbDAO.updateCollectionReference(Object storeVO, String pAttributeName): " + e.toString(),e);
-                throw new DataAccessException("Error in BaseOjbPbDAO.updateCollectionReference(Object storeVO, String pAttributeName): " + e.toString(),e);
-            }
-        } finally {
-            try{
-
-                persistenceBrokerSupport.releasePersistenceBroker(pb);
-
-            } catch(PersistenceBrokerSupportException e) {
-                log.error("PersistenceBrokerSupportException thrown in  BaseOjbPbDAO.updateCollectionReference(Object storeVO, String pAttributeName) in the finally clause: " + e.toString());
-                throw new DataAccessException("Error in  BaseOjbPbDAO.updateCollectionReference(Object storeVO, String pAttributeName) in the finally clause: " + e.toString(),e);
-            }
-        }
-        log.info("************Done with the BaseOjbPbDAO.updateCollectionReference(Object storeVO, String pAttributeName)***************");
-        return storeVO;
+	    } catch (final PersistenceBrokerSupportException e) {
+		log.error(
+			"PersistenceBrokerSupportException thrown in  BaseOjbPbDAO.deleteItemsNotInCollectionsInPath(Object rootVO, String path, Boolean applyDeletePathCascade, Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne)  in the finally clause: "
+				+ e.toString());
+		throw new DataAccessException(
+			"Error in  BaseOjbPbDAO.deleteItemsNotInCollectionsInPath(Object rootVO, String path, Boolean applyDeletePathCascade, Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) in the finally clause: "
+				+ e.toString(),
+			e);
+	    }
+	}
+	log.info(
+		"************Done with the BaseOjbPbDAO.deleteItemsNotInCollectionsInPath(Object rootVO, String path, Boolean applyDeletePathCascade, Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) ***************");
 
     }
 
+    @SuppressWarnings("finally")
+    public void deleteItemsNotInCollectionsInPath(Object rootVO, String path) throws DataAccessException {
+	log.info("************Entering the BaseOjbPbDAO.deleteItemsNotInCollectionsInPath(Object rootVO, String path) ***************");
+	PersistenceBroker pb = null;
+	try {
+	    pb = persistenceBrokerSupport.getPersistenceBroker();
+	    persistenceBrokerSupport.beginTransaction(pb);
+	    ojbPbCore.deleteItemsNotInCollectionsInPath(rootVO, path, pb);
+	    persistenceBrokerSupport.commit(pb);
 
+	} catch (final PersistenceBrokerSupportException e) {
+	    try {
+		persistenceBrokerSupport.rollback(pb);
+	    } catch (final PersistenceBrokerSupportException pbsEx) {
+		log.error(
+			"PersistenceBrokerSupportException thrown in the catch block of the PersistenceBrokerSupportException in BaseOjbPbDAO.deleteItemsNotInCollectionsInPath(Object rootVO, String path) : "
+				+ pbsEx.toString());
+	    } finally {
+		log.error("PersistenceBrokerSupportException thrown in BaseOjbPbDAO.deleteItemsNotInCollectionsInPath(Object rootVO, String path) : " + e.toString());
+		throw new DataAccessException("Error in BaseOjbPbDAO.deleteItemsNotInCollectionsInPath(Object rootVO, String path) : " + e.toString(), e);
+	    }
+	} catch (final OjbPbCoreException e) {
+	    try {
+		persistenceBrokerSupport.rollback(pb);
+	    } catch (final PersistenceBrokerSupportException pbsEx) {
+		log.error("PersistenceBrokerSupportException thrown in the catch block of the OjbPbCoreException in BaseOjbPbDAO.deleteItemsNotInCollectionsInPath(Object rootVO, String path): "
+			+ pbsEx.toString());
+	    } finally {
+		log.error("OjbPbCoreException thrown in BaseOjbPbDAO.deleteItemsNotInCollectionsInPath(Object rootVO, String path): " + e.toString());
+		throw new DataAccessException("Error in BaseOjbPbDAO.deleteItemsNotInCollectionsInPath(Object rootVO, String path) : " + e.toString(), e);
+	    }
+	} catch (final Exception e) {
+	    try {
+		persistenceBrokerSupport.rollback(pb);
+	    } catch (final PersistenceBrokerSupportException pbsEx) {
+		log.error("PersistenceBrokerSupportException thrown in the catch block of the Exception in BaseOjbPbDAO.deleteItemsNotInCollectionsInPath(Object rootVO, String path): "
+			+ pbsEx.toString());
+	    } finally {
+		log.error("Exception thrown in BaseOjbPbDAO.deleteItemsNotInCollectionsInPath(Object rootVO, String path): " + e.toString());
+		throw new DataAccessException("Error in BaseOjbPbDAO.deleteItemsNotInCollectionsInPath(Object rootVO): " + e.toString(), e);
+	    }
+	} finally {
+	    try {
 
+		persistenceBrokerSupport.releasePersistenceBroker(pb);
 
-    public Object updateCollectionReferences(Object storeVO) throws DataAccessException, DataOptimisticLockException{
-        log.info("************Entering the BaseOjbPbDAO.updateCollectionReferences(Object storeVO)***************");
-        PersistenceBroker pb = null;
-        try{
-            pb = persistenceBrokerSupport.getPersistenceBroker();
-            persistenceBrokerSupport.beginTransaction(pb);
-            ojbPbCore.updateCollectionReferences(storeVO, pb);
-            persistenceBrokerSupport.commit(pb);
-
-        } catch (OptimisticLockException e) {
-        	try{
-                persistenceBrokerSupport.rollback(pb); // change of policy. Now the if OptimisticLockException is rolled back , depends as other Exceptions, on if the environment is
-                                                   // managed or not.
-            } catch (PersistenceBrokerSupportException pbsEx){
-                log.error("PersistenceBrokerSupportException thrown in the catch block of the OptimisticLockException in BaseOjbPbDAO.updateCollectionReferences(Object storeVO): " + pbsEx.toString());
-            } finally{
-                log.error("OptimisticLockException thrown in BaseOjbPbDAO.updateCollectionReferences(Object storeVO): " + e.toString());
-                throw new DataOptimisticLockException("Error in BaseOjbPbDAO.updateCollectionReferences(Object storeVO): " + e.toString(),e);
-            }
-        } catch (PersistenceBrokerSupportException e) {
-            try{
-                persistenceBrokerSupport.rollback(pb);
-            } catch (PersistenceBrokerSupportException pbsEx){
-                log.error("PersistenceBrokerSupportException thrown in the catch block of the PersistenceBrokerSupportException in BaseOjbPbDAO.updateCollectionReferences(Object storeVO): " + pbsEx.toString());
-            } finally{
-                log.error("PersistenceBrokerSupportException thrown in BaseOjbPbDAO.updateCollectionReferences(Object storeVO): " + e.toString());
-                //throw new DataOptimisticLockException("Error in BaseOjbPbDAO.updateCollectionReferences(Object storeVO): " + e.toString(),e);
-                throw new DataAccessException("Error in BaseOjbPbDAO.updateCollectionReferences(Object storeVO): " + e.toString(),e);
-            }
-        } catch (OjbPbCoreException e) {
-            try{
-                persistenceBrokerSupport.rollback(pb);
-            } catch (PersistenceBrokerSupportException pbsEx){
-                log.error("PersistenceBrokerSupportException thrown in the catch block of the OjbPbCoreException in BaseOjbPbDAO.updateCollectionReferences(Object storeVO): " + pbsEx.toString());
-            } finally{
-                log.error("OjbPbCoreException thrown in BaseOjbPbDAO.updateCollectionReferences(Object storeVO): " + e.toString());
-                //throw new DataOptimisticLockException("Error in BaseOjbPbDAO.updateCollectionReferences(Object storeVO): " + e.toString(),e);
-                throw new DataAccessException("Error in BaseOjbPbDAO.updateCollectionReferences(Object storeVO): " + e.toString(),e);
-            }
-        } catch (Exception e) {
-            try{
-                persistenceBrokerSupport.rollback(pb);
-            } catch (PersistenceBrokerSupportException pbsEx){
-                log.error("PersistenceBrokerSupportException thrown in the catch block of the Exception in BaseOjbPbDAO.updateCollectionReferences(Object storeVO): " + pbsEx.toString());
-            } finally{
-                log.error("Exception thrown in BaseOjbPbDAO.updateCollectionReferences(Object storeVO): " + e.toString());
-                //throw new DataOptimisticLockException("Error in BaseOjbPbDAO.updateCollectionReferences(Object storeVO): " + e.toString(),e);
-                throw new DataAccessException("Error in BaseOjbPbDAO.updateCollectionReferences(Object storeVO): " + e.toString(),e);
-            }
-        } finally {
-            try{
-
-                persistenceBrokerSupport.releasePersistenceBroker(pb);
-
-            } catch(PersistenceBrokerSupportException e) {
-                log.error("PersistenceBrokerSupportException thrown in  BaseOjbPbDAO.updateCollectionReferences(Object storeVO) in the finally clause: " + e.toString());
-                throw new DataAccessException("Error in  BaseOjbPbDAO.updateCollectionReferences(Object storeVO) in the finally clause: " + e.toString(),e);
-            }
-        }
-        log.info("************Done with the BaseOjbPbDAO.updateCollectionReferences(Object storeVO)***************");
-        return storeVO;
+	    } catch (final PersistenceBrokerSupportException e) {
+		log.error("PersistenceBrokerSupportException thrown in  BaseOjbPbDAO.deleteItemsNotInCollectionsInPath(Object rootVO, String path)  in the finally clause: " + e.toString());
+		throw new DataAccessException("Error in  BaseOjbPbDAO.deleteItemsNotInCollectionsInPath(Object rootVO, String path) in the finally clause: " + e.toString(), e);
+	    }
+	}
+	log.info("************Done with the BaseOjbPbDAO.deleteItemsNotInCollectionsInPath(Object rootVO, String path) ***************");
     }
 
+    @SuppressWarnings("finally")
+    public void deleteItemsNotInCollectionsInPath(Object rootVO, String path, Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) throws DataAccessException {
+	log.info("************Entering the BaseOjbPbDAO.deleteItemsNotInCollectionsInPath(Object rootVO, String path,Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) ***************");
+	PersistenceBroker pb = null;
+	try {
+	    pb = persistenceBrokerSupport.getPersistenceBroker();
+	    persistenceBrokerSupport.beginTransaction(pb);
+	    ojbPbCore.deleteItemsNotInCollectionsInPath(rootVO, path, ifM2NDeleteOnlyRelationship, deleteOneToOne, pb);
+	    persistenceBrokerSupport.commit(pb);
 
+	} catch (final PersistenceBrokerSupportException e) {
+	    try {
+		persistenceBrokerSupport.rollback(pb);
+	    } catch (final PersistenceBrokerSupportException pbsEx) {
+		log.error(
+			"PersistenceBrokerSupportException thrown in the catch block of the PersistenceBrokerSupportException in BaseOjbPbDAO.deleteItemsNotInCollectionsInPath(Object rootVO, String path,Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) : "
+				+ pbsEx.toString());
+	    } finally {
+		log.error(
+			"PersistenceBrokerSupportException thrown in BaseOjbPbDAO.deleteItemsNotInCollectionsInPath(Object rootVO, String path,Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) : "
+				+ e.toString());
+		throw new DataAccessException(
+			"Error in BaseOjbPbDAO.deleteItemsNotInCollectionsInPath(Object rootVO, String path,Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) : " + e.toString(), e);
+	    }
+	} catch (final OjbPbCoreException e) {
+	    try {
+		persistenceBrokerSupport.rollback(pb);
+	    } catch (final PersistenceBrokerSupportException pbsEx) {
+		log.error(
+			"PersistenceBrokerSupportException thrown in the catch block of the OjbPbCoreException in BaseOjbPbDAO.deleteItemsNotInCollectionsInPath(Object rootVO, String path,Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne): "
+				+ pbsEx.toString());
+	    } finally {
+		log.error("OjbPbCoreException thrown in BaseOjbPbDAO.deleteItemsNotInCollectionsInPath(Object rootVO, String path,Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne): "
+			+ e.toString());
+		throw new DataAccessException(
+			"Error in BaseOjbPbDAO.deleteItemsNotInCollectionsInPath(Object rootVO, String path,Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) : " + e.toString(), e);
+	    }
+	} catch (final Exception e) {
+	    try {
+		persistenceBrokerSupport.rollback(pb);
+	    } catch (final PersistenceBrokerSupportException pbsEx) {
+		log.error(
+			"PersistenceBrokerSupportException thrown in the catch block of the Exception in BaseOjbPbDAO.deleteItemsNotInCollectionsInPath(Object rootVO, String path,Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne): "
+				+ pbsEx.toString());
+	    } finally {
+		log.error(
+			"Exception thrown in BaseOjbPbDAO.deleteItemsNotInCollectionsInPath(Object rootVO, String path,Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne): " + e.toString());
+		throw new DataAccessException("Error in BaseOjbPbDAO.deleteItemsNotInCollectionsInPath(Object rootVO,Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne): " + e.toString(), e);
+	    }
+	} finally {
+	    try {
 
+		persistenceBrokerSupport.releasePersistenceBroker(pb);
 
-
-
-    public void storePathCascade(Object storeVO, String path) throws DataAccessException, DataOptimisticLockException{
-        log.info("************Entering the BaseOjbPbDAO.storePathCascade(Object storeVO, String path) ***************");
-        PersistenceBroker pb = null;
-        try{
-            pb = persistenceBrokerSupport.getPersistenceBroker();
-            persistenceBrokerSupport.beginTransaction(pb);
-            ojbPbCore.storePathCascade(storeVO, path,pb);
-            persistenceBrokerSupport.commit(pb);
-
-        } catch (OptimisticLockException e) {
-        	try{
-                persistenceBrokerSupport.rollback(pb); // change of policy. Now the if OptimisticLockException is rolled back , depends as other Exceptions, on if the environment is
-                                                   // managed or not.
-            } catch (PersistenceBrokerSupportException pbsEx){
-                log.error("PersistenceBrokerSupportException thrown in the catch block of the OptimisticLockException in BaseOjbPbDAO.storePathCascade(Object storeVO, String path) : " + pbsEx.toString());
-                //throw new DataOptimisticLockException("Error in the catch block of the OptimisticLockException of BaseOjbPbDAO.store(Object storeVO,ObjectModification modification): " + pbsEx.toString(),pbsEx);
-
-            } finally{
-                log.error("OptimisticLockException thrown in BaseOjbPbDAO.storePathCascade(Object storeVO, String path) : " + e.toString());
-                throw new DataOptimisticLockException("Error in BaseOjbPbDAO.storePathCascade(Object storeVO, String path) : " + e.toString(),e);
-            }
-        } catch (PersistenceBrokerSupportException e) {
-            try{
-                persistenceBrokerSupport.rollback(pb);
-            } catch (PersistenceBrokerSupportException pbsEx){
-                log.error("PersistenceBrokerSupportException thrown in the catch block of the PersistenceBrokerSupportException in BaseOjbPbDAO.storePathCascade(Object storeVO, String path) : " + pbsEx.toString());
-            } finally{
-                log.error("PersistenceBrokerSupportException thrown in BaseOjbPbDAO.storePathCascade(Object storeVO, String path) : " + e.toString());
-                //throw new DataOptimisticLockException("Error in BaseOjbPbDAO.storePathCascade(Object storeVO, String path) : " + e.toString(),e);
-                throw new DataAccessException("Error in BaseOjbPbDAO.storePathCascade(Object storeVO, String path) : " + e.toString(),e);
-            }
-        } catch (OjbPbCoreException e) {
-            try{
-                persistenceBrokerSupport.rollback(pb);
-            } catch (PersistenceBrokerSupportException pbsEx){
-                log.error("PersistenceBrokerSupportException thrown in the catch block of the OjbPbCoreException in BaseOjbPbDAO.storePathCascade(Object storeVO, String path) : " + pbsEx.toString());
-            } finally{
-                log.error("OjbPbCoreException thrown in BaseOjbPbDAO.storePathCascade(Object storeVO, String path) : " + e.toString());
-                //throw new DataOptimisticLockException("Error in BaseOjbPbDAO.storePathCascade(Object storeVO, String path) : " + e.toString(),e);
-                throw new DataAccessException("Error in BaseOjbPbDAO.storePathCascade(Object storeVO, String path) : " + e.toString(),e);
-            }
-        } catch (Exception e) {
-            try{
-                persistenceBrokerSupport.rollback(pb);
-            } catch (PersistenceBrokerSupportException pbsEx){
-                log.error("PersistenceBrokerSupportException thrown in the catch block of the Exception in BaseOjbPbDAO.storePathCascade(Object storeVO, String path) : " + pbsEx.toString());
-            } finally{
-                log.error("Exception thrown in BaseOjbPbDAO.storePathCascade(Object storeVO, String path) : " + e.toString());
-                //throw new DataOptimisticLockException("Error in BaseOjbPbDAO.storePathCascade(Object storeVO, String path) : " + e.toString(),e);
-                throw new DataAccessException("Error in BaseOjbPbDAO.storePathCascade(Object storeVO, String path) : " + e.toString(),e);
-            }
-        } finally {
-            try{
-
-                persistenceBrokerSupport.releasePersistenceBroker(pb);
-
-            } catch(PersistenceBrokerSupportException e) {
-                log.error("PersistenceBrokerSupportException thrown in  BaseOjbPbDAO.storePathCascade(Object storeVO, String path)  in the finally clause: " + e.toString());
-                throw new DataAccessException("Error in  BaseOjbPbDAO.storePathCascade(Object storeVO, String path) in the finally clause: " + e.toString(),e);
-            }
-        }
-        log.info("************Done with the BaseOjbPbDAO.storePathCascade(Object storeVO, String path) ***************");
+	    } catch (final PersistenceBrokerSupportException e) {
+		log.error(
+			"PersistenceBrokerSupportException thrown in  BaseOjbPbDAO.deleteItemsNotInCollectionsInPath(Object rootVO, String path,Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne)  in the finally clause: "
+				+ e.toString());
+		throw new DataAccessException(
+			"Error in  BaseOjbPbDAO.deleteItemsNotInCollectionsInPath(Object rootVO, String path,Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) in the finally clause: "
+				+ e.toString(),
+			e);
+	    }
+	}
+	log.info("************Done with the BaseOjbPbDAO.deleteItemsNotInCollectionsInPath(Object rootVO, String path,Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) ***************");
     }
 
-    public void storePathsCascade(Object storeVO, Collection paths, Boolean pathsHasToBeSorted, Boolean  storeVOHasToBeStored) throws DataAccessException, DataOptimisticLockException{
-        log.info("************Entering the BaseOjbPbDAO.storePathsCascade(Object storeVO, Collection paths, Boolean pathsHasToBeSorted, Boolean  storeVOHasToBeStored) ***************");
-        PersistenceBroker pb = null;
-        try{
-            pb = persistenceBrokerSupport.getPersistenceBroker();
-            persistenceBrokerSupport.beginTransaction(pb);
-            ojbPbCore.storePathsCascade(storeVO, paths, pathsHasToBeSorted,storeVOHasToBeStored,pb);
-            persistenceBrokerSupport.commit(pb);
+    public void deleteItemsNotInCollectionsInPaths(Object rootVO, Collection paths, Boolean applyDeletePathCascade, Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne)
+	    throws DataAccessException {
+	log.info(
+		"************Entering the BaseOjbPbDAO.deleteItemsNotInCollectionsInPaths(Object rootVO, Collection paths, Boolean applyDeletePathCascade, Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) ***************");
+	PersistenceBroker pb = null;
+	try {
+	    pb = persistenceBrokerSupport.getPersistenceBroker();
+	    persistenceBrokerSupport.beginTransaction(pb);
+	    ojbPbCore.deleteItemsNotInCollectionsInPaths(rootVO, paths, Boolean.TRUE, applyDeletePathCascade, ifM2NDeleteOnlyRelationship, deleteOneToOne, pb);
+	    persistenceBrokerSupport.commit(pb);
 
-        } catch (OptimisticLockException e) {
-        	try{
-                persistenceBrokerSupport.rollback(pb); // change of policy. Now the if OptimisticLockException is rolled back , depends as other Exceptions, on if the environment is
-                                                   // managed or not.
-            } catch (PersistenceBrokerSupportException pbsEx){
-                log.error("PersistenceBrokerSupportException thrown in the catch block of the OptimisticLockException in BaseOjbPbDAO.storePathsCascade(Object storeVO, Collection paths, Boolean pathsHasToBeSorted, Boolean  storeVOHasToBeStored): " + pbsEx.toString());
-                //throw new DataOptimisticLockException("Error in the catch block of the OptimisticLockException of BaseOjbPbDAO.store(Object storeVO,ObjectModification modification): " + pbsEx.toString(),pbsEx);
+	} catch (final PersistenceBrokerSupportException e) {
+	    try {
+		persistenceBrokerSupport.rollback(pb);
+	    } catch (final PersistenceBrokerSupportException pbsEx) {
+		log.error(
+			"PersistenceBrokerSupportException thrown in the catch block of the PersistenceBrokerSupportException in BaseOjbPbDAO.deleteItemsNotInCollectionsInPath(Object rootVO, Collection paths, Boolean applyDeletePathCascade, Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) : "
+				+ pbsEx.toString());
+	    } finally {
+		log.error(
+			"PersistenceBrokerSupportException thrown in BaseOjbPbDAO.deleteItemsNotInCollectionsInPaths(Object rootVO, Collection paths,  Boolean applyDeletePathCascade, Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne)  : "
+				+ e.toString());
+		throw new DataAccessException(
+			"Error in BaseOjbPbDAO.deleteItemsNotInCollectionsInPaths(Object rootVO, Collection paths,  Boolean applyDeletePathCascade, Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne)  : "
+				+ e.toString(),
+			e);
+	    }
+	} catch (final OjbPbCoreException e) {
+	    try {
+		persistenceBrokerSupport.rollback(pb);
+	    } catch (final PersistenceBrokerSupportException pbsEx) {
+		log.error(
+			"PersistenceBrokerSupportException thrown in the catch block of the OjbPbCoreException in BaseOjbPbDAO.deleteItemsNotInCollectionsInPaths(Object rootVO, Collection paths, Boolean pathsHasToBeSorted, Boolean applyDeletePathCascade, Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) : "
+				+ pbsEx.toString());
+	    } finally {
+		log.error(
+			"OjbPbCoreException thrown in BaseOjbPbDAO.deleteItemsNotInCollectionsInPaths(Object rootVO, Collection paths, Boolean applyDeletePathCascade, Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) : "
+				+ e.toString());
+		throw new DataAccessException(
+			"Error in BaseOjbPbDAO.deleteItemsNotInCollectionsInPaths(Object rootVO, Collection paths, Boolean applyDeletePathCascade, Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) : "
+				+ e.toString(),
+			e);
+	    }
+	} catch (final Exception e) {
+	    try {
+		persistenceBrokerSupport.rollback(pb);
+	    } catch (final PersistenceBrokerSupportException pbsEx) {
+		log.error(
+			"PersistenceBrokerSupportException thrown in the catch block of the Exception in BaseOjbPbDAO.deleteItemsNotInCollectionsInPaths(Object rootVO, Collection paths,  Boolean applyDeletePathCascade, Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) : "
+				+ pbsEx.toString());
+	    } finally {
+		log.error(
+			"Exception thrown in BaseOjbPbDAO.deleteItemsNotInCollectionsInPaths(Object rootVO, Collection paths, Boolean applyDeletePathCascade, Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) : "
+				+ e.toString());
+		throw new DataAccessException(
+			"Error in BaseOjbPbDAO.deleteItemsNotInCollectionsInPaths(Object rootVO, Collection paths,  Boolean applyDeletePathCascade, Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) : "
+				+ e.toString(),
+			e);
+	    }
+	} finally {
+	    try {
 
-            } finally{
-                log.error("OptimisticLockException thrown in BaseOjbPbDAO.storePathsCascade(Object storeVO, Collection paths, Boolean pathsHasToBeSorted, Boolean  storeVOHasToBeStored): " + e.toString());
-                throw new DataOptimisticLockException("Error in BaseOjbPbDAO.storePathsCascade(Object storeVO, Collection paths, Boolean pathsHasToBeSorted, Boolean  storeVOHasToBeStored): " + e.toString(),e);
-            }
-        } catch (PersistenceBrokerSupportException e) {
-            try{
-                persistenceBrokerSupport.rollback(pb);
-            } catch (PersistenceBrokerSupportException pbsEx){
-                log.error("PersistenceBrokerSupportException thrown in the catch block of the PersistenceBrokerSupportException in BaseOjbPbDAO.storePathsCascade(Object storeVO, Collection paths, Boolean pathsHasToBeSorted, Boolean  storeVOHasToBeStored) : " + pbsEx.toString());
-            } finally{
-                log.error("PersistenceBrokerSupportException thrown in BaseOjbPbDAO.storePathsCascade(Object storeVO, Collection paths, Boolean pathsHasToBeSorted, Boolean  storeVOHasToBeStored) : " + e.toString());
-                //throw new DataOptimisticLockException("Error in BaseOjbPbDAO.storePathsCascade(Object storeVO, Collection paths, Boolean pathsHasToBeSorted, Boolean  storeVOHasToBeStored) : " + e.toString(),e);
-                throw new DataAccessException("Error in BaseOjbPbDAO.storePathsCascade(Object storeVO, Collection paths, Boolean pathsHasToBeSorted, Boolean  storeVOHasToBeStored) : " + e.toString(),e);
-            }
-        } catch (OjbPbCoreException e) {
-            try{
-                persistenceBrokerSupport.rollback(pb);
-            } catch (PersistenceBrokerSupportException pbsEx){
-                log.error("PersistenceBrokerSupportException thrown in the catch block of the OjbPbCoreException in BaseOjbPbDAO.storePathsCascade(Object storeVO, Collection paths, Boolean pathsHasToBeSorted, Boolean  storeVOHasToBeStored) : " + pbsEx.toString());
-            } finally{
-                log.error("OjbPbCoreException thrown in BaseOjbPbDAO.storePathsCascade(Object storeVO, Collection paths, Boolean pathsHasToBeSorted, Boolean  storeVOHasToBeStored): " + e.toString());
-                //throw new DataOptimisticLockException("Error in BaseOjbPbDAO.storePathsCascade(Object storeVO, Collection paths, Boolean pathsHasToBeSorted, Boolean  storeVOHasToBeStored) : " + e.toString(),e);
-                throw new DataAccessException("Error in BaseOjbPbDAO.storePathsCascade(Object storeVO, Collection paths, Boolean pathsHasToBeSorted, Boolean  storeVOHasToBeStored) : " + e.toString(),e);
-            }
-        } catch (Exception e) {
-            try{
-                persistenceBrokerSupport.rollback(pb);
-            } catch (PersistenceBrokerSupportException pbsEx){
-                log.error("PersistenceBrokerSupportException thrown in the catch block of the Exception in BaseOjbPbDAO.storePathsCascade(Object storeVO, Collection paths, Boolean pathsHasToBeSorted, Boolean  storeVOHasToBeStored): " + pbsEx.toString());
-            } finally{
-                log.error("Exception thrown in BaseOjbPbDAO.storePathsCascade(Object storeVO, Collection paths, Boolean pathsHasToBeSorted, Boolean  storeVOHasToBeStored) : " + e.toString());
-                //throw new DataOptimisticLockException("Error in BaseOjbPbDAO.storePathsCascade(Object storeVO, Collection paths, Boolean pathsHasToBeSorted, Boolean  storeVOHasToBeStored) : " + e.toString(),e);
-                throw new DataAccessException("Error in BaseOjbPbDAO.storePathsCascade(Object storeVO, Collection paths, Boolean pathsHasToBeSorted, Boolean  storeVOHasToBeStored) : " + e.toString(),e);
-            }
-        } finally {
-            try{
+		persistenceBrokerSupport.releasePersistenceBroker(pb);
 
-                persistenceBrokerSupport.releasePersistenceBroker(pb);
+	    } catch (final PersistenceBrokerSupportException e) {
+		log.error(
+			"PersistenceBrokerSupportException thrown in  BaseOjbPbDAO.deleteItemsNotInCollectionsInPaths(Object rootVO, Collection paths, Boolean applyDeletePathCascade, Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne)  in the finally clause: "
+				+ e.toString());
+		throw new DataAccessException(
+			"Error in  BaseOjbPbDAO.deleteItemsNotInCollectionsInPaths(Object rootVO, Collection paths,  Boolean applyDeletePathCascade, Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) in the finally clause: "
+				+ e.toString(),
+			e);
+	    }
+	}
+	log.info(
+		"************Done with the BaseOjbPbDAO.deleteItemsNotInCollectionsInPaths(Object rootVO, Collection paths,  Boolean applyDeletePathCascade, Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne)  ***************");
 
-            } catch(PersistenceBrokerSupportException e) {
-                log.error("PersistenceBrokerSupportException thrown in  BaseOjbPbDAO.storePathsCascade(Object storeVO, Collection paths, Boolean pathsHasToBeSorted, Boolean  storeVOHasToBeStored)  in the finally clause: " + e.toString());
-                throw new DataAccessException("Error in  BaseOjbPbDAO.storePathsCascade(Object storeVO, Collection paths, Boolean pathsHasToBeSorted, Boolean  storeVOHasToBeStored) in the finally clause: " + e.toString(),e);
-            }
-        }
-        log.info("************Done with the BaseOjbPbDAO.storePathsCascade(Object storeVO, Collection paths, Boolean pathsHasToBeSorted, Boolean  storeVOHasToBeStored) ***************");
+    }
+
+    public void deletePathCascade(Object parentVO, String path, Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) throws DataAccessException {
+	log.info("************Entering the BaseOjbPbDAO.deletePathCascade(Object parentVO,String path,Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) ***************");
+	PersistenceBroker pb = null;
+	try {
+	    pb = persistenceBrokerSupport.getPersistenceBroker();
+	    persistenceBrokerSupport.beginTransaction(pb);
+	    ojbPbCore.deletePathCascade(parentVO, path, ifM2NDeleteOnlyRelationship, deleteOneToOne, pb);
+	    persistenceBrokerSupport.commit(pb);
+
+	} catch (final PersistenceBrokerSupportException e) {
+	    try {
+		persistenceBrokerSupport.rollback(pb);
+	    } catch (final PersistenceBrokerSupportException pbsEx) {
+		log.error(
+			"PersistenceBrokerSupportException thrown in the catch block of the PersistenceBrokerSupportException in BaseOjbPbDAO.deletePathCascade(Object parentVO,String path,Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) : "
+				+ pbsEx.toString());
+	    } finally {
+		log.error("PersistenceBrokerSupportException thrown in BaseOjbPbDAO.deletePathCascade(Object parentVO,String path,Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) : "
+			+ e.toString());
+		throw new DataAccessException("Error in BaseOjbPbDAO.deletePathCascade(Object parentVO,String path,Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) : " + e.toString(), e);
+	    }
+	} catch (final OjbPbCoreException e) {
+	    try {
+		persistenceBrokerSupport.rollback(pb);
+	    } catch (final PersistenceBrokerSupportException pbsEx) {
+		log.error(
+			"PersistenceBrokerSupportException thrown in the catch block of the OjbPbCoreException in BaseOjbPbDAO.deletePathCascade(Object parentVO,String path,Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne): "
+				+ pbsEx.toString());
+	    } finally {
+		log.error("OjbPbCoreException thrown in BaseOjbPbDAO.deletePathCascade(Object parentVO,String path,Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne): " + e.toString());
+		throw new DataAccessException("Error in BaseOjbPbDAO.deletePathCascade(Object parentVO,String path,Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) : " + e.toString(), e);
+	    }
+	} catch (final Exception e) {
+	    try {
+		persistenceBrokerSupport.rollback(pb);
+	    } catch (final PersistenceBrokerSupportException pbsEx) {
+		log.error(
+			"PersistenceBrokerSupportException thrown in the catch block of the Exception in BaseOjbPbDAO.deletePathCascade(Object parentVO,String path,Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) : "
+				+ pbsEx.toString());
+	    } finally {
+		log.error("Exception thrown in BaseOjbPbDAO.deletePathCascade(Object parentVO,String path,Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) : " + e.toString());
+		throw new DataAccessException("Error in BaseOjbPbDAO.deletePathCascade(Object parentVO,String path,Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) : " + e.toString(), e);
+	    }
+	} finally {
+	    try {
+
+		persistenceBrokerSupport.releasePersistenceBroker(pb);
+
+	    } catch (final PersistenceBrokerSupportException e) {
+		log.error(
+			"PersistenceBrokerSupportException thrown in  BaseOjbPbDAO.deletePathCascade(Object parentVO,String path,Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne)   in the finally clause: "
+				+ e.toString());
+		throw new DataAccessException(
+			"Error in  BaseOjbPbDAO.deletePathCascade(Object parentVO,String path,Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne)  in the finally clause: " + e.toString(), e);
+	    }
+	}
+	log.info("************Done with the BaseOjbPbDAO.deletePathCascade(Object parentVO,String path,Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne)  ***************");
+
+    }
+
+    public void deletePathsCascade(Object parentVO, Collection paths, Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) throws DataAccessException {
+	log.info("************Entering the BaseOjbPbDAO.deletePathsCascade(Object parentVO,Collection paths,Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne)  ***************");
+	PersistenceBroker pb = null;
+	try {
+	    pb = persistenceBrokerSupport.getPersistenceBroker();
+	    persistenceBrokerSupport.beginTransaction(pb);
+	    ojbPbCore.deletePathsCascade(parentVO, paths, ifM2NDeleteOnlyRelationship, deleteOneToOne, pb);
+	    persistenceBrokerSupport.commit(pb);
+
+	} catch (final PersistenceBrokerSupportException e) {
+	    try {
+		persistenceBrokerSupport.rollback(pb);
+	    } catch (final PersistenceBrokerSupportException pbsEx) {
+		log.error(
+			"PersistenceBrokerSupportException thrown in the catch block of the PersistenceBrokerSupportException in BaseOjbPbDAO.deletePathsCascade(Object parentVO,Collection paths,Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) throws DataAccessException: "
+				+ pbsEx.toString());
+	    } finally {
+		log.error(
+			"PersistenceBrokerSupportException thrown in BaseOjbPbDAO.deletePathsCascade(Object parentVO,Collection paths,Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) throws DataAccessException: "
+				+ e.toString());
+		throw new DataAccessException(
+			"Error in BaseOjbPbDAO.deletePathsCascade(Object parentVO,Collection paths,Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) throws DataAccessException : "
+				+ e.toString(),
+			e);
+	    }
+	} catch (final OjbPbCoreException e) {
+	    try {
+		persistenceBrokerSupport.rollback(pb);
+	    } catch (final PersistenceBrokerSupportException pbsEx) {
+		log.error(
+			"PersistenceBrokerSupportException thrown in the catch block of the OjbPbCoreException in BaseOjbPbDAO.deletePathsCascade(Object parentVO,Collection paths,Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) throws DataAccessException: "
+				+ pbsEx.toString());
+	    } finally {
+		log.error(
+			"OjbPbCoreException thrown in BaseOjbPbDAO.deletePathsCascade(Object parentVO,Collection paths,Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) throws DataAccessException: "
+				+ e.toString());
+		throw new DataAccessException(
+			"Error in BaseOjbPbDAO.deletePathsCascade(Object parentVO,Collection paths,Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) throws DataAccessException : "
+				+ e.toString(),
+			e);
+	    }
+	} catch (final Exception e) {
+	    try {
+		persistenceBrokerSupport.rollback(pb);
+	    } catch (final PersistenceBrokerSupportException pbsEx) {
+		log.error(
+			"PersistenceBrokerSupportException thrown in the catch block of the Exception in BaseOjbPbDAO.deletePathsCascade(Object parentVO,Collection paths,Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) throws DataAccessException: "
+				+ pbsEx.toString());
+	    } finally {
+		log.error(
+			"Exception thrown in BaseOjbPbDAO.deletePathsCascade(Object parentVO,Collection paths,Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) throws DataAccessException : "
+				+ e.toString());
+		throw new DataAccessException(
+			"Error in BaseOjbPbDAO.deletePathsCascade(Object parentVO,Collection paths,Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) throws DataAccessException : "
+				+ e.toString(),
+			e);
+	    }
+	} finally {
+	    try {
+
+		persistenceBrokerSupport.releasePersistenceBroker(pb);
+
+	    } catch (final PersistenceBrokerSupportException e) {
+		log.error(
+			"PersistenceBrokerSupportException thrown in  BaseOjbPbDAO.deletePathsCascade(Object parentVO,Collection paths,Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) throws DataAccessException in the finally clause: "
+				+ e.toString());
+		throw new DataAccessException(
+			"Error in  BaseOjbPbDAO.deletePathsCascade(Object parentVO,Collection paths,Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) throws DataAccessException in the finally clause: "
+				+ e.toString(),
+			e);
+	    }
+	}
+	log.info("************Done with the BaseOjbPbDAO.deletePathsCascade(Object parentVO,Collection paths,Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) ***************");
+    }
+
+    public Object insert(Object storeVO) throws DataAccessException, DataOptimisticLockException {
+	log.info("************Entering the BaseOjbPbDAO.insert(Object storeVO)***************");
+	try {
+	    store(storeVO, ObjectModification.INSERT);
+	} catch (final DataOptimisticLockException e) {
+	    log.error("DataOptimisticLockException thrown in BaseOjbPbDAO.insert(Object storeVO): " + e.toString());
+	    throw new DataOptimisticLockException("Error in BaseOjbPbDAO.insert(Object storeVO): " + e.toString(), e);
+	} catch (final DataAccessException e) {
+	    log.error("DataAccessException thrown in BaseOjbPbDAO.insert(Object storeVO): " + e.toString());
+	    throw new DataAccessException("Error in BaseOjbPbDAO.insert(Object storeVO): " + e.toString(), e);
+	}
+	log.info("************Done with the BaseOjbPbDAO.insert(Object storeVO)***************");
+	return storeVO;
+    }
+
+    public Object update(Object storeVO) throws DataAccessException, DataOptimisticLockException {
+	log.info("************Entering the BaseOjbPbDAO.update(Object storeVO)***************");
+	try {
+	    storeVO = store(storeVO, ObjectModification.UPDATE);
+	} catch (final DataOptimisticLockException e) {
+	    log.error("DataOptimisticLockException thrown in BaseOjbPbDAO.update(Object storeVO): " + e.toString());
+	    throw new DataOptimisticLockException("Error in BaseOjbPbDAO.update(Object storeVO): " + e.toString(), e);
+	} catch (final DataAccessException e) {
+	    log.error("DataAccessException thrown in BaseOjbPbDAO.update(Object storeVO): " + e.toString());
+	    throw new DataAccessException("Error in BaseOjbPbDAO.update(Object storeVO): " + e.toString(), e);
+	}
+	log.info("************Done with the BaseOjbPbDAO.update(Object storeVO)***************");
+	return storeVO;
+    }
+
+    public void updateCollection(Collection storeVOs) throws DataAccessException, DataOptimisticLockException {
+	log.info("************Entering the BaseOjbPbDAO.updateCollection(Collection storeVOs)***************");
+	try {
+	    storeCollection(storeVOs);
+	} catch (final DataOptimisticLockException e) {
+	    log.error("DataOptimisticLockException thrown in BaseOjbPbDAO.updateCollection(Collection storeVOs): " + e.toString());
+	    throw new DataOptimisticLockException("Error in BaseOjbPbDAO.updateCollection(Collection storeVOs): " + e.toString(), e);
+	} catch (final DataAccessException e) {
+	    log.error("DataAccessException thrown in BaseOjbPbDAO.updateCollection(Collection storeVOs): " + e.toString());
+	    throw new DataAccessException("Error in BaseOjbPbDAO.updateCollection(Collection storeVOs): " + e.toString(), e);
+	}
+	log.info("************Done with the BaseOjbPbDAO.updateCollection(Collection storeVOs)***************");
+    }
+
+    protected Object store(Object storeVO, ObjectModification modification) throws DataAccessException, DataOptimisticLockException {
+	log.info("************Entering the BaseOjbPbDAO.store(Object storeVO,ObjectModification modification)***************");
+	if (storeVO == null) {
+	    throw new DataAccessException("Error in BaseOjbPbDAO.store(Object storeVO,ObjectModification modification): storeVO can't be null. ");
+	}
+	PersistenceBroker pb = null;
+	try {
+	    pb = persistenceBrokerSupport.getPersistenceBroker();
+	    persistenceBrokerSupport.beginTransaction(pb);
+	    storeVO = ojbPbCore.store(storeVO, modification, pb);
+	    persistenceBrokerSupport.commit(pb);
+
+	} catch (final OptimisticLockException e) {
+	    try {
+		persistenceBrokerSupport.rollback(pb); // change of policy. Now
+						       // the if
+						       // OptimisticLockException
+						       // is rolled back ,
+						       // depends as other
+						       // Exceptions, on if the
+						       // environment is
+		// managed or not.
+	    } catch (final PersistenceBrokerSupportException pbsEx) {
+		log.error("PersistenceBrokerSupportException thrown in the catch block of the OptimisticLockException in BaseOjbPbDAO.store(Object storeVO,ObjectModification modification): "
+			+ pbsEx.toString());
+		// throw new DataOptimisticLockException("Error in the catch
+		// block of the OptimisticLockException of
+		// BaseOjbPbDAO.store(Object storeVO,ObjectModification
+		// modification): " + pbsEx.toString(),pbsEx);
+
+	    } finally {
+		log.error("OptimisticLockException thrown in BaseOjbPbDAO.store(Object storeVO,ObjectModification modification): " + e.toString());
+		throw new DataOptimisticLockException("Error in BaseOjbPbDAO.store(Object storeVO,ObjectModification modification): " + e.toString(), e);
+	    }
+	} catch (final PersistenceBrokerSupportException e) {
+	    try {
+		persistenceBrokerSupport.rollback(pb);
+	    } catch (final PersistenceBrokerSupportException pbsEx) {
+		log.error("PersistenceBrokerSupportException thrown in the catch block of the PersistenceBrokerSupportException in BaseOjbPbDAO.store(Object storeVO,ObjectModification modification): "
+			+ pbsEx.toString());
+	    } finally {
+		log.error("PersistenceBrokerSupportException thrown in BaseOjbPbDAO.store(Object storeVO,ObjectModification modification): " + e.toString());
+		// throw new DataOptimisticLockException("Error in
+		// BaseOjbPbDAO.store(Object storeVO,ObjectModification
+		// modification): " + e.toString(),e);
+		throw new DataAccessException("Error in BaseOjbPbDAO.store(Object storeVO,ObjectModification modification): " + e.toString(), e);
+	    }
+	} catch (final OjbPbCoreException e) {
+	    try {
+		persistenceBrokerSupport.rollback(pb);
+	    } catch (final PersistenceBrokerSupportException pbsEx) {
+		log.error("PersistenceBrokerSupportException thrown in the catch block of the OjbPbCoreException in BaseOjbPbDAO.store(Object storeVO,ObjectModification modification): "
+			+ pbsEx.toString());
+	    } finally {
+		log.error("OjbPbCoreException thrown in BaseOjbPbDAO.store(Object storeVO,ObjectModification modification): " + e.toString());
+		// throw new DataOptimisticLockException("Error in
+		// BaseOjbPbDAO.store(Object storeVO,ObjectModification
+		// modification): " + e.toString(),e);
+		throw new DataAccessException("Error in BaseOjbPbDAO.store(Object storeVO,ObjectModification modification): " + e.toString(), e);
+	    }
+	} catch (final Exception e) {
+	    try {
+		persistenceBrokerSupport.rollback(pb);
+	    } catch (final PersistenceBrokerSupportException pbsEx) {
+		log.error("PersistenceBrokerSupportException thrown in the catch block of the Exception in BaseOjbPbDAO.store(Object storeVO,ObjectModification modification): " + pbsEx.toString());
+	    } finally {
+		log.error("Exception thrown in BaseOjbPbDAO.store(Object storeVO,ObjectModification modification): " + e.toString());
+		// throw new DataOptimisticLockException("Error in
+		// BaseOjbPbDAO.store(Object storeVO,ObjectModification
+		// modification): " + e.toString(),e);
+		throw new DataAccessException("Error in BaseOjbPbDAO.store(Object storeVO,ObjectModification modification): " + e.toString(), e);
+	    }
+	} finally {
+	    try {
+
+		persistenceBrokerSupport.releasePersistenceBroker(pb);
+
+	    } catch (final PersistenceBrokerSupportException e) {
+		log.error("PersistenceBrokerSupportException thrown in  BaseOjbPbDAO.store(Object storeVO,ObjectModification modification) in the finally clause: " + e.toString());
+		throw new DataAccessException("Error in  BaseOjbPbDAO.store(Object storeVO,ObjectModification modification) in the finally clause: " + e.toString(), e);
+	    }
+	}
+	log.info("************Done with the BaseOjbPbDAO.store(Object storeVO,ObjectModification modification)***************");
+	return storeVO;
+    }
+
+    protected void storeCollection(Collection storeVOs) throws DataAccessException, DataOptimisticLockException {
+	log.info("************Entering the BaseOjbPbDAO.storeCollection(Collection storeVOs) ***************");
+	if (storeVOs == null) {
+	    throw new DataAccessException("Error in BaseOjbPbDAO.storeCollection(Collection storeVOs): storeVOs can't be null. ");
+	}
+	PersistenceBroker pb = null;
+	try {
+	    pb = persistenceBrokerSupport.getPersistenceBroker();
+	    persistenceBrokerSupport.beginTransaction(pb);
+	    ojbPbCore.storeCollection(storeVOs, pb);
+	    persistenceBrokerSupport.commit(pb);
+	} catch (final OptimisticLockException e) {
+	    try {
+		persistenceBrokerSupport.rollback(pb); // change of policy. Now
+						       // the if
+						       // OptimisticLockException
+						       // is rolled back ,
+						       // depends as other
+						       // Exceptions, on if the
+						       // environment is
+		// managed or not.
+	    } catch (final PersistenceBrokerSupportException pbsEx) {
+		log.error("PersistenceBrokerSupportException thrown in the catch block of the OptimisticLockException in BaseOjbPbDAO.storeCollection(Collection storeVOs): " + pbsEx.toString());
+	    } finally {
+		log.error("OptimisticLockException thrown in BaseOjbPbDAO.storeCollection(Collection storeVOs): " + e.toString());
+		throw new DataOptimisticLockException("Error in BaseOjbPbDAO.storeCollection(Collection storeVOs): " + e.toString(), e);
+	    }
+	} catch (final PersistenceBrokerSupportException e) {
+	    try {
+		persistenceBrokerSupport.rollback(pb);
+	    } catch (final PersistenceBrokerSupportException pbsEx) {
+		log.error("PersistenceBrokerSupportException thrown in the catch block of the PersistenceBrokerSupportException in BaseOjbPbDAO.storeCollection(Collection storeVOs): "
+			+ pbsEx.toString());
+	    } finally {
+		log.error("PersistenceBrokerSupportException thrown in BaseOjbPbDAO.storeCollection(Collection storeVOs): " + e.toString());
+		// throw new DataOptimisticLockException("Error in
+		// BaseOjbPbDAO.storeCollection(Collection storeVOs): " +
+		// e.toString(),e);
+		throw new DataAccessException("Error in BaseOjbPbDAO.storeCollection(Collection storeVOs): " + e.toString(), e);
+	    }
+	} catch (final OjbPbCoreException e) {
+	    try {
+		persistenceBrokerSupport.rollback(pb);
+	    } catch (final PersistenceBrokerSupportException pbsEx) {
+		log.error("PersistenceBrokerSupportException thrown in the catch block of the OjbPbCoreException in BaseOjbPbDAO.storeCollection(Collection storeVOs): " + pbsEx.toString());
+	    } finally {
+		log.error("OjbPbCoreException thrown in BaseOjbPbDAO.storeCollection(Collection storeVOs): " + e.toString());
+		// throw new DataOptimisticLockException("Error in
+		// BaseOjbPbDAO.storeCollection(Collection storeVOs): " +
+		// e.toString(),e);
+		throw new DataAccessException("Error in BaseOjbPbDAO.storeCollection(Collection storeVOs): " + e.toString(), e);
+	    }
+	} catch (final Exception e) {
+	    try {
+		persistenceBrokerSupport.rollback(pb);
+	    } catch (final PersistenceBrokerSupportException pbsEx) {
+		log.error("PersistenceBrokerSupportException thrown in the catch block of the Exception in BaseOjbPbDAO.storeCollection(Collection storeVOs): " + pbsEx.toString());
+	    } finally {
+		log.error("Exception thrown in BaseOjbPbDAO.storeCollection(Collection storeVOs): " + e.toString());
+		// throw new DataOptimisticLockException("Error in
+		// BaseOjbPbDAO.storeCollection(Collection storeVOs): " +
+		// e.toString(),e);
+		throw new DataAccessException("Error in BaseOjbPbDAO.storeCollection(Collection storeVOs): " + e.toString(), e);
+	    }
+	} finally {
+	    try {
+
+		persistenceBrokerSupport.releasePersistenceBroker(pb);
+
+	    } catch (final PersistenceBrokerSupportException e) {
+		log.error("PersistenceBrokerSupportException thrown in  BaseOjbPbDAO.storeCollection(Collection storeVOs) in the finally clause: " + e.toString());
+		throw new DataAccessException("Error in  BaseOjbPbDAO.storeCollection(Collection storeVOs) in the finally clause: " + e.toString(), e);
+	    }
+	}
+	log.info("************Done with the BaseOjbPbDAO.storeCollection(Collection storeVOs)***************");
+    }
+
+    public Object updateCollectionReference(Object storeVO, String pAttributeName) throws DataAccessException, DataOptimisticLockException {
+	log.info("************Entering the BaseOjbPbDAO.updateCollectionReference(Object storeVO, String pAttributeName)***************");
+	PersistenceBroker pb = null;
+	try {
+	    pb = persistenceBrokerSupport.getPersistenceBroker();
+	    persistenceBrokerSupport.beginTransaction(pb);
+	    ojbPbCore.updateCollectionReference(storeVO, pAttributeName, pb);
+	    persistenceBrokerSupport.commit(pb);
+
+	} catch (final OptimisticLockException e) {
+	    try {
+		persistenceBrokerSupport.rollback(pb); // change of policy. Now
+						       // the if
+						       // OptimisticLockException
+						       // is rolled back ,
+						       // depends as other
+						       // Exceptions, on if the
+						       // environment is
+		// managed or not.
+	    } catch (final PersistenceBrokerSupportException pbsEx) {
+		log.error(
+			"PersistenceBrokerSupportException thrown in the catch block of the OptimisticLockException in BaseOjbPbDAO.updateCollectionReference(Object storeVO, String pAttributeName): "
+				+ pbsEx.toString());
+	    } finally {
+		log.error("OptimisticLockException thrown in BaseOjbPbDAO.updateCollectionReference(Object storeVO, String pAttributeName): " + e.toString());
+		throw new DataOptimisticLockException("Error in BaseOjbPbDAO.updateCollectionReference(Object storeVO, String pAttributeName): " + e.toString(), e);
+	    }
+	} catch (final PersistenceBrokerSupportException e) {
+	    try {
+		persistenceBrokerSupport.rollback(pb);
+	    } catch (final PersistenceBrokerSupportException pbsEx) {
+		log.error(
+			"PersistenceBrokerSupportException thrown in the catch block of the PersistenceBrokerSupportException in BaseOjbPbDAO.updateCollectionReference(Object storeVO, String pAttributeName): "
+				+ pbsEx.toString());
+	    } finally {
+		log.error("PersistenceBrokerSupportException thrown in BaseOjbPbDAO.updateCollectionReference(Object storeVO, String pAttributeName): " + e.toString());
+		// throw new DataOptimisticLockException("Error in
+		// BaseOjbPbDAO.updateCollectionReference(Object storeVO, String
+		// pAttributeName): " + e.toString(),e);
+		throw new DataAccessException("Error in BaseOjbPbDAO.updateCollectionReference(Object storeVO, String pAttributeName): " + e.toString(), e);
+	    }
+	} catch (final OjbPbCoreException e) {
+	    try {
+		persistenceBrokerSupport.rollback(pb);
+	    } catch (final PersistenceBrokerSupportException pbsEx) {
+		log.error("PersistenceBrokerSupportException thrown in the catch block of the OjbPbCoreException in BaseOjbPbDAO.updateCollectionReference(Object storeVO, String pAttributeName): "
+			+ pbsEx.toString());
+	    } finally {
+		log.error("OjbPbCoreException thrown in BaseOjbPbDAO.updateCollectionReference(Object storeVO, String pAttributeName): " + e.toString());
+		// throw new DataOptimisticLockException("Error in
+		// BaseOjbPbDAO.updateCollectionReference(Object storeVO, String
+		// pAttributeName): " + e.toString(),e);
+		throw new DataAccessException("Error in BaseOjbPbDAO.updateCollectionReference(Object storeVO, String pAttributeName): " + e.toString(), e);
+	    }
+	} catch (final Exception e) {
+	    try {
+		persistenceBrokerSupport.rollback(pb);
+	    } catch (final PersistenceBrokerSupportException pbsEx) {
+		log.error("PersistenceBrokerSupportException thrown in the catch block of the Exception in BaseOjbPbDAO.updateCollectionReference(Object storeVO, String pAttributeName): "
+			+ pbsEx.toString());
+	    } finally {
+		log.error("Exception thrown in BaseOjbPbDAO.updateCollectionReference(Object storeVO, String pAttributeName): " + e.toString());
+		// throw new DataOptimisticLockException("Error in
+		// BaseOjbPbDAO.updateCollectionReference(Object storeVO, String
+		// pAttributeName): " + e.toString(),e);
+		throw new DataAccessException("Error in BaseOjbPbDAO.updateCollectionReference(Object storeVO, String pAttributeName): " + e.toString(), e);
+	    }
+	} finally {
+	    try {
+
+		persistenceBrokerSupport.releasePersistenceBroker(pb);
+
+	    } catch (final PersistenceBrokerSupportException e) {
+		log.error("PersistenceBrokerSupportException thrown in  BaseOjbPbDAO.updateCollectionReference(Object storeVO, String pAttributeName) in the finally clause: " + e.toString());
+		throw new DataAccessException("Error in  BaseOjbPbDAO.updateCollectionReference(Object storeVO, String pAttributeName) in the finally clause: " + e.toString(), e);
+	    }
+	}
+	log.info("************Done with the BaseOjbPbDAO.updateCollectionReference(Object storeVO, String pAttributeName)***************");
+	return storeVO;
+
+    }
+
+    public Object updateCollectionReferences(Object storeVO) throws DataAccessException, DataOptimisticLockException {
+	log.info("************Entering the BaseOjbPbDAO.updateCollectionReferences(Object storeVO)***************");
+	PersistenceBroker pb = null;
+	try {
+	    pb = persistenceBrokerSupport.getPersistenceBroker();
+	    persistenceBrokerSupport.beginTransaction(pb);
+	    ojbPbCore.updateCollectionReferences(storeVO, pb);
+	    persistenceBrokerSupport.commit(pb);
+
+	} catch (final OptimisticLockException e) {
+	    try {
+		persistenceBrokerSupport.rollback(pb); // change of policy. Now
+						       // the if
+						       // OptimisticLockException
+						       // is rolled back ,
+						       // depends as other
+						       // Exceptions, on if the
+						       // environment is
+		// managed or not.
+	    } catch (final PersistenceBrokerSupportException pbsEx) {
+		log.error("PersistenceBrokerSupportException thrown in the catch block of the OptimisticLockException in BaseOjbPbDAO.updateCollectionReferences(Object storeVO): " + pbsEx.toString());
+	    } finally {
+		log.error("OptimisticLockException thrown in BaseOjbPbDAO.updateCollectionReferences(Object storeVO): " + e.toString());
+		throw new DataOptimisticLockException("Error in BaseOjbPbDAO.updateCollectionReferences(Object storeVO): " + e.toString(), e);
+	    }
+	} catch (final PersistenceBrokerSupportException e) {
+	    try {
+		persistenceBrokerSupport.rollback(pb);
+	    } catch (final PersistenceBrokerSupportException pbsEx) {
+		log.error("PersistenceBrokerSupportException thrown in the catch block of the PersistenceBrokerSupportException in BaseOjbPbDAO.updateCollectionReferences(Object storeVO): "
+			+ pbsEx.toString());
+	    } finally {
+		log.error("PersistenceBrokerSupportException thrown in BaseOjbPbDAO.updateCollectionReferences(Object storeVO): " + e.toString());
+		// throw new DataOptimisticLockException("Error in
+		// BaseOjbPbDAO.updateCollectionReferences(Object storeVO): " +
+		// e.toString(),e);
+		throw new DataAccessException("Error in BaseOjbPbDAO.updateCollectionReferences(Object storeVO): " + e.toString(), e);
+	    }
+	} catch (final OjbPbCoreException e) {
+	    try {
+		persistenceBrokerSupport.rollback(pb);
+	    } catch (final PersistenceBrokerSupportException pbsEx) {
+		log.error("PersistenceBrokerSupportException thrown in the catch block of the OjbPbCoreException in BaseOjbPbDAO.updateCollectionReferences(Object storeVO): " + pbsEx.toString());
+	    } finally {
+		log.error("OjbPbCoreException thrown in BaseOjbPbDAO.updateCollectionReferences(Object storeVO): " + e.toString());
+		// throw new DataOptimisticLockException("Error in
+		// BaseOjbPbDAO.updateCollectionReferences(Object storeVO): " +
+		// e.toString(),e);
+		throw new DataAccessException("Error in BaseOjbPbDAO.updateCollectionReferences(Object storeVO): " + e.toString(), e);
+	    }
+	} catch (final Exception e) {
+	    try {
+		persistenceBrokerSupport.rollback(pb);
+	    } catch (final PersistenceBrokerSupportException pbsEx) {
+		log.error("PersistenceBrokerSupportException thrown in the catch block of the Exception in BaseOjbPbDAO.updateCollectionReferences(Object storeVO): " + pbsEx.toString());
+	    } finally {
+		log.error("Exception thrown in BaseOjbPbDAO.updateCollectionReferences(Object storeVO): " + e.toString());
+		// throw new DataOptimisticLockException("Error in
+		// BaseOjbPbDAO.updateCollectionReferences(Object storeVO): " +
+		// e.toString(),e);
+		throw new DataAccessException("Error in BaseOjbPbDAO.updateCollectionReferences(Object storeVO): " + e.toString(), e);
+	    }
+	} finally {
+	    try {
+
+		persistenceBrokerSupport.releasePersistenceBroker(pb);
+
+	    } catch (final PersistenceBrokerSupportException e) {
+		log.error("PersistenceBrokerSupportException thrown in  BaseOjbPbDAO.updateCollectionReferences(Object storeVO) in the finally clause: " + e.toString());
+		throw new DataAccessException("Error in  BaseOjbPbDAO.updateCollectionReferences(Object storeVO) in the finally clause: " + e.toString(), e);
+	    }
+	}
+	log.info("************Done with the BaseOjbPbDAO.updateCollectionReferences(Object storeVO)***************");
+	return storeVO;
+    }
+
+    public void storePathCascade(Object storeVO, String path) throws DataAccessException, DataOptimisticLockException {
+	log.info("************Entering the BaseOjbPbDAO.storePathCascade(Object storeVO, String path) ***************");
+	PersistenceBroker pb = null;
+	try {
+	    pb = persistenceBrokerSupport.getPersistenceBroker();
+	    persistenceBrokerSupport.beginTransaction(pb);
+	    ojbPbCore.storePathCascade(storeVO, path, pb);
+	    persistenceBrokerSupport.commit(pb);
+
+	} catch (final OptimisticLockException e) {
+	    try {
+		persistenceBrokerSupport.rollback(pb); // change of policy. Now
+						       // the if
+						       // OptimisticLockException
+						       // is rolled back ,
+						       // depends as other
+						       // Exceptions, on if the
+						       // environment is
+		// managed or not.
+	    } catch (final PersistenceBrokerSupportException pbsEx) {
+		log.error("PersistenceBrokerSupportException thrown in the catch block of the OptimisticLockException in BaseOjbPbDAO.storePathCascade(Object storeVO, String path) : "
+			+ pbsEx.toString());
+		// throw new DataOptimisticLockException("Error in the catch
+		// block of the OptimisticLockException of
+		// BaseOjbPbDAO.store(Object storeVO,ObjectModification
+		// modification): " + pbsEx.toString(),pbsEx);
+
+	    } finally {
+		log.error("OptimisticLockException thrown in BaseOjbPbDAO.storePathCascade(Object storeVO, String path) : " + e.toString());
+		throw new DataOptimisticLockException("Error in BaseOjbPbDAO.storePathCascade(Object storeVO, String path) : " + e.toString(), e);
+	    }
+	} catch (final PersistenceBrokerSupportException e) {
+	    try {
+		persistenceBrokerSupport.rollback(pb);
+	    } catch (final PersistenceBrokerSupportException pbsEx) {
+		log.error("PersistenceBrokerSupportException thrown in the catch block of the PersistenceBrokerSupportException in BaseOjbPbDAO.storePathCascade(Object storeVO, String path) : "
+			+ pbsEx.toString());
+	    } finally {
+		log.error("PersistenceBrokerSupportException thrown in BaseOjbPbDAO.storePathCascade(Object storeVO, String path) : " + e.toString());
+		// throw new DataOptimisticLockException("Error in
+		// BaseOjbPbDAO.storePathCascade(Object storeVO, String path) :
+		// " + e.toString(),e);
+		throw new DataAccessException("Error in BaseOjbPbDAO.storePathCascade(Object storeVO, String path) : " + e.toString(), e);
+	    }
+	} catch (final OjbPbCoreException e) {
+	    try {
+		persistenceBrokerSupport.rollback(pb);
+	    } catch (final PersistenceBrokerSupportException pbsEx) {
+		log.error("PersistenceBrokerSupportException thrown in the catch block of the OjbPbCoreException in BaseOjbPbDAO.storePathCascade(Object storeVO, String path) : " + pbsEx.toString());
+	    } finally {
+		log.error("OjbPbCoreException thrown in BaseOjbPbDAO.storePathCascade(Object storeVO, String path) : " + e.toString());
+		// throw new DataOptimisticLockException("Error in
+		// BaseOjbPbDAO.storePathCascade(Object storeVO, String path) :
+		// " + e.toString(),e);
+		throw new DataAccessException("Error in BaseOjbPbDAO.storePathCascade(Object storeVO, String path) : " + e.toString(), e);
+	    }
+	} catch (final Exception e) {
+	    try {
+		persistenceBrokerSupport.rollback(pb);
+	    } catch (final PersistenceBrokerSupportException pbsEx) {
+		log.error("PersistenceBrokerSupportException thrown in the catch block of the Exception in BaseOjbPbDAO.storePathCascade(Object storeVO, String path) : " + pbsEx.toString());
+	    } finally {
+		log.error("Exception thrown in BaseOjbPbDAO.storePathCascade(Object storeVO, String path) : " + e.toString());
+		// throw new DataOptimisticLockException("Error in
+		// BaseOjbPbDAO.storePathCascade(Object storeVO, String path) :
+		// " + e.toString(),e);
+		throw new DataAccessException("Error in BaseOjbPbDAO.storePathCascade(Object storeVO, String path) : " + e.toString(), e);
+	    }
+	} finally {
+	    try {
+
+		persistenceBrokerSupport.releasePersistenceBroker(pb);
+
+	    } catch (final PersistenceBrokerSupportException e) {
+		log.error("PersistenceBrokerSupportException thrown in  BaseOjbPbDAO.storePathCascade(Object storeVO, String path)  in the finally clause: " + e.toString());
+		throw new DataAccessException("Error in  BaseOjbPbDAO.storePathCascade(Object storeVO, String path) in the finally clause: " + e.toString(), e);
+	    }
+	}
+	log.info("************Done with the BaseOjbPbDAO.storePathCascade(Object storeVO, String path) ***************");
+    }
+
+    public void storePathsCascade(Object storeVO, Collection paths, Boolean pathsHasToBeSorted, Boolean storeVOHasToBeStored) throws DataAccessException, DataOptimisticLockException {
+	log.info("************Entering the BaseOjbPbDAO.storePathsCascade(Object storeVO, Collection paths, Boolean pathsHasToBeSorted, Boolean  storeVOHasToBeStored) ***************");
+	PersistenceBroker pb = null;
+	try {
+	    pb = persistenceBrokerSupport.getPersistenceBroker();
+	    persistenceBrokerSupport.beginTransaction(pb);
+	    ojbPbCore.storePathsCascade(storeVO, paths, pathsHasToBeSorted, storeVOHasToBeStored, pb);
+	    persistenceBrokerSupport.commit(pb);
+
+	} catch (final OptimisticLockException e) {
+	    try {
+		persistenceBrokerSupport.rollback(pb); // change of policy. Now
+						       // the if
+						       // OptimisticLockException
+						       // is rolled back ,
+						       // depends as other
+						       // Exceptions, on if the
+						       // environment is
+		// managed or not.
+	    } catch (final PersistenceBrokerSupportException pbsEx) {
+		log.error(
+			"PersistenceBrokerSupportException thrown in the catch block of the OptimisticLockException in BaseOjbPbDAO.storePathsCascade(Object storeVO, Collection paths, Boolean pathsHasToBeSorted, Boolean  storeVOHasToBeStored): "
+				+ pbsEx.toString());
+		// throw new DataOptimisticLockException("Error in the catch
+		// block of the OptimisticLockException of
+		// BaseOjbPbDAO.store(Object storeVO,ObjectModification
+		// modification): " + pbsEx.toString(),pbsEx);
+
+	    } finally {
+		log.error("OptimisticLockException thrown in BaseOjbPbDAO.storePathsCascade(Object storeVO, Collection paths, Boolean pathsHasToBeSorted, Boolean  storeVOHasToBeStored): "
+			+ e.toString());
+		throw new DataOptimisticLockException(
+			"Error in BaseOjbPbDAO.storePathsCascade(Object storeVO, Collection paths, Boolean pathsHasToBeSorted, Boolean  storeVOHasToBeStored): " + e.toString(), e);
+	    }
+	} catch (final PersistenceBrokerSupportException e) {
+	    try {
+		persistenceBrokerSupport.rollback(pb);
+	    } catch (final PersistenceBrokerSupportException pbsEx) {
+		log.error(
+			"PersistenceBrokerSupportException thrown in the catch block of the PersistenceBrokerSupportException in BaseOjbPbDAO.storePathsCascade(Object storeVO, Collection paths, Boolean pathsHasToBeSorted, Boolean  storeVOHasToBeStored) : "
+				+ pbsEx.toString());
+	    } finally {
+		log.error("PersistenceBrokerSupportException thrown in BaseOjbPbDAO.storePathsCascade(Object storeVO, Collection paths, Boolean pathsHasToBeSorted, Boolean  storeVOHasToBeStored) : "
+			+ e.toString());
+		// throw new DataOptimisticLockException("Error in
+		// BaseOjbPbDAO.storePathsCascade(Object storeVO, Collection
+		// paths, Boolean pathsHasToBeSorted, Boolean
+		// storeVOHasToBeStored) : " + e.toString(),e);
+		throw new DataAccessException("Error in BaseOjbPbDAO.storePathsCascade(Object storeVO, Collection paths, Boolean pathsHasToBeSorted, Boolean  storeVOHasToBeStored) : " + e.toString(),
+			e);
+	    }
+	} catch (final OjbPbCoreException e) {
+	    try {
+		persistenceBrokerSupport.rollback(pb);
+	    } catch (final PersistenceBrokerSupportException pbsEx) {
+		log.error(
+			"PersistenceBrokerSupportException thrown in the catch block of the OjbPbCoreException in BaseOjbPbDAO.storePathsCascade(Object storeVO, Collection paths, Boolean pathsHasToBeSorted, Boolean  storeVOHasToBeStored) : "
+				+ pbsEx.toString());
+	    } finally {
+		log.error("OjbPbCoreException thrown in BaseOjbPbDAO.storePathsCascade(Object storeVO, Collection paths, Boolean pathsHasToBeSorted, Boolean  storeVOHasToBeStored): " + e.toString());
+		// throw new DataOptimisticLockException("Error in
+		// BaseOjbPbDAO.storePathsCascade(Object storeVO, Collection
+		// paths, Boolean pathsHasToBeSorted, Boolean
+		// storeVOHasToBeStored) : " + e.toString(),e);
+		throw new DataAccessException("Error in BaseOjbPbDAO.storePathsCascade(Object storeVO, Collection paths, Boolean pathsHasToBeSorted, Boolean  storeVOHasToBeStored) : " + e.toString(),
+			e);
+	    }
+	} catch (final Exception e) {
+	    try {
+		persistenceBrokerSupport.rollback(pb);
+	    } catch (final PersistenceBrokerSupportException pbsEx) {
+		log.error(
+			"PersistenceBrokerSupportException thrown in the catch block of the Exception in BaseOjbPbDAO.storePathsCascade(Object storeVO, Collection paths, Boolean pathsHasToBeSorted, Boolean  storeVOHasToBeStored): "
+				+ pbsEx.toString());
+	    } finally {
+		log.error("Exception thrown in BaseOjbPbDAO.storePathsCascade(Object storeVO, Collection paths, Boolean pathsHasToBeSorted, Boolean  storeVOHasToBeStored) : " + e.toString());
+		// throw new DataOptimisticLockException("Error in
+		// BaseOjbPbDAO.storePathsCascade(Object storeVO, Collection
+		// paths, Boolean pathsHasToBeSorted, Boolean
+		// storeVOHasToBeStored) : " + e.toString(),e);
+		throw new DataAccessException("Error in BaseOjbPbDAO.storePathsCascade(Object storeVO, Collection paths, Boolean pathsHasToBeSorted, Boolean  storeVOHasToBeStored) : " + e.toString(),
+			e);
+	    }
+	} finally {
+	    try {
+
+		persistenceBrokerSupport.releasePersistenceBroker(pb);
+
+	    } catch (final PersistenceBrokerSupportException e) {
+		log.error(
+			"PersistenceBrokerSupportException thrown in  BaseOjbPbDAO.storePathsCascade(Object storeVO, Collection paths, Boolean pathsHasToBeSorted, Boolean  storeVOHasToBeStored)  in the finally clause: "
+				+ e.toString());
+		throw new DataAccessException(
+			"Error in  BaseOjbPbDAO.storePathsCascade(Object storeVO, Collection paths, Boolean pathsHasToBeSorted, Boolean  storeVOHasToBeStored) in the finally clause: " + e.toString(),
+			e);
+	    }
+	}
+	log.info("************Done with the BaseOjbPbDAO.storePathsCascade(Object storeVO, Collection paths, Boolean pathsHasToBeSorted, Boolean  storeVOHasToBeStored) ***************");
     }
 
     // todo put in dao and until BD
-    public Object updateCreateTrees(Object storeVO,Collection<String> trees, Boolean storeVOHasToBeUpdated, Boolean deleteChangedOneToOne, Boolean applyDeletePathCascade, Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) throws DataAccessException, DataOptimisticLockException{
-        log.info("************Entering the BaseOjbPbDAO.updateCreateTrees(Object storeVO,Collection<String> trees, Boolean storeVOHasToBeUpdated, Boolean deleteChangedOneToOne, Boolean applyDeletePathCascade, Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) ***************");
-        PersistenceBroker pb = null;
-        try{
-            pb = persistenceBrokerSupport.getPersistenceBroker();
-            persistenceBrokerSupport.beginTransaction(pb);
-            storeVO = ojbPbCore.updateCreateTrees( storeVO, trees,  storeVOHasToBeUpdated,  deleteChangedOneToOne,  applyDeletePathCascade,  ifM2NDeleteOnlyRelationship,  deleteOneToOne, pb) ;
-            persistenceBrokerSupport.commit(pb);
+    public Object updateCreateTrees(Object storeVO, Collection<String> trees, Boolean storeVOHasToBeUpdated, Boolean deleteChangedOneToOne, Boolean applyDeletePathCascade,
+	    Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) throws DataAccessException, DataOptimisticLockException {
+	log.info(
+		"************Entering the BaseOjbPbDAO.updateCreateTrees(Object storeVO,Collection<String> trees, Boolean storeVOHasToBeUpdated, Boolean deleteChangedOneToOne, Boolean applyDeletePathCascade, Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) ***************");
+	PersistenceBroker pb = null;
+	try {
+	    pb = persistenceBrokerSupport.getPersistenceBroker();
+	    persistenceBrokerSupport.beginTransaction(pb);
+	    storeVO = ojbPbCore.updateCreateTrees(storeVO, trees, storeVOHasToBeUpdated, deleteChangedOneToOne, applyDeletePathCascade, ifM2NDeleteOnlyRelationship, deleteOneToOne, pb);
+	    persistenceBrokerSupport.commit(pb);
 
-        } catch (OptimisticLockException e) {
-        	try{
-                persistenceBrokerSupport.rollback(pb); // change of policy. Now the if OptimisticLockException is rolled back , depends as other Exceptions, on if the environment is
-                                                   // managed or not.
-            } catch (PersistenceBrokerSupportException pbsEx){
-                log.error("PersistenceBrokerSupportException thrown in the catch block of the OptimisticLockException in BaseOjbPbDAO.updateCreateTrees(Object storeVO,Collection<String> trees, Boolean storeVOHasToBeUpdated, Boolean deleteChangedOneToOne, Boolean applyDeletePathCascade, Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) : " + pbsEx.toString());
-                //throw new DataOptimisticLockException("Error in the catch block of the OptimisticLockException of BaseOjbPbDAO.store(Object storeVO,ObjectModification modification): " + pbsEx.toString(),pbsEx);
+	} catch (final OptimisticLockException e) {
+	    try {
+		persistenceBrokerSupport.rollback(pb); // change of policy. Now
+						       // the if
+						       // OptimisticLockException
+						       // is rolled back ,
+						       // depends as other
+						       // Exceptions, on if the
+						       // environment is
+		// managed or not.
+	    } catch (final PersistenceBrokerSupportException pbsEx) {
+		log.error(
+			"PersistenceBrokerSupportException thrown in the catch block of the OptimisticLockException in BaseOjbPbDAO.updateCreateTrees(Object storeVO,Collection<String> trees, Boolean storeVOHasToBeUpdated, Boolean deleteChangedOneToOne, Boolean applyDeletePathCascade, Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) : "
+				+ pbsEx.toString());
+		// throw new DataOptimisticLockException("Error in the catch
+		// block of the OptimisticLockException of
+		// BaseOjbPbDAO.store(Object storeVO,ObjectModification
+		// modification): " + pbsEx.toString(),pbsEx);
 
-            } finally{
-                log.error("OptimisticLockException thrown in BaseOjbPbDAO.updateCreateTrees(Object storeVO,Collection<String> trees, Boolean storeVOHasToBeUpdated, Boolean deleteChangedOneToOne, Boolean applyDeletePathCascade, Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) : " + e.toString());
-                throw new DataOptimisticLockException("Error in BaseOjbPbDAO.updateCreateTrees(Object storeVO,Collection<String> trees, Boolean storeVOHasToBeUpdated, Boolean deleteChangedOneToOne, Boolean applyDeletePathCascade, Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) : " + e.toString(),e);
-            }
-        } catch (PersistenceBrokerSupportException e) {
-            try{
-                persistenceBrokerSupport.rollback(pb);
-            } catch (PersistenceBrokerSupportException pbsEx){
-                log.error("PersistenceBrokerSupportException thrown in the catch block of the PersistenceBrokerSupportException in BaseOjbPbDAO.updateCreateTrees(Object storeVO,Collection<String> trees, Boolean storeVOHasToBeUpdated, Boolean deleteChangedOneToOne, Boolean applyDeletePathCascade, Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) : " + pbsEx.toString());
-            } finally{
-                log.error("PersistenceBrokerSupportException thrown in BaseOjbPbDAO.updateCreateTrees(Object storeVO,Collection<String> trees, Boolean storeVOHasToBeUpdated, Boolean deleteChangedOneToOne, Boolean applyDeletePathCascade, Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) : " + e.toString());
-                //throw new DataOptimisticLockException("Error in BaseOjbPbDAO.updateCreateTrees(Object storeVO,Collection<String> trees, Boolean storeVOHasToBeUpdated, Boolean deleteChangedOneToOne, Boolean applyDeletePathCascade, Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) : " + e.toString(),e);
-                throw new DataAccessException("Error in BaseOjbPbDAO.updateCreateTrees(Object storeVO,Collection<String> trees, Boolean storeVOHasToBeUpdated, Boolean deleteChangedOneToOne, Boolean applyDeletePathCascade, Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) : " + e.toString(),e);
-            }
-        } catch (OjbPbCoreException e) {
-            try{
-                persistenceBrokerSupport.rollback(pb);
-            } catch (PersistenceBrokerSupportException pbsEx){
-                log.error("PersistenceBrokerSupportException thrown in the catch block of the OjbPbCoreException in BaseOjbPbDAO.updateCreateTrees(Object storeVO,Collection<String> trees, Boolean storeVOHasToBeUpdated, Boolean deleteChangedOneToOne, Boolean applyDeletePathCascade, Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne)  : " + pbsEx.toString());
-            } finally{
-                log.error("OjbPbCoreException thrown in BaseOjbPbDAO.updateCreateTrees(Object storeVO,Collection<String> trees, Boolean storeVOHasToBeUpdated, Boolean deleteChangedOneToOne, Boolean applyDeletePathCascade, Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne)  : " + e.toString());
-                //throw new DataOptimisticLockException("Error in BaseOjbPbDAO.updateCreateTrees(Object storeVO,Collection<String> trees, Boolean storeVOHasToBeUpdated, Boolean deleteChangedOneToOne, Boolean applyDeletePathCascade, Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) : " + e.toString(),e);
-                throw new DataAccessException("Error in BaseOjbPbDAO.updateCreateTrees(Object storeVO,Collection<String> trees, Boolean storeVOHasToBeUpdated, Boolean deleteChangedOneToOne, Boolean applyDeletePathCascade, Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) : " + e.toString(),e);
-            }
-        } catch (Exception e) {
-            try{
-                persistenceBrokerSupport.rollback(pb);
-            } catch (PersistenceBrokerSupportException pbsEx){
-                log.error("PersistenceBrokerSupportException thrown in the catch block of the Exception in BaseOjbPbDAO.updateCreateTrees(Object storeVO,Collection<String> trees, Boolean storeVOHasToBeUpdated, Boolean deleteChangedOneToOne, Boolean applyDeletePathCascade, Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) : " + pbsEx.toString());
-            } finally{
-                log.error("Exception thrown in BaseOjbPbDAO.updateCreateTrees(Object storeVO,Collection<String> trees, Boolean storeVOHasToBeUpdated, Boolean deleteChangedOneToOne, Boolean applyDeletePathCascade, Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) : " + e.toString());
-                //throw new DataOptimisticLockException("Error in BaseOjbPbDAO.updateCreateTrees(Object storeVO,Collection<String> trees, Boolean storeVOHasToBeUpdated, Boolean deleteChangedOneToOne, Boolean applyDeletePathCascade, Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) : " + e.toString(),e);
-                throw new DataAccessException("Error in BaseOjbPbDAO.updateCreateTrees(Object storeVO,Collection<String> trees, Boolean storeVOHasToBeUpdated, Boolean deleteChangedOneToOne, Boolean applyDeletePathCascade, Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) : " + e.toString(),e);
-            }
-        } finally {
-            try{
+	    } finally {
+		log.error(
+			"OptimisticLockException thrown in BaseOjbPbDAO.updateCreateTrees(Object storeVO,Collection<String> trees, Boolean storeVOHasToBeUpdated, Boolean deleteChangedOneToOne, Boolean applyDeletePathCascade, Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) : "
+				+ e.toString());
+		throw new DataOptimisticLockException(
+			"Error in BaseOjbPbDAO.updateCreateTrees(Object storeVO,Collection<String> trees, Boolean storeVOHasToBeUpdated, Boolean deleteChangedOneToOne, Boolean applyDeletePathCascade, Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) : "
+				+ e.toString(),
+			e);
+	    }
+	} catch (final PersistenceBrokerSupportException e) {
+	    try {
+		persistenceBrokerSupport.rollback(pb);
+	    } catch (final PersistenceBrokerSupportException pbsEx) {
+		log.error(
+			"PersistenceBrokerSupportException thrown in the catch block of the PersistenceBrokerSupportException in BaseOjbPbDAO.updateCreateTrees(Object storeVO,Collection<String> trees, Boolean storeVOHasToBeUpdated, Boolean deleteChangedOneToOne, Boolean applyDeletePathCascade, Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) : "
+				+ pbsEx.toString());
+	    } finally {
+		log.error(
+			"PersistenceBrokerSupportException thrown in BaseOjbPbDAO.updateCreateTrees(Object storeVO,Collection<String> trees, Boolean storeVOHasToBeUpdated, Boolean deleteChangedOneToOne, Boolean applyDeletePathCascade, Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) : "
+				+ e.toString());
+		// throw new DataOptimisticLockException("Error in
+		// BaseOjbPbDAO.updateCreateTrees(Object
+		// storeVO,Collection<String> trees, Boolean
+		// storeVOHasToBeUpdated, Boolean deleteChangedOneToOne, Boolean
+		// applyDeletePathCascade, Boolean ifM2NDeleteOnlyRelationship,
+		// Boolean deleteOneToOne) : " + e.toString(),e);
+		throw new DataAccessException(
+			"Error in BaseOjbPbDAO.updateCreateTrees(Object storeVO,Collection<String> trees, Boolean storeVOHasToBeUpdated, Boolean deleteChangedOneToOne, Boolean applyDeletePathCascade, Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) : "
+				+ e.toString(),
+			e);
+	    }
+	} catch (final OjbPbCoreException e) {
+	    try {
+		persistenceBrokerSupport.rollback(pb);
+	    } catch (final PersistenceBrokerSupportException pbsEx) {
+		log.error(
+			"PersistenceBrokerSupportException thrown in the catch block of the OjbPbCoreException in BaseOjbPbDAO.updateCreateTrees(Object storeVO,Collection<String> trees, Boolean storeVOHasToBeUpdated, Boolean deleteChangedOneToOne, Boolean applyDeletePathCascade, Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne)  : "
+				+ pbsEx.toString());
+	    } finally {
+		log.error(
+			"OjbPbCoreException thrown in BaseOjbPbDAO.updateCreateTrees(Object storeVO,Collection<String> trees, Boolean storeVOHasToBeUpdated, Boolean deleteChangedOneToOne, Boolean applyDeletePathCascade, Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne)  : "
+				+ e.toString());
+		// throw new DataOptimisticLockException("Error in
+		// BaseOjbPbDAO.updateCreateTrees(Object
+		// storeVO,Collection<String> trees, Boolean
+		// storeVOHasToBeUpdated, Boolean deleteChangedOneToOne, Boolean
+		// applyDeletePathCascade, Boolean ifM2NDeleteOnlyRelationship,
+		// Boolean deleteOneToOne) : " + e.toString(),e);
+		throw new DataAccessException(
+			"Error in BaseOjbPbDAO.updateCreateTrees(Object storeVO,Collection<String> trees, Boolean storeVOHasToBeUpdated, Boolean deleteChangedOneToOne, Boolean applyDeletePathCascade, Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) : "
+				+ e.toString(),
+			e);
+	    }
+	} catch (final Exception e) {
+	    try {
+		persistenceBrokerSupport.rollback(pb);
+	    } catch (final PersistenceBrokerSupportException pbsEx) {
+		log.error(
+			"PersistenceBrokerSupportException thrown in the catch block of the Exception in BaseOjbPbDAO.updateCreateTrees(Object storeVO,Collection<String> trees, Boolean storeVOHasToBeUpdated, Boolean deleteChangedOneToOne, Boolean applyDeletePathCascade, Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) : "
+				+ pbsEx.toString());
+	    } finally {
+		log.error(
+			"Exception thrown in BaseOjbPbDAO.updateCreateTrees(Object storeVO,Collection<String> trees, Boolean storeVOHasToBeUpdated, Boolean deleteChangedOneToOne, Boolean applyDeletePathCascade, Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) : "
+				+ e.toString());
+		// throw new DataOptimisticLockException("Error in
+		// BaseOjbPbDAO.updateCreateTrees(Object
+		// storeVO,Collection<String> trees, Boolean
+		// storeVOHasToBeUpdated, Boolean deleteChangedOneToOne, Boolean
+		// applyDeletePathCascade, Boolean ifM2NDeleteOnlyRelationship,
+		// Boolean deleteOneToOne) : " + e.toString(),e);
+		throw new DataAccessException(
+			"Error in BaseOjbPbDAO.updateCreateTrees(Object storeVO,Collection<String> trees, Boolean storeVOHasToBeUpdated, Boolean deleteChangedOneToOne, Boolean applyDeletePathCascade, Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) : "
+				+ e.toString(),
+			e);
+	    }
+	} finally {
+	    try {
 
-                persistenceBrokerSupport.releasePersistenceBroker(pb);
+		persistenceBrokerSupport.releasePersistenceBroker(pb);
 
-            } catch(PersistenceBrokerSupportException e) {
-                log.error("PersistenceBrokerSupportException thrown in  BaseOjbPbDAO.updateCreateTrees(Object storeVO,Collection<String> trees, Boolean storeVOHasToBeUpdated, Boolean deleteChangedOneToOne, Boolean applyDeletePathCascade, Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne)  in the finally clause: " + e.toString());
-                throw new DataAccessException("Error in  BaseOjbPbDAO.updateCreateTrees(Object storeVO,Collection<String> trees, Boolean storeVOHasToBeUpdated, Boolean deleteChangedOneToOne, Boolean applyDeletePathCascade, Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne)  in the finally clause: " + e.toString(),e);
-            }
-        }
-        log.info("************Done with the BaseOjbPbDAO.updateCreateTrees(Object storeVO,Collection<String> trees, Boolean storeVOHasToBeUpdated, Boolean deleteChangedOneToOne, Boolean applyDeletePathCascade, Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) ***************");
-        return storeVO;
+	    } catch (final PersistenceBrokerSupportException e) {
+		log.error(
+			"PersistenceBrokerSupportException thrown in  BaseOjbPbDAO.updateCreateTrees(Object storeVO,Collection<String> trees, Boolean storeVOHasToBeUpdated, Boolean deleteChangedOneToOne, Boolean applyDeletePathCascade, Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne)  in the finally clause: "
+				+ e.toString());
+		throw new DataAccessException(
+			"Error in  BaseOjbPbDAO.updateCreateTrees(Object storeVO,Collection<String> trees, Boolean storeVOHasToBeUpdated, Boolean deleteChangedOneToOne, Boolean applyDeletePathCascade, Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne)  in the finally clause: "
+				+ e.toString(),
+			e);
+	    }
+	}
+	log.info(
+		"************Done with the BaseOjbPbDAO.updateCreateTrees(Object storeVO,Collection<String> trees, Boolean storeVOHasToBeUpdated, Boolean deleteChangedOneToOne, Boolean applyDeletePathCascade, Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) ***************");
+	return storeVO;
     }
-
-
 
     /**
-     * @deprecated use {@link #updateCreateTrees(Object storeVO, java.util.Collection trees, Boolean storeVOHasToBeUpdated)}
+     * @deprecated use
+     *             {@link #updateCreateTrees(Object storeVO, java.util.Collection trees, Boolean storeVOHasToBeUpdated)}
      */
-    public Object updateCreateTrees(Object storeVO,Collection trees, boolean storeVOHasToBeUpdated) throws DataAccessException, DataOptimisticLockException{
-        return   updateCreateTrees(storeVO, trees, new Boolean(storeVOHasToBeUpdated));
+    @Deprecated
+    public Object updateCreateTrees(Object storeVO, Collection trees, boolean storeVOHasToBeUpdated) throws DataAccessException, DataOptimisticLockException {
+	return updateCreateTrees(storeVO, trees, new Boolean(storeVOHasToBeUpdated));
     }
 
+    public Object updateCreateTrees(Object storeVO, Collection trees, Boolean storeVOHasToBeUpdated) throws DataAccessException, DataOptimisticLockException {
+	log.info("************Entering the BaseOjbPbDAO.updateCreateTrees(Object storeVO,Collection trees, Boolean storeVOHasToBeUpdated)***************");
+	PersistenceBroker pb = null;
+	try {
+	    pb = persistenceBrokerSupport.getPersistenceBroker();
+	    persistenceBrokerSupport.beginTransaction(pb);
+	    storeVO = ojbPbCore.updateCreateTrees(storeVO, trees, storeVOHasToBeUpdated, pb);
+	    persistenceBrokerSupport.commit(pb);
 
-    public Object updateCreateTrees(Object storeVO,Collection trees, Boolean storeVOHasToBeUpdated) throws DataAccessException, DataOptimisticLockException{
-        log.info("************Entering the BaseOjbPbDAO.updateCreateTrees(Object storeVO,Collection trees, Boolean storeVOHasToBeUpdated)***************");
-        PersistenceBroker pb = null;
-        try{
-            pb = persistenceBrokerSupport.getPersistenceBroker();
-            persistenceBrokerSupport.beginTransaction(pb);
-            storeVO = ojbPbCore.updateCreateTrees(storeVO,trees,storeVOHasToBeUpdated,pb);
-            persistenceBrokerSupport.commit(pb);
+	} catch (final OptimisticLockException e) {
+	    try {
+		persistenceBrokerSupport.rollback(pb); // change of policy. Now
+						       // the if
+						       // OptimisticLockException
+						       // is rolled back ,
+						       // depends as other
+						       // Exceptions, on if the
+						       // environment is
+		// managed or not.
+	    } catch (final PersistenceBrokerSupportException pbsEx) {
+		log.error(
+			"PersistenceBrokerSupportException thrown in the catch block of the OptimisticLockException in BaseOjbPbDAO.updateCreateTrees(Object storeVO,Collection trees, Boolean storeVOHasToBeUpdated): "
+				+ pbsEx.toString());
+		// throw new DataOptimisticLockException("Error in the catch
+		// block of the OptimisticLockException of
+		// BaseOjbPbDAO.store(Object storeVO,ObjectModification
+		// modification): " + pbsEx.toString(),pbsEx);
 
-        } catch (OptimisticLockException e) {
-        	try{
-                persistenceBrokerSupport.rollback(pb); // change of policy. Now the if OptimisticLockException is rolled back , depends as other Exceptions, on if the environment is
-                                                   // managed or not.
-            } catch (PersistenceBrokerSupportException pbsEx){
-                log.error("PersistenceBrokerSupportException thrown in the catch block of the OptimisticLockException in BaseOjbPbDAO.updateCreateTrees(Object storeVO,Collection trees, Boolean storeVOHasToBeUpdated): " + pbsEx.toString());
-                //throw new DataOptimisticLockException("Error in the catch block of the OptimisticLockException of BaseOjbPbDAO.store(Object storeVO,ObjectModification modification): " + pbsEx.toString(),pbsEx);
+	    } finally {
+		log.error("OptimisticLockException thrown in BaseOjbPbDAO.updateCreateTrees(Object storeVO,Collection trees, Boolean storeVOHasToBeUpdated): " + e.toString());
+		throw new DataOptimisticLockException("Error in BaseOjbPbDAO.updateCreateTrees(Object storeVO,Collection trees, Boolean storeVOHasToBeUpdated): " + e.toString(), e);
+	    }
+	} catch (final PersistenceBrokerSupportException e) {
+	    try {
+		persistenceBrokerSupport.rollback(pb);
+	    } catch (final PersistenceBrokerSupportException pbsEx) {
+		log.error(
+			"PersistenceBrokerSupportException thrown in the catch block of the PersistenceBrokerSupportException in BaseOjbPbDAO.updateCreateTrees(Object storeVO,Collection trees, Boolean storeVOHasToBeUpdated): "
+				+ pbsEx.toString());
+	    } finally {
+		log.error("PersistenceBrokerSupportException thrown in BaseOjbPbDAO.updateCreateTrees(Object storeVO,Collection trees, Boolean storeVOHasToBeUpdated): " + e.toString());
+		// throw new DataOptimisticLockException("Error in
+		// BaseOjbPbDAO.updateCreateTrees(Object storeVO,Collection
+		// trees, Boolean storeVOHasToBeUpdated): " + e.toString(),e);
+		throw new DataAccessException("Error in BaseOjbPbDAO.updateCreateTrees(Object storeVO,Collection trees, Boolean storeVOHasToBeUpdated): " + e.toString(), e);
+	    }
+	} catch (final OjbPbCoreException e) {
+	    try {
+		persistenceBrokerSupport.rollback(pb);
+	    } catch (final PersistenceBrokerSupportException pbsEx) {
+		log.error(
+			"PersistenceBrokerSupportException thrown in the catch block of the OjbPbCoreException in BaseOjbPbDAO.updateCreateTrees(Object storeVO,Collection trees, Boolean storeVOHasToBeUpdated): "
+				+ pbsEx.toString());
+	    } finally {
+		log.error("OjbPbCoreException thrown in BaseOjbPbDAO.updateCreateTrees(Object storeVO,Collection trees, Boolean storeVOHasToBeUpdated): " + e.toString());
+		// throw new DataOptimisticLockException("Error in
+		// BaseOjbPbDAO.updateCreateTrees(Object storeVO,Collection
+		// trees, Boolean storeVOHasToBeUpdated): " + e.toString(),e);
+		throw new DataAccessException("Error in BaseOjbPbDAO.updateCreateTrees(Object storeVO,Collection trees, Boolean storeVOHasToBeUpdated): " + e.toString(), e);
+	    }
+	} catch (final Exception e) {
+	    try {
+		persistenceBrokerSupport.rollback(pb);
+	    } catch (final PersistenceBrokerSupportException pbsEx) {
+		log.error(
+			"PersistenceBrokerSupportException thrown in the catch block of the Exception in BaseOjbPbDAO.updateCreateTrees(Object storeVO,Collection trees, Boolean storeVOHasToBeUpdated): "
+				+ pbsEx.toString());
+	    } finally {
+		log.error("Exception thrown in BaseOjbPbDAO.updateCreateTrees(Object storeVO,Collection trees, Boolean storeVOHasToBeUpdated): " + e.toString());
+		// throw new DataOptimisticLockException("Error in
+		// BaseOjbPbDAO.updateCreateTrees(Object storeVO,Collection
+		// trees, Boolean storeVOHasToBeUpdated): " + e.toString(),e);
+		throw new DataAccessException("Error in BaseOjbPbDAO.updateCreateTrees(Object storeVO,Collection trees, Boolean storeVOHasToBeUpdated): " + e.toString(), e);
+	    }
+	} finally {
+	    try {
 
-            } finally{
-                log.error("OptimisticLockException thrown in BaseOjbPbDAO.updateCreateTrees(Object storeVO,Collection trees, Boolean storeVOHasToBeUpdated): " + e.toString());
-                throw new DataOptimisticLockException("Error in BaseOjbPbDAO.updateCreateTrees(Object storeVO,Collection trees, Boolean storeVOHasToBeUpdated): " + e.toString(),e);
-            }
-        } catch (PersistenceBrokerSupportException e) {
-            try{
-                persistenceBrokerSupport.rollback(pb);
-            } catch (PersistenceBrokerSupportException pbsEx){
-                log.error("PersistenceBrokerSupportException thrown in the catch block of the PersistenceBrokerSupportException in BaseOjbPbDAO.updateCreateTrees(Object storeVO,Collection trees, Boolean storeVOHasToBeUpdated): " + pbsEx.toString());
-            } finally{
-                log.error("PersistenceBrokerSupportException thrown in BaseOjbPbDAO.updateCreateTrees(Object storeVO,Collection trees, Boolean storeVOHasToBeUpdated): " + e.toString());
-                //throw new DataOptimisticLockException("Error in BaseOjbPbDAO.updateCreateTrees(Object storeVO,Collection trees, Boolean storeVOHasToBeUpdated): " + e.toString(),e);
-                throw new DataAccessException("Error in BaseOjbPbDAO.updateCreateTrees(Object storeVO,Collection trees, Boolean storeVOHasToBeUpdated): " + e.toString(),e);
-            }
-        } catch (OjbPbCoreException e) {
-            try{
-                persistenceBrokerSupport.rollback(pb);
-            } catch (PersistenceBrokerSupportException pbsEx){
-                log.error("PersistenceBrokerSupportException thrown in the catch block of the OjbPbCoreException in BaseOjbPbDAO.updateCreateTrees(Object storeVO,Collection trees, Boolean storeVOHasToBeUpdated): " + pbsEx.toString());
-            } finally{
-                log.error("OjbPbCoreException thrown in BaseOjbPbDAO.updateCreateTrees(Object storeVO,Collection trees, Boolean storeVOHasToBeUpdated): " + e.toString());
-                //throw new DataOptimisticLockException("Error in BaseOjbPbDAO.updateCreateTrees(Object storeVO,Collection trees, Boolean storeVOHasToBeUpdated): " + e.toString(),e);
-                throw new DataAccessException("Error in BaseOjbPbDAO.updateCreateTrees(Object storeVO,Collection trees, Boolean storeVOHasToBeUpdated): " + e.toString(),e);
-            }
-        } catch (Exception e) {
-            try{
-                persistenceBrokerSupport.rollback(pb);
-            } catch (PersistenceBrokerSupportException pbsEx){
-                log.error("PersistenceBrokerSupportException thrown in the catch block of the Exception in BaseOjbPbDAO.updateCreateTrees(Object storeVO,Collection trees, Boolean storeVOHasToBeUpdated): " + pbsEx.toString());
-            } finally{
-                log.error("Exception thrown in BaseOjbPbDAO.updateCreateTrees(Object storeVO,Collection trees, Boolean storeVOHasToBeUpdated): " + e.toString());
-                //throw new DataOptimisticLockException("Error in BaseOjbPbDAO.updateCreateTrees(Object storeVO,Collection trees, Boolean storeVOHasToBeUpdated): " + e.toString(),e);
-                throw new DataAccessException("Error in BaseOjbPbDAO.updateCreateTrees(Object storeVO,Collection trees, Boolean storeVOHasToBeUpdated): " + e.toString(),e);
-            }
-        } finally {
-            try{
+		persistenceBrokerSupport.releasePersistenceBroker(pb);
 
-                persistenceBrokerSupport.releasePersistenceBroker(pb);
-
-            } catch(PersistenceBrokerSupportException e) {
-                log.error("PersistenceBrokerSupportException thrown in  BaseOjbPbDAO.updateCreateTrees(Object storeVO,Collection trees, Boolean storeVOHasToBeUpdated) in the finally clause: " + e.toString());
-                throw new DataAccessException("Error in  BaseOjbPbDAO.updateCreateTrees(Object storeVO,Collection trees, Boolean storeVOHasToBeUpdated) in the finally clause: " + e.toString(),e);
-            }
-        }
-        log.info("************Done with the BaseOjbPbDAO.updateCreateTrees(Object storeVO,Collection trees, Boolean storeVOHasToBeUpdated)***************");
-        return storeVO;
+	    } catch (final PersistenceBrokerSupportException e) {
+		log.error("PersistenceBrokerSupportException thrown in  BaseOjbPbDAO.updateCreateTrees(Object storeVO,Collection trees, Boolean storeVOHasToBeUpdated) in the finally clause: "
+			+ e.toString());
+		throw new DataAccessException("Error in  BaseOjbPbDAO.updateCreateTrees(Object storeVO,Collection trees, Boolean storeVOHasToBeUpdated) in the finally clause: " + e.toString(), e);
+	    }
+	}
+	log.info("************Done with the BaseOjbPbDAO.updateCreateTrees(Object storeVO,Collection trees, Boolean storeVOHasToBeUpdated)***************");
+	return storeVO;
     }
 
+    public Object updateCreateTrees(Object storeVO, Collection trees) throws DataAccessException, DataOptimisticLockException {
+	log.info("************Entering the BaseOjbPbDAO.updateCreateTrees(Object storeVO,Collection trees) ***************");
+	Object object;
+	try {
+	    object = updateCreateTrees(storeVO, trees, Boolean.TRUE);
 
-    public Object updateCreateTrees(Object storeVO,Collection trees) throws DataAccessException, DataOptimisticLockException{
-        log.info("************Entering the BaseOjbPbDAO.updateCreateTrees(Object storeVO,Collection trees) ***************");
-        Object object;
-        try{
-            object= updateCreateTrees( storeVO, trees,Boolean.TRUE);
-
-        } catch (DataOptimisticLockException e) {
-            log.error("DataOptimisticLockException thrown in BaseOjbPbDAO.updateCreateTrees(Object storeVO,Collection trees): " + e.toString());
-            throw new DataOptimisticLockException("Error in BaseOjbPbDAO.updateCreateTrees(Object storeVO,Collection trees): " + e.toString(),e);
-        } catch (DataAccessException e) {
-            log.error("DataAccessException thrown in BaseOjbPbDAO.updateCreateTrees(Object storeVO,Collection trees): " + e.toString());
-            throw new DataAccessException("Error in BaseOjbPbDAO.updateCreateTrees(Object storeVO,Collection trees): " + e.toString(),e);
-        }
-        log.info("************Done with the BaseOjbPbDAO.updateCreateTrees(Object storeVO,Collection trees) ***************");
-        return object;
+	} catch (final DataOptimisticLockException e) {
+	    log.error("DataOptimisticLockException thrown in BaseOjbPbDAO.updateCreateTrees(Object storeVO,Collection trees): " + e.toString());
+	    throw new DataOptimisticLockException("Error in BaseOjbPbDAO.updateCreateTrees(Object storeVO,Collection trees): " + e.toString(), e);
+	} catch (final DataAccessException e) {
+	    log.error("DataAccessException thrown in BaseOjbPbDAO.updateCreateTrees(Object storeVO,Collection trees): " + e.toString());
+	    throw new DataAccessException("Error in BaseOjbPbDAO.updateCreateTrees(Object storeVO,Collection trees): " + e.toString(), e);
+	}
+	log.info("************Done with the BaseOjbPbDAO.updateCreateTrees(Object storeVO,Collection trees) ***************");
+	return object;
     }
 
+    /***************************************/
 
+    public Class getClassFromPath(Class realClass, String path) throws DataAccessException {
+	log.info("************Entering the BaseOjbPbDAO.getClassFromPath(Class realClass, String path)***************");
+	PersistenceBroker pb = null;
+	try {
+	    pb = persistenceBrokerSupport.getPersistenceBroker();
+	    realClass = ojbPbCore.getClassFromPath(realClass, path, pb);
 
-     /***************************************/
+	} catch (final PersistenceBrokerSupportException e) {
+	    log.error("PersistenceBrokerSupportException thrown in  BaseOjbPbDAO.getClassFromPath(Class realClass, String path): " + e.toString());
+	    throw new DataAccessException("Error in  BaseOjbPbDAO.getClassFromPath(Class realClass, String path): " + e.toString(), e);
+	} catch (final OjbPbCoreException e) {
+	    log.error("OjbPbCoreException thrown in  BaseOjbPbDAO.getClassFromPath(Class realClass, String path): " + e.toString());
+	    throw new DataAccessException("Error in  BaseOjbPbDAO.getClassFromPath(Class realClass, String path): " + e.toString(), e);
+	} catch (final Exception e) {
+	    log.error("Exception thrown in  BaseOjbPbDAO.getClassFromPath(Class realClass, String path): " + e.toString());
+	    throw new DataAccessException("Error in  BaseOjbPbDAO.getClassFromPath(Class realClass, String path): " + e.toString(), e);
+	} finally {
+	    try {
 
+		persistenceBrokerSupport.releasePersistenceBroker(pb);
 
-    public Class getClassFromPath(Class realClass, String path) throws DataAccessException{
-        log.info("************Entering the BaseOjbPbDAO.getClassFromPath(Class realClass, String path)***************");
-        PersistenceBroker pb = null;
-        try{
-            pb = persistenceBrokerSupport.getPersistenceBroker();
-            realClass =  ojbPbCore.getClassFromPath(realClass,path, pb);
-
-        } catch (PersistenceBrokerSupportException e) {
-            log.error("PersistenceBrokerSupportException thrown in  BaseOjbPbDAO.getClassFromPath(Class realClass, String path): " + e.toString());
-            throw new DataAccessException("Error in  BaseOjbPbDAO.getClassFromPath(Class realClass, String path): " + e.toString(),e);
-        } catch (OjbPbCoreException e) {
-            log.error("OjbPbCoreException thrown in  BaseOjbPbDAO.getClassFromPath(Class realClass, String path): " + e.toString());
-            throw new DataAccessException("Error in  BaseOjbPbDAO.getClassFromPath(Class realClass, String path): " + e.toString(),e);
-        } catch (Exception e) {
-            log.error("Exception thrown in  BaseOjbPbDAO.getClassFromPath(Class realClass, String path): " + e.toString());
-            throw new DataAccessException("Error in  BaseOjbPbDAO.getClassFromPath(Class realClass, String path): " + e.toString(),e);
-        } finally {
-            try{
-
-                persistenceBrokerSupport.releasePersistenceBroker(pb);
-
-            } catch(PersistenceBrokerSupportException e) {
-                log.error("PersistenceBrokerSupportException thrown in  BaseOjbPbDAO.getClassFromPath(Class realClass, String path) in the finally clause: " + e.toString());
-                throw new DataAccessException("Error in  BaseOjbPbDAO.getClassFromPath(Class realClass, String path) in the finally clause: " + e.toString(),e);
-            }
-        }
-        log.info("************Done with the  BaseOjbPbDAO.getClassFromPath(Class realClass, String path)***************");
-        return realClass;
+	    } catch (final PersistenceBrokerSupportException e) {
+		log.error("PersistenceBrokerSupportException thrown in  BaseOjbPbDAO.getClassFromPath(Class realClass, String path) in the finally clause: " + e.toString());
+		throw new DataAccessException("Error in  BaseOjbPbDAO.getClassFromPath(Class realClass, String path) in the finally clause: " + e.toString(), e);
+	    }
+	}
+	log.info("************Done with the  BaseOjbPbDAO.getClassFromPath(Class realClass, String path)***************");
+	return realClass;
     }
 
+    public Class getCollectionClassFromPath(Class realClass, String path) throws DataAccessException {
+	log.info("************Entering the BaseOjbPbDAO.getCollectionClassFromPath(Class realClass, String path)***************");
+	PersistenceBroker pb = null;
+	try {
+	    pb = persistenceBrokerSupport.getPersistenceBroker();
+	    realClass = ojbPbCore.getCollectionClassFromPath(realClass, path, pb);
 
-    public Class getCollectionClassFromPath(Class realClass, String path) throws DataAccessException{
-        log.info("************Entering the BaseOjbPbDAO.getCollectionClassFromPath(Class realClass, String path)***************");
-        PersistenceBroker pb = null;
-        try{
-            pb = persistenceBrokerSupport.getPersistenceBroker();
-            realClass =  ojbPbCore.getCollectionClassFromPath(realClass,path, pb);
+	} catch (final PersistenceBrokerSupportException e) {
+	    log.error("PersistenceBrokerSupportException thrown in  BaseOjbPbDAO.getCollectionClassFromPath(Class realClass, String path): " + e.toString());
+	    throw new DataAccessException("Error in  BaseOjbPbDAO.getCollectionClassFromPath(Class realClass, String path): " + e.toString(), e);
+	} catch (final OjbPbCoreException e) {
+	    log.error("OjbPbCoreException thrown in  BaseOjbPbDAO.getCollectionClassFromPath(Class realClass, String path): " + e.toString());
+	    throw new DataAccessException("Error in  BaseOjbPbDAO.getCollectionClassFromPath(Class realClass, String path): " + e.toString(), e);
+	} catch (final Exception e) {
+	    log.error("Exception thrown in  BaseOjbPbDAO.getCollectionClassFromPath(Class realClass, String path): " + e.toString());
+	    throw new DataAccessException("Error in  BaseOjbPbDAO.getCollectionClassFromPath(Class realClass, String path): " + e.toString(), e);
+	} finally {
+	    try {
 
-        } catch (PersistenceBrokerSupportException e) {
-            log.error("PersistenceBrokerSupportException thrown in  BaseOjbPbDAO.getCollectionClassFromPath(Class realClass, String path): " + e.toString());
-            throw new DataAccessException("Error in  BaseOjbPbDAO.getCollectionClassFromPath(Class realClass, String path): " + e.toString(),e);
-        } catch (OjbPbCoreException e) {
-            log.error("OjbPbCoreException thrown in  BaseOjbPbDAO.getCollectionClassFromPath(Class realClass, String path): " + e.toString());
-            throw new DataAccessException("Error in  BaseOjbPbDAO.getCollectionClassFromPath(Class realClass, String path): " + e.toString(),e);
-        } catch (Exception e) {
-            log.error("Exception thrown in  BaseOjbPbDAO.getCollectionClassFromPath(Class realClass, String path): " + e.toString());
-            throw new DataAccessException("Error in  BaseOjbPbDAO.getCollectionClassFromPath(Class realClass, String path): " + e.toString(),e);
-        } finally {
-            try{
+		persistenceBrokerSupport.releasePersistenceBroker(pb);
 
-                persistenceBrokerSupport.releasePersistenceBroker(pb);
-
-            } catch(PersistenceBrokerSupportException e) {
-                log.error("PersistenceBrokerSupportException thrown in  BaseOjbPbDAO.getCollectionClassFromPath(Class realClass, String path) in the finally clause: " + e.toString());
-                throw new DataAccessException("Error in  BaseOjbPbDAO.getCollectionClassFromPath(Class realClass, String path) in the finally clause: " + e.toString(),e);
-            }
-        }
-        log.info("************Done with the  BaseOjbPbDAO.getCollectionClassFromPath(Class realClass, String path)***************");
-        return realClass;
+	    } catch (final PersistenceBrokerSupportException e) {
+		log.error("PersistenceBrokerSupportException thrown in  BaseOjbPbDAO.getCollectionClassFromPath(Class realClass, String path) in the finally clause: " + e.toString());
+		throw new DataAccessException("Error in  BaseOjbPbDAO.getCollectionClassFromPath(Class realClass, String path) in the finally clause: " + e.toString(), e);
+	    }
+	}
+	log.info("************Done with the  BaseOjbPbDAO.getCollectionClassFromPath(Class realClass, String path)***************");
+	return realClass;
     }
 
+    public Vector getFksToItemClassInDecomposedRelationship(Class realClass, String oneToN, String mToOne) throws DataAccessException {
+	log.info("************Entering the BaseOjbPbDAO.getFksToItemClassInDecomposedRelationship(Class realClass, String oneToN, String mToOne)***************");
+	PersistenceBroker pb = null;
+	Vector flds = null;
+	try {
+	    pb = persistenceBrokerSupport.getPersistenceBroker();
+	    flds = ojbPbCore.getFksToItemClassInDecomposedRelationship(realClass, oneToN, mToOne, pb);
 
+	} catch (final PersistenceBrokerSupportException e) {
+	    log.error("PersistenceBrokerSupportException thrown in  BaseOjbPbDAO.getFksToItemClassInDecomposedRelationship(Class realClass, String oneToN, String mToOne): " + e.toString());
+	    throw new DataAccessException("Error in  BaseOjbPbDAO.getFksToItemClassInDecomposedRelationship(Class realClass, String oneToN, String mToOne): " + e.toString(), e);
+	} catch (final OjbPbCoreException e) {
+	    log.error("OjbPbCoreException thrown in  BaseOjbPbDAO.getFksToItemClassInDecomposedRelationship(Class realClass, String oneToN, String mToOne): " + e.toString());
+	    throw new DataAccessException("Error in  BaseOjbPbDAO.getFksToItemClassInDecomposedRelationship(Class realClass, String oneToN, String mToOne): " + e.toString(), e);
+	} catch (final Exception e) {
+	    log.error("Exception thrown in  BaseOjbPbDAO.getFksToItemClassInDecomposedRelationship(Class realClass, String oneToN, String mToOne): " + e.toString());
+	    throw new DataAccessException("Error in  BaseOjbPbDAO.getFksToItemClassInDecomposedRelationship(Class realClass, String oneToN, String mToOne): " + e.toString(), e);
+	} finally {
+	    try {
 
-    public Vector getFksToItemClassInDecomposedRelationship(Class realClass, String oneToN, String mToOne) throws DataAccessException{
-        log.info("************Entering the BaseOjbPbDAO.getFksToItemClassInDecomposedRelationship(Class realClass, String oneToN, String mToOne)***************");
-        PersistenceBroker pb = null;
-        Vector flds = null;
-        try{
-            pb = persistenceBrokerSupport.getPersistenceBroker();
-            flds =  ojbPbCore.getFksToItemClassInDecomposedRelationship(realClass,oneToN, mToOne, pb);
+		persistenceBrokerSupport.releasePersistenceBroker(pb);
 
-        } catch (PersistenceBrokerSupportException e) {
-            log.error("PersistenceBrokerSupportException thrown in  BaseOjbPbDAO.getFksToItemClassInDecomposedRelationship(Class realClass, String oneToN, String mToOne): " + e.toString());
-            throw new DataAccessException("Error in  BaseOjbPbDAO.getFksToItemClassInDecomposedRelationship(Class realClass, String oneToN, String mToOne): " + e.toString(),e);
-        } catch (OjbPbCoreException e) {
-            log.error("OjbPbCoreException thrown in  BaseOjbPbDAO.getFksToItemClassInDecomposedRelationship(Class realClass, String oneToN, String mToOne): " + e.toString());
-            throw new DataAccessException("Error in  BaseOjbPbDAO.getFksToItemClassInDecomposedRelationship(Class realClass, String oneToN, String mToOne): " + e.toString(),e);
-        } catch (Exception e) {
-            log.error("Exception thrown in  BaseOjbPbDAO.getFksToItemClassInDecomposedRelationship(Class realClass, String oneToN, String mToOne): " + e.toString());
-            throw new DataAccessException("Error in  BaseOjbPbDAO.getFksToItemClassInDecomposedRelationship(Class realClass, String oneToN, String mToOne): " + e.toString(),e);
-        } finally {
-            try{
-
-                persistenceBrokerSupport.releasePersistenceBroker(pb);
-
-            } catch(PersistenceBrokerSupportException e) {
-                log.error("PersistenceBrokerSupportException thrown in  BaseOjbPbDAO.getFksToItemClassInDecomposedRelationship(Class realClass, String oneToN, String mToOne) in the finally clause: " + e.toString());
-                throw new DataAccessException("Error in  BaseOjbPbDAO.getFksToItemClassInDecomposedRelationship(Class realClass, String oneToN, String mToOne) in the finally clause: " + e.toString(),e);
-            }
-        }
-        log.info("************Done with the  BaseOjbPbDAO.getFksToItemClassInDecomposedRelationship(Class realClass, String oneToN, String mToOne)***************");
-        return flds;
+	    } catch (final PersistenceBrokerSupportException e) {
+		log.error("PersistenceBrokerSupportException thrown in  BaseOjbPbDAO.getFksToItemClassInDecomposedRelationship(Class realClass, String oneToN, String mToOne) in the finally clause: "
+			+ e.toString());
+		throw new DataAccessException("Error in  BaseOjbPbDAO.getFksToItemClassInDecomposedRelationship(Class realClass, String oneToN, String mToOne) in the finally clause: " + e.toString(),
+			e);
+	    }
+	}
+	log.info("************Done with the  BaseOjbPbDAO.getFksToItemClassInDecomposedRelationship(Class realClass, String oneToN, String mToOne)***************");
+	return flds;
     }
 
+    public Object[] getKeyValues(Object pInstance) throws DataAccessException {
+	log.info("************Entering the BaseOjbPbDAO.getKeyValues(Object pInstance)***************");
+	PersistenceBroker pb = null;
+	Object[] keyValues = null;
+	try {
+	    pb = persistenceBrokerSupport.getPersistenceBroker();
+	    keyValues = ojbPbCore.getKeyValues(pInstance, pb);
 
+	} catch (final PersistenceBrokerSupportException e) {
+	    log.error("PersistenceBrokerSupportException thrown in  BaseOjbPbDAO.getKeyValues(Object pInstance): " + e.toString());
+	    throw new DataAccessException("Error in  BaseOjbPbDAO.getKeyValues(Object pInstance): " + e.toString(), e);
+	} catch (final OjbPbCoreException e) {
+	    log.error("OjbPbCoreException thrown in  BaseOjbPbDAO.getKeyValues(Object pInstance): " + e.toString());
+	    throw new DataAccessException("Error in  BaseOjbPbDAO.getKeyValues(Object pInstance): " + e.toString(), e);
+	} catch (final Exception e) {
+	    log.error("Exception thrown in  BaseOjbPbDAO.getKeyValues(Object pInstance): " + e.toString());
+	    throw new DataAccessException("Error in  BaseOjbPbDAO.getKeyValues(Object pInstance): " + e.toString(), e);
+	} finally {
+	    try {
 
+		persistenceBrokerSupport.releasePersistenceBroker(pb);
 
-
-
-    public Object[] getKeyValues(Object pInstance) throws DataAccessException{
-        log.info("************Entering the BaseOjbPbDAO.getKeyValues(Object pInstance)***************");
-        PersistenceBroker pb = null;
-        Object[] keyValues = null;
-        try{
-            pb = persistenceBrokerSupport.getPersistenceBroker();
-            keyValues =  ojbPbCore.getKeyValues(pInstance, pb);
-
-        } catch (PersistenceBrokerSupportException e) {
-            log.error("PersistenceBrokerSupportException thrown in  BaseOjbPbDAO.getKeyValues(Object pInstance): " + e.toString());
-            throw new DataAccessException("Error in  BaseOjbPbDAO.getKeyValues(Object pInstance): " + e.toString(),e);
-        } catch (OjbPbCoreException e) {
-            log.error("OjbPbCoreException thrown in  BaseOjbPbDAO.getKeyValues(Object pInstance): " + e.toString());
-            throw new DataAccessException("Error in  BaseOjbPbDAO.getKeyValues(Object pInstance): " + e.toString(),e);
-        } catch (Exception e) {
-            log.error("Exception thrown in  BaseOjbPbDAO.getKeyValues(Object pInstance): " + e.toString());
-            throw new DataAccessException("Error in  BaseOjbPbDAO.getKeyValues(Object pInstance): " + e.toString(),e);
-        } finally {
-            try{
-
-                persistenceBrokerSupport.releasePersistenceBroker(pb);
-
-            } catch(PersistenceBrokerSupportException e) {
-                log.error("PersistenceBrokerSupportException thrown in  BaseOjbPbDAO.getKeyValues(Object pInstance) in the finally clause: " + e.toString());
-                throw new DataAccessException("Error in  BaseOjbPbDAO.getKeyValues(Object pInstance) in the finally clause: " + e.toString(),e);
-            }
-        }
-        log.info("************Done with the  BaseOjbPbDAO.getKeyValues(Object pInstance)***************");
-        return keyValues;
+	    } catch (final PersistenceBrokerSupportException e) {
+		log.error("PersistenceBrokerSupportException thrown in  BaseOjbPbDAO.getKeyValues(Object pInstance) in the finally clause: " + e.toString());
+		throw new DataAccessException("Error in  BaseOjbPbDAO.getKeyValues(Object pInstance) in the finally clause: " + e.toString(), e);
+	    }
+	}
+	log.info("************Done with the  BaseOjbPbDAO.getKeyValues(Object pInstance)***************");
+	return keyValues;
     }
 
+    public String[] getPkNames(Class realClass) throws DataAccessException {
+	log.info("************Entering the BaseOjbPbDAO.getPkNames(Class realClass)***************");
+	PersistenceBroker pb = null;
+	String[] pkNames = null;
+	try {
+	    pb = persistenceBrokerSupport.getPersistenceBroker();
+	    pkNames = ojbPbCore.getPkNames(realClass, pb);
 
-    public String[] getPkNames(Class realClass) throws DataAccessException{
-        log.info("************Entering the BaseOjbPbDAO.getPkNames(Class realClass)***************");
-        PersistenceBroker pb = null;
-        String[] pkNames = null;
-        try{
-            pb = persistenceBrokerSupport.getPersistenceBroker();
-            pkNames =  ojbPbCore.getPkNames(realClass, pb);
+	} catch (final PersistenceBrokerSupportException e) {
+	    log.error("PersistenceBrokerSupportException thrown in  BaseOjbPbDAO.getPkNames(Class realClass): " + e.toString());
+	    throw new DataAccessException("Error in  BaseOjbPbDAO.getPkNames(Class realClass): " + e.toString(), e);
+	} catch (final OjbPbCoreException e) {
+	    log.error("OjbPbCoreException thrown in  BaseOjbPbDAO.getPkNames(Class realClass): " + e.toString());
+	    throw new DataAccessException("Error in  BaseOjbPbDAO.getPkNames(Class realClass): " + e.toString(), e);
+	} catch (final Exception e) {
+	    log.error("Exception thrown in  BaseOjbPbDAO.getPkNames(Class realClass): " + e.toString());
+	    throw new DataAccessException("Error in  BaseOjbPbDAO.getPkNames(Class realClass): " + e.toString(), e);
+	} finally {
+	    try {
 
-        } catch (PersistenceBrokerSupportException e) {
-            log.error("PersistenceBrokerSupportException thrown in  BaseOjbPbDAO.getPkNames(Class realClass): " + e.toString());
-            throw new DataAccessException("Error in  BaseOjbPbDAO.getPkNames(Class realClass): " + e.toString(),e);
-        } catch (OjbPbCoreException e) {
-            log.error("OjbPbCoreException thrown in  BaseOjbPbDAO.getPkNames(Class realClass): " + e.toString());
-            throw new DataAccessException("Error in  BaseOjbPbDAO.getPkNames(Class realClass): " + e.toString(),e);
-        } catch (Exception e) {
-            log.error("Exception thrown in  BaseOjbPbDAO.getPkNames(Class realClass): " + e.toString());
-            throw new DataAccessException("Error in  BaseOjbPbDAO.getPkNames(Class realClass): " + e.toString(),e);
-        } finally {
-            try{
+		persistenceBrokerSupport.releasePersistenceBroker(pb);
 
-                persistenceBrokerSupport.releasePersistenceBroker(pb);
-
-            } catch(PersistenceBrokerSupportException e) {
-                log.error("PersistenceBrokerSupportException thrown in  BaseOjbPbDAO.getPkNames(Class realClass) in the finally clause: " + e.toString());
-                throw new DataAccessException("Error in  BaseOjbPbDAO.getPkNames(Class realClass) in the finally clause: " + e.toString(),e);
-            }
-        }
-        log.info("************Done with the  BaseOjbPbDAO.getPkNames(Class realClass)***************");
-        return pkNames;
+	    } catch (final PersistenceBrokerSupportException e) {
+		log.error("PersistenceBrokerSupportException thrown in  BaseOjbPbDAO.getPkNames(Class realClass) in the finally clause: " + e.toString());
+		throw new DataAccessException("Error in  BaseOjbPbDAO.getPkNames(Class realClass) in the finally clause: " + e.toString(), e);
+	    }
+	}
+	log.info("************Done with the  BaseOjbPbDAO.getPkNames(Class realClass)***************");
+	return pkNames;
     }
 
+    public String[] getFksToThisClass(Class realClass, String oneToN) throws DataAccessException {
+	log.info("************Entering the BaseOjbPbDAO.getFksToThisClass(Class realClass, String oneToN)***************");
+	PersistenceBroker pb = null;
+	String[] flds = null;
+	try {
+	    pb = persistenceBrokerSupport.getPersistenceBroker();
+	    flds = ojbPbCore.getFksToThisClass(realClass, oneToN, pb);
 
+	} catch (final PersistenceBrokerSupportException e) {
+	    log.error("PersistenceBrokerSupportException thrown in  BaseOjbPbDAO.getFksToThisClass(Class realClass, String oneToN): " + e.toString());
+	    throw new DataAccessException("Error in  BaseOjbPbDAO.getFksToThisClass(Class realClass, String oneToN): " + e.toString(), e);
+	} catch (final OjbPbCoreException e) {
+	    log.error("OjbPbCoreException thrown in  BaseOjbPbDAO.getFksToThisClass(Class realClass, String oneToN): " + e.toString());
+	    throw new DataAccessException("Error in  BaseOjbPbDAO.getFksToThisClass(Class realClass, String oneToN): " + e.toString(), e);
+	} catch (final Exception e) {
+	    log.error("Exception thrown in  BaseOjbPbDAO.getFksToThisClass(Class realClass, String oneToN): " + e.toString());
+	    throw new DataAccessException("Error in  BaseOjbPbDAO.getFksToThisClass(Class realClass, String oneToN): " + e.toString(), e);
+	} finally {
+	    try {
 
-    public String[] getFksToThisClass(Class realClass, String oneToN) throws DataAccessException{
-        log.info("************Entering the BaseOjbPbDAO.getFksToThisClass(Class realClass, String oneToN)***************");
-        PersistenceBroker pb = null;
-        String[] flds = null;
-        try{
-            pb = persistenceBrokerSupport.getPersistenceBroker();
-            flds =  ojbPbCore.getFksToThisClass(realClass, oneToN, pb);
+		persistenceBrokerSupport.releasePersistenceBroker(pb);
 
-        } catch (PersistenceBrokerSupportException e) {
-            log.error("PersistenceBrokerSupportException thrown in  BaseOjbPbDAO.getFksToThisClass(Class realClass, String oneToN): " + e.toString());
-            throw new DataAccessException("Error in  BaseOjbPbDAO.getFksToThisClass(Class realClass, String oneToN): " + e.toString(),e);
-        } catch (OjbPbCoreException e) {
-            log.error("OjbPbCoreException thrown in  BaseOjbPbDAO.getFksToThisClass(Class realClass, String oneToN): " + e.toString());
-            throw new DataAccessException("Error in  BaseOjbPbDAO.getFksToThisClass(Class realClass, String oneToN): " + e.toString(),e);
-        } catch (Exception e) {
-            log.error("Exception thrown in  BaseOjbPbDAO.getFksToThisClass(Class realClass, String oneToN): " + e.toString());
-            throw new DataAccessException("Error in  BaseOjbPbDAO.getFksToThisClass(Class realClass, String oneToN): " + e.toString(),e);
-        } finally {
-            try{
-
-                persistenceBrokerSupport.releasePersistenceBroker(pb);
-
-            } catch(PersistenceBrokerSupportException e) {
-                log.error("PersistenceBrokerSupportException thrown in  BaseOjbPbDAO.getFksToThisClass(Class realClass, String oneToN) in the finally clause: " + e.toString());
-                throw new DataAccessException("Error in  BaseOjbPbDAO.getFksToThisClass(Class realClass, String oneToN) in the finally clause: " + e.toString(),e);
-            }
-        }
-        log.info("************Done with the  BaseOjbPbDAO.getFksToThisClass(Class realClass, String oneToN)**************");
-        return flds;
+	    } catch (final PersistenceBrokerSupportException e) {
+		log.error("PersistenceBrokerSupportException thrown in  BaseOjbPbDAO.getFksToThisClass(Class realClass, String oneToN) in the finally clause: " + e.toString());
+		throw new DataAccessException("Error in  BaseOjbPbDAO.getFksToThisClass(Class realClass, String oneToN) in the finally clause: " + e.toString(), e);
+	    }
+	}
+	log.info("************Done with the  BaseOjbPbDAO.getFksToThisClass(Class realClass, String oneToN)**************");
+	return flds;
     }
 
+    public Vector getForeignKeyFields(Class realClass, String pAttributeName) throws DataAccessException {
+	log.info("************Entering the BaseOjbPbDAO.getForeignKeyFields(Class realClass, String pAttributeName)***************");
+	PersistenceBroker pb = null;
+	Vector flds = null;
+	try {
+	    pb = persistenceBrokerSupport.getPersistenceBroker();
+	    flds = ojbPbCore.getForeignKeyFields(realClass, pAttributeName, pb);
 
-    public Vector getForeignKeyFields(Class realClass, String pAttributeName) throws DataAccessException{
-        log.info("************Entering the BaseOjbPbDAO.getForeignKeyFields(Class realClass, String pAttributeName)***************");
-        PersistenceBroker pb = null;
-        Vector flds = null;
-        try{
-            pb = persistenceBrokerSupport.getPersistenceBroker();
-            flds =  ojbPbCore.getForeignKeyFields(realClass, pAttributeName, pb);
+	} catch (final PersistenceBrokerSupportException e) {
+	    log.error("PersistenceBrokerSupportException thrown in  BaseOjbPbDAO.getForeignKeyFields(Class realClass, String pAttributeName): " + e.toString());
+	    throw new DataAccessException("Error in  BaseOjbPbDAO.getForeignKeyFields(Class realClass, String pAttributeName): " + e.toString(), e);
+	} catch (final OjbPbCoreException e) {
+	    log.error("OjbPbCoreException thrown in  BaseOjbPbDAO.getForeignKeyFields(Class realClass, String pAttributeName): " + e.toString());
+	    throw new DataAccessException("Error in  BaseOjbPbDAO.getForeignKeyFields(Class realClass, String pAttributeName): " + e.toString(), e);
+	} catch (final Exception e) {
+	    log.error("Exception thrown in  BaseOjbPbDAO.getForeignKeyFields(Class realClass, String pAttributeName): " + e.toString());
+	    throw new DataAccessException("Error in  BaseOjbPbDAO.getForeignKeyFields(Class realClass, String pAttributeName): " + e.toString(), e);
+	} finally {
+	    try {
 
-        } catch (PersistenceBrokerSupportException e) {
-            log.error("PersistenceBrokerSupportException thrown in  BaseOjbPbDAO.getForeignKeyFields(Class realClass, String pAttributeName): " + e.toString());
-            throw new DataAccessException("Error in  BaseOjbPbDAO.getForeignKeyFields(Class realClass, String pAttributeName): " + e.toString(),e);
-        } catch (OjbPbCoreException e) {
-            log.error("OjbPbCoreException thrown in  BaseOjbPbDAO.getForeignKeyFields(Class realClass, String pAttributeName): " + e.toString());
-            throw new DataAccessException("Error in  BaseOjbPbDAO.getForeignKeyFields(Class realClass, String pAttributeName): " + e.toString(),e);
-        } catch (Exception e) {
-            log.error("Exception thrown in  BaseOjbPbDAO.getForeignKeyFields(Class realClass, String pAttributeName): " + e.toString());
-            throw new DataAccessException("Error in  BaseOjbPbDAO.getForeignKeyFields(Class realClass, String pAttributeName): " + e.toString(),e);
-        } finally {
-            try{
+		persistenceBrokerSupport.releasePersistenceBroker(pb);
 
-                persistenceBrokerSupport.releasePersistenceBroker(pb);
-
-            } catch(PersistenceBrokerSupportException e) {
-                log.error("PersistenceBrokerSupportException thrown in  BaseOjbPbDAO.getForeignKeyFields(Class realClass, String pAttributeName) in the finally clause: " + e.toString());
-                throw new DataAccessException("Error in  BaseOjbPbDAO.getForeignKeyFields(Class realClass, String pAttributeName) in the finally clause: " + e.toString(),e);
-            }
-        }
-        log.info("************Done with the  BaseOjbPbDAO.getForeignKeyFields(Class realClass, String pAttributeName)**************");
-        return flds;
+	    } catch (final PersistenceBrokerSupportException e) {
+		log.error("PersistenceBrokerSupportException thrown in  BaseOjbPbDAO.getForeignKeyFields(Class realClass, String pAttributeName) in the finally clause: " + e.toString());
+		throw new DataAccessException("Error in  BaseOjbPbDAO.getForeignKeyFields(Class realClass, String pAttributeName) in the finally clause: " + e.toString(), e);
+	    }
+	}
+	log.info("************Done with the  BaseOjbPbDAO.getForeignKeyFields(Class realClass, String pAttributeName)**************");
+	return flds;
     }
 
+    public Vector getInverseForeignKeyFields(Class realClass, String pAttributeName) throws DataAccessException {
+	log.info("************Entering the BaseOjbPbDAO.getInverseForeignKeyFields(Class realClass, String pAttributeName)***************");
+	PersistenceBroker pb = null;
+	Vector flds = null;
+	try {
+	    pb = persistenceBrokerSupport.getPersistenceBroker();
+	    flds = ojbPbCore.getInverseForeignKeyFields(realClass, pAttributeName, pb);
 
-    public Vector getInverseForeignKeyFields(Class realClass, String pAttributeName) throws DataAccessException{
-        log.info("************Entering the BaseOjbPbDAO.getInverseForeignKeyFields(Class realClass, String pAttributeName)***************");
-        PersistenceBroker pb = null;
-        Vector flds = null;
-        try{
-            pb = persistenceBrokerSupport.getPersistenceBroker();
-            flds =  ojbPbCore.getInverseForeignKeyFields(realClass, pAttributeName, pb);
+	} catch (final PersistenceBrokerSupportException e) {
+	    log.error("PersistenceBrokerSupportException thrown in  BaseOjbPbDAO.getInverseForeignKeyFields(Class realClass, String pAttributeName): " + e.toString());
+	    throw new DataAccessException("Error in  BaseOjbPbDAO.getInverseForeignKeyFields(Class realClass, String pAttributeName): " + e.toString(), e);
+	} catch (final OjbPbCoreException e) {
+	    log.error("OjbPbCoreException thrown in  BaseOjbPbDAO.getInverseForeignKeyFields(Class realClass, String pAttributeName): " + e.toString());
+	    throw new DataAccessException("Error in  BaseOjbPbDAO.getInverseForeignKeyFields(Class realClass, String pAttributeName): " + e.toString(), e);
+	} catch (final Exception e) {
+	    log.error("Exception thrown in  BaseOjbPbDAO.getInverseForeignKeyFields(Class realClass, String pAttributeName): " + e.toString());
+	    throw new DataAccessException("Error in  BaseOjbPbDAO.getInverseForeignKeyFields(Class realClass, String pAttributeName): " + e.toString(), e);
+	} finally {
+	    try {
 
-        } catch (PersistenceBrokerSupportException e) {
-            log.error("PersistenceBrokerSupportException thrown in  BaseOjbPbDAO.getInverseForeignKeyFields(Class realClass, String pAttributeName): " + e.toString());
-            throw new DataAccessException("Error in  BaseOjbPbDAO.getInverseForeignKeyFields(Class realClass, String pAttributeName): " + e.toString(),e);
-        } catch (OjbPbCoreException e) {
-            log.error("OjbPbCoreException thrown in  BaseOjbPbDAO.getInverseForeignKeyFields(Class realClass, String pAttributeName): " + e.toString());
-            throw new DataAccessException("Error in  BaseOjbPbDAO.getInverseForeignKeyFields(Class realClass, String pAttributeName): " + e.toString(),e);
-        } catch (Exception e) {
-            log.error("Exception thrown in  BaseOjbPbDAO.getInverseForeignKeyFields(Class realClass, String pAttributeName): " + e.toString());
-            throw new DataAccessException("Error in  BaseOjbPbDAO.getInverseForeignKeyFields(Class realClass, String pAttributeName): " + e.toString(),e);
-        } finally {
-            try{
+		persistenceBrokerSupport.releasePersistenceBroker(pb);
 
-                persistenceBrokerSupport.releasePersistenceBroker(pb);
-
-            } catch(PersistenceBrokerSupportException e) {
-                log.error("PersistenceBrokerSupportException thrown in  BaseOjbPbDAO.getInverseForeignKeyFields(Class realClass, String pAttributeName) in the finally clause: " + e.toString());
-                throw new DataAccessException("Error in  BaseOjbPbDAO.getInverseForeignKeyFields(Class realClass, String pAttributeName) in the finally clause: " + e.toString(),e);
-            }
-        }
-        log.info("************Done with the  BaseOjbPbDAO.getInverseForeignKeyFields(Class realClass, String pAttributeName)**************");
-        return flds;
+	    } catch (final PersistenceBrokerSupportException e) {
+		log.error("PersistenceBrokerSupportException thrown in  BaseOjbPbDAO.getInverseForeignKeyFields(Class realClass, String pAttributeName) in the finally clause: " + e.toString());
+		throw new DataAccessException("Error in  BaseOjbPbDAO.getInverseForeignKeyFields(Class realClass, String pAttributeName) in the finally clause: " + e.toString(), e);
+	    }
+	}
+	log.info("************Done with the  BaseOjbPbDAO.getInverseForeignKeyFields(Class realClass, String pAttributeName)**************");
+	return flds;
     }
 
     /**
@@ -2569,109 +2929,121 @@ public abstract class BaseOjbPbDAO implements DAO{
      * @param pAttributeName
      * @throws it.aco.mandragora.exception.DataAccessException
      */
-    public void setInverseForeignKeyFields(Object pInstance, String pAttributeName) throws DataAccessException{
-        log.info("************Entering the BaseOjbPbDAO.setInverseForeignKeyFields(Object pInstance, String pAttributeName)***************");
-        PersistenceBroker pb = null;
-        try{
-            pb = persistenceBrokerSupport.getPersistenceBroker();
-            ojbPbCore.setInverseForeignKeyFields(pInstance,  pAttributeName,pb) ;
+    public void setInverseForeignKeyFields(Object pInstance, String pAttributeName) throws DataAccessException {
+	log.info("************Entering the BaseOjbPbDAO.setInverseForeignKeyFields(Object pInstance, String pAttributeName)***************");
+	PersistenceBroker pb = null;
+	try {
+	    pb = persistenceBrokerSupport.getPersistenceBroker();
+	    ojbPbCore.setInverseForeignKeyFields(pInstance, pAttributeName, pb);
 
-        } catch (PersistenceBrokerSupportException e) {
-            log.error("PersistenceBrokerSupportException thrown in  BaseOjbPbDAO.setInverseForeignKeyFields(Object pInstance, String pAttributeName): " + e.toString());
-            throw new DataAccessException("Error in  BaseOjbPbDAO.setInverseForeignKeyFields(Object pInstance, String pAttributeName): " + e.toString(),e);
-        } catch (OjbPbCoreException e) {
-            log.error("OjbPbCoreException thrown in  BaseOjbPbDAO.setInverseForeignKeyFields(Object pInstance, String pAttributeName): " + e.toString());
-            throw new DataAccessException("Error in  BaseOjbPbDAO.setInverseForeignKeyFields(Object pInstance, String pAttributeName): " + e.toString(),e);
-        } catch (Exception e) {
-            log.error("Exception thrown in  BaseOjbPbDAO.setInverseForeignKeyFields(Object pInstance, String pAttributeName): " + e.toString());
-            throw new DataAccessException("Error in  BaseOjbPbDAO.setInverseForeignKeyFields(Object pInstance, String pAttributeName): " + e.toString(),e);
-        } finally {
-            try{
+	} catch (final PersistenceBrokerSupportException e) {
+	    log.error("PersistenceBrokerSupportException thrown in  BaseOjbPbDAO.setInverseForeignKeyFields(Object pInstance, String pAttributeName): " + e.toString());
+	    throw new DataAccessException("Error in  BaseOjbPbDAO.setInverseForeignKeyFields(Object pInstance, String pAttributeName): " + e.toString(), e);
+	} catch (final OjbPbCoreException e) {
+	    log.error("OjbPbCoreException thrown in  BaseOjbPbDAO.setInverseForeignKeyFields(Object pInstance, String pAttributeName): " + e.toString());
+	    throw new DataAccessException("Error in  BaseOjbPbDAO.setInverseForeignKeyFields(Object pInstance, String pAttributeName): " + e.toString(), e);
+	} catch (final Exception e) {
+	    log.error("Exception thrown in  BaseOjbPbDAO.setInverseForeignKeyFields(Object pInstance, String pAttributeName): " + e.toString());
+	    throw new DataAccessException("Error in  BaseOjbPbDAO.setInverseForeignKeyFields(Object pInstance, String pAttributeName): " + e.toString(), e);
+	} finally {
+	    try {
 
-                persistenceBrokerSupport.releasePersistenceBroker(pb);
+		persistenceBrokerSupport.releasePersistenceBroker(pb);
 
-            } catch(PersistenceBrokerSupportException e) {
-                log.error("PersistenceBrokerSupportException thrown in  BaseOjbPbDAO.setInverseForeignKeyFields(Object pInstance, String pAttributeName) in the finally clause: " + e.toString());
-                throw new DataAccessException("Error in  BaseOjbPbDAO.setInverseForeignKeyFields(Object pInstance, String pAttributeName) in the finally clause: " + e.toString(),e);
-            }
-        }
-        log.info("************Done with the  BaseOjbPbDAO.setInverseForeignKeyFields(Object pInstance, String pAttributeName)**************");
+	    } catch (final PersistenceBrokerSupportException e) {
+		log.error("PersistenceBrokerSupportException thrown in  BaseOjbPbDAO.setInverseForeignKeyFields(Object pInstance, String pAttributeName) in the finally clause: " + e.toString());
+		throw new DataAccessException("Error in  BaseOjbPbDAO.setInverseForeignKeyFields(Object pInstance, String pAttributeName) in the finally clause: " + e.toString(), e);
+	    }
+	}
+	log.info("************Done with the  BaseOjbPbDAO.setInverseForeignKeyFields(Object pInstance, String pAttributeName)**************");
     }
-    
-    
-    public Object findObjectByLogicCondition(Class realClass,
-			LogicCondition logicCondition) throws DataAccessException {
-		throw new UnsupportedOperationException("Method not implemented yet");
-		
-	}
-	public Object findObjectByLogicCondition(String[] selectFields,
-			Class realClass, LogicCondition logicCondition)
-			throws DataAccessException {
-		throw new UnsupportedOperationException("Method not implemented yet");
-	}
-	public Object findObjectByLogicCondition(String[] selectFields,
-			Class realClass, LogicCondition logicCondition, String orderBy)
-			throws DataAccessException {
-		throw new UnsupportedOperationException("Method not implemented yet");
-	}
-	public Object findObjectByLogicCondition(Class realClass,
-			LogicCondition logicCondition, String orderBy)
-			throws DataAccessException {
-		throw new UnsupportedOperationException("Method not implemented yet");
-	}
-	public Collection findCollectionByLogicCondition(Class realClass, LogicCondition logicCondition, String orderBy) throws DataAccessException {
-		throw new UnsupportedOperationException("Method not implemented yet");
-	}
-	public Collection findCollectionByQueryString(String queryString) throws DataAccessException {
-		throw new UnsupportedOperationException("Method not implemented yet");
-	}
-	public Collection findCollectionByQueryString(String queryString, Map parameters, Integer firstResult, Integer maxResults) throws DataAccessException {
-		throw new UnsupportedOperationException("Method not implemented yet");
-	}
-	public Collection findCollectionByQueryString(String queryString, Map parameters) throws DataAccessException {
-		throw new UnsupportedOperationException("Method not implemented yet");
-	}
-	public Collection findCollectionByQueryString(String queryString,String parameterName, Object parameterValue) throws DataAccessException {
-		throw new UnsupportedOperationException("Method not implemented yet");
-	}
-	
-	
-    	
-	public Collection findCollectionByQueryString(String queryString,Integer firstResult, Integer maxResults) throws DataAccessException {
-		throw new UnsupportedOperationException("Method not implemented yet");
-	}
-	public Collection findCollectionByLogicCondition(String[]selectFields, java.lang.Class realClass, LogicCondition logicCondition) throws DataAccessException{
-		throw new UnsupportedOperationException("Method not implemented yet");
-	}
-	
-	public Object refresh(Object refreshVO) throws DataAccessException {
-		throw new UnsupportedOperationException("Method not implemented yet");
-	}
-	 
-	public Collection findCollectionByLogicCondition(Boolean distinct, String[]selectFields, java.lang.Class realClass, LogicCondition logicCondition, String orderBy) throws DataAccessException{
-		throw new UnsupportedOperationException("Method not implemented yet");
-	}
-	
-	 public Collection findCollectionByLogicCondition(String[]selectFields, java.lang.Class realClass, LogicCondition logicCondition, String orderBy) throws DataAccessException{
-		 throw new UnsupportedOperationException("Method not implemented yet");
-	 }
-	 
-	 public Collection findCollectionByNativeQueryString(String queryString) throws DataAccessException {
-		 throw new UnsupportedOperationException("Method not implemented yet");
-		}
-		
-	public Collection findCollectionByNativeQueryString(String queryString, String parameterName, Object parameterValue) throws DataAccessException {
-		throw new UnsupportedOperationException("Method not implemented yet");
-	}
-    		
-	public Collection findCollectionByNativeQueryString(String queryString, Map parameters) throws DataAccessException {
-		throw new UnsupportedOperationException("Method not implemented yet");
-	}
-	
-	public void updateByNativeQueryString(String queryString)  throws DataAccessException {
-		throw new UnsupportedOperationException("Method not implemented yet");
-	}
-	public void updateByNativeQueryString(String queryString, Map parameters) throws DataAccessException{
-		throw new UnsupportedOperationException("Method not implemented yet");
+
+    public Object findObjectByLogicCondition(Class realClass, LogicCondition logicCondition) throws DataAccessException {
+	throw new UnsupportedOperationException("Method not implemented yet");
+
+    }
+
+    public Object findObjectByLogicCondition(String[] selectFields, Class realClass, LogicCondition logicCondition) throws DataAccessException {
+	throw new UnsupportedOperationException("Method not implemented yet");
+    }
+
+    public Object findObjectByLogicCondition(String[] selectFields, Class realClass, LogicCondition logicCondition, String orderBy) throws DataAccessException {
+	throw new UnsupportedOperationException("Method not implemented yet");
+    }
+
+    public Object findObjectByLogicCondition(Class realClass, LogicCondition logicCondition, String orderBy) throws DataAccessException {
+	throw new UnsupportedOperationException("Method not implemented yet");
+    }
+
+    public Collection findCollectionByLogicCondition(Class realClass, LogicCondition logicCondition, String orderBy) throws DataAccessException {
+	throw new UnsupportedOperationException("Method not implemented yet");
+    }
+
+    public Collection findCollectionByQueryString(String queryString) throws DataAccessException {
+	throw new UnsupportedOperationException("Method not implemented yet");
+    }
+
+    public Collection findCollectionByQueryString(String queryString, Map parameters, Integer firstResult, Integer maxResults) throws DataAccessException {
+	throw new UnsupportedOperationException("Method not implemented yet");
+    }
+
+    public Collection findCollectionByQueryString(String queryString, Map parameters) throws DataAccessException {
+	throw new UnsupportedOperationException("Method not implemented yet");
+    }
+
+    public Collection findCollectionByQueryString(String queryString, String parameterName, Object parameterValue) throws DataAccessException {
+	throw new UnsupportedOperationException("Method not implemented yet");
+    }
+
+    public Collection findCollectionByQueryString(String queryString, Integer firstResult, Integer maxResults) throws DataAccessException {
+	throw new UnsupportedOperationException("Method not implemented yet");
+    }
+
+    public Collection findCollectionByLogicCondition(String[] selectFields, java.lang.Class realClass, LogicCondition logicCondition) throws DataAccessException {
+	throw new UnsupportedOperationException("Method not implemented yet");
+    }
+
+    public Object refresh(Object refreshVO) throws DataAccessException {
+	throw new UnsupportedOperationException("Method not implemented yet");
+    }
+
+    public Collection findCollectionByLogicCondition(Boolean distinct, String[] selectFields, java.lang.Class realClass, LogicCondition logicCondition, String orderBy) throws DataAccessException {
+	throw new UnsupportedOperationException("Method not implemented yet");
+    }
+
+    public Collection findCollectionByLogicCondition(String[] selectFields, java.lang.Class realClass, LogicCondition logicCondition, String orderBy) throws DataAccessException {
+	throw new UnsupportedOperationException("Method not implemented yet");
+    }
+
+    public Collection findCollectionByNativeQueryString(String queryString) throws DataAccessException {
+	throw new UnsupportedOperationException("Method not implemented yet");
+    }
+
+    public Collection findCollectionByNativeQueryString(String queryString, String parameterName, Object parameterValue) throws DataAccessException {
+	throw new UnsupportedOperationException("Method not implemented yet");
+    }
+
+    public Collection findCollectionByNativeQueryString(String queryString, Map parameters) throws DataAccessException {
+	throw new UnsupportedOperationException("Method not implemented yet");
+    }
+
+    public void updateByNativeQueryString(String queryString) throws DataAccessException {
+	throw new UnsupportedOperationException("Method not implemented yet");
+    }
+
+    public void updateByNativeQueryString(String queryString, Map parameters) throws DataAccessException {
+	throw new UnsupportedOperationException("Method not implemented yet");
+    }
+
+    public Object findObjectByQueryString(String queryString, Map parameters) throws DataAccessException {
+	throw new UnsupportedOperationException("Method not implemented yet");
+    }
+
+    public Object findObjectByQueryString(String queryString) throws DataAccessException {
+	throw new UnsupportedOperationException("Method not implemented yet");
+    }
+
+    public Object findObjectByQueryString(String queryString, String parameterName, Object parameterValue) throws DataAccessException {
+	throw new UnsupportedOperationException("Method not implemented yet");
     }
 }

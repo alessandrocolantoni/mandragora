@@ -5,7 +5,7 @@
     <groupId>it.aco.mandragora</groupId>
     <artifactId>mandragora</artifactId>
     <packaging>jar</packaging>
-    <version>2.0.1.FINAL</version>
+    <version>2.0.2.FINAL</version>
     
 <!--    <version>0.3.6-SNAPSHOT</version>-->
 <!--    <version>0.3.5-SNAPSHOT</version>-->
