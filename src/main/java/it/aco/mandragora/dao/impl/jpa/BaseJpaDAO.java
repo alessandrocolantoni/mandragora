@@ -811,7 +811,7 @@ public abstract class BaseJpaDAO implements DAO {
 
 	} catch (final Exception e) {
 	    log.error("Exception caught  : " + e.toString());
-	    throw new DataAccessException("Error in  ImplIrisDAO.findCollectionByQueryString(String queryString, Map parameters,Integer firstResult, Integer maxResults) : " + e.toString(), e);
+	    throw new DataAccessException("Error in  BaseJPADAO.findCollectionByQueryString(String queryString, Map parameters,Integer firstResult, Integer maxResults) : " + e.toString(), e);
 	}
 	log.debug("************Done **************");
 	return result;
@@ -831,7 +831,7 @@ public abstract class BaseJpaDAO implements DAO {
 
 	} catch (final Exception e) {
 	    log.error("Exception caught  : " + e.toString());
-	    throw new DataAccessException("Error in  ImplIrisDAO.findCollectionByQueryString(String queryString, Map parameters) : " + e.toString(), e);
+	    throw new DataAccessException("Error in  BaseJPADAO.findCollectionByQueryString(String queryString, Map parameters) : " + e.toString(), e);
 	}
 	log.debug("************Done **************");
 	return result;
@@ -879,7 +879,46 @@ public abstract class BaseJpaDAO implements DAO {
 
 	} catch (final Exception e) {
 	    log.error("Exception caught  : " + e.toString());
-	    throw new DataAccessException("Error in  ImplIrisDAO.findCollectionByNativeQueryString(String queryString, Map parameters) : " + e.toString(), e);
+	    throw new DataAccessException("Error in  BaseJPADAO.findCollectionByNativeQueryString(String queryString, Map parameters) : " + e.toString(), e);
+	}
+	log.debug("************Done **************");
+	return result;
+    }
+
+    public Object findObjectByNativeQueryString(String queryString, Map parameters) throws DataAccessException {
+	log.debug("************Entering ***************");
+	Object result;
+	try {
+	    final Query query = getEntityManager().createNativeQuery(queryString);
+	    setQueryParameters(query, parameters);
+	    result = query.getSingleResult();
+
+	} catch (final NoResultException e) {
+	    result = null;
+	} catch (final Exception e) {
+	    log.error("Exception caught  : " + e.toString());
+	    throw new DataAccessException("Error in  BaseJPADAO : " + e.toString(), e);
+	}
+	log.debug("************Done **************");
+	return result;
+    }
+
+    public Object findObjectByNativeQueryString(String queryString, String parameterName, Object parameterValue) throws DataAccessException {
+	log.debug("************Entering ***************");
+	Object result;
+	try {
+	    final Query query = getEntityManager().createNativeQuery(queryString);
+
+	    final HashMap parameters = new HashMap();
+	    parameters.put(parameterName, parameterValue);
+	    setQueryParameters(query, parameters);
+	    result = query.getSingleResult();
+
+	} catch (final NoResultException e) {
+	    result = null;
+	} catch (final Exception e) {
+	    log.error("Exception caught  : " + e.toString());
+	    throw new DataAccessException("Error in  BaseJPADAO.findCollectionByNativeQueryString(String queryString, Map parameters) : " + e.toString(), e);
 	}
 	log.debug("************Done **************");
 	return result;
@@ -6639,7 +6678,7 @@ public abstract class BaseJpaDAO implements DAO {
 	} catch (final Exception e) {
 	    log.error("Exception caught : " + e.toString());
 	    throw new DataAccessException(
-		    "Error in  ImplIrisDAO.translateSimpleCondition(int progr,Class realClass, SimpleCondition simpleCondition, Map<String,Object> parametersMap): " + e.toString(), e);
+		    "Error in  BaseJPADAO.translateSimpleCondition(int progr,Class realClass, SimpleCondition simpleCondition, Map<String,Object> parametersMap): " + e.toString(), e);
 
 	}
 	log.debug("Done");

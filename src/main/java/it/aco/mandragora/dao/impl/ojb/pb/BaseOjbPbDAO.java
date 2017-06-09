@@ -3046,4 +3046,12 @@ public abstract class BaseOjbPbDAO implements DAO {
     public Object findObjectByQueryString(String queryString, String parameterName, Object parameterValue) throws DataAccessException {
 	throw new UnsupportedOperationException("Method not implemented yet");
     }
+
+    public Object findObjectByNativeQueryString(String queryString, Map parameters) throws DataAccessException {
+	throw new UnsupportedOperationException("Method not implemented yet");
+    }
+
+    public Object findObjectByNativeQueryString(String queryString, String parameterName, Object parameterValue) throws DataAccessException {
+	throw new UnsupportedOperationException("Method not implemented yet");
+    }
 }

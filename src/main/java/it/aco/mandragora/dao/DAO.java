@@ -529,7 +529,7 @@ public interface DAO {
      * Strings could be a path to the fields of other directly or indirectly
      * related classes too. </br>
      * <br/>
-     * 
+     *
      * @param realClass
      *            Class which instances have to looked for
      * @param nullFields
@@ -560,7 +560,7 @@ public interface DAO {
      * For example
      * <code>findCollectionByLogicCondition(Employee.class,new LogicSqlCondition("age","<=",new Integer(35),"AND", new LogicSqlCondition("salary",">=", new Integer(40000))))</code></br>
      * returns all instance of Employee where age<=35 and salary >= 40000 </br>
-     * 
+     *
      * @param realClass
      *            Class which instances have to looked for
      * @param logicCondition
@@ -636,7 +636,7 @@ public interface DAO {
      * <code>pAttributeName</code> assumes one of the values contained in
      * <code>valuesCollection</code>.</br>
      * If <code>valuesCollection</code> is null or empty, a null is returned .
-     * 
+     *
      * @param realClass
      *            Class which instances have to looked for
      * @param pAttributeName
@@ -683,7 +683,7 @@ public interface DAO {
      * NOTE!! Operators supported must be
      * <code>==,=,<=,>=,<,>,!=,<></code>.</br>
      * If arrays are empty all instances are returned. </br>
-     * 
+     *
      * @param realClass
      *            Class which instances have to looked for
      * @param pAttributeNames
@@ -758,7 +758,7 @@ public interface DAO {
      * <code>instance.pAttributeNames[i] Like %value%</code> for at list one
      * i.</br>
      * </br>
-     * 
+     *
      * @param realClass
      *            Class which instances have to be looked for
      * @param pAttributeNames
@@ -781,7 +781,7 @@ public interface DAO {
      * that are not present in the collection
      * <code>pInstance.pAttributeName</code></br>
      * </br>
-     * 
+     *
      * @param pInstance
      *            value object which items related to in the media store have to
      *            be returned in the collection.
@@ -805,7 +805,7 @@ public interface DAO {
      * of the collection <code>pInstance.pAttributeName</code> that are stored
      * in the media store and related to the same <code>pInstance</code>.</br>
      * </br>
-     * 
+     *
      * @param pInstance
      *            value object which items related to in the media store have to
      *            be returned in the collection.
@@ -832,7 +832,7 @@ public interface DAO {
      * The attribute names may also contain path expressions like
      * 'owner.address.street'.</br>
      * </br>
-     * 
+     *
      * @param realClass
      *            class wich attribute you want to retrieve, or where the path
      *            expression must start from
@@ -856,7 +856,7 @@ public interface DAO {
     /**
      * Retrieves the specified reference or collection attribute for the given
      * persistent object <code>pInstance</code> . </br>
-     * 
+     *
      * @param pInstance
      *            The persistence object
      * @param pAttributeName
@@ -886,7 +886,7 @@ public interface DAO {
     /**
      * Retrieves all references and collections of the given object
      * <code>pInstance</code>. </br>
-     * 
+     *
      * @param pInstance
      *            Object in which the retrieve will be performed
      * @throws DataAccessException
@@ -898,7 +898,7 @@ public interface DAO {
      * This method must have the same behavior of
      * {@link #retrieveAllReferences(Object)} with the difference that the
      * operation is performed on all elements of <code>collection</code> </br>
-     * 
+     *
      * @param valueObjectsCollection
      *            objects for which all references will be retrieved
      * @throws DataAccessException
@@ -914,7 +914,7 @@ public interface DAO {
      * {@link #retrieveReference(Object pInstance, String pAttributeName)} if
      * <code>pInstance.pAttributeName</code> is null, otherwise no job is done
      * </br>
-     * 
+     *
      * @param pInstance
      *            The persistence object
      * @param pAttributeName
@@ -932,7 +932,7 @@ public interface DAO {
      * {@link #retrieveNullReference(Object pInstance, String pAttributeName)},
      * but for all its references.</br>
      * </br>
-     * 
+     *
      * @param pInstance
      *            Object, which all null references of, will be retrieved.
      * @throws DataAccessException
@@ -973,7 +973,7 @@ public interface DAO {
      * with the difference, that following the <code>path</code>, if the value
      * referenced by an attribute is null, such reference will be retrieved from
      * the underlying media store, otherwise not.</br>
-     * 
+     *
      * @param valueobjectOrCollection
      *            Starting object or collection
      * @param path
@@ -1054,7 +1054,7 @@ public interface DAO {
      * Connection management and transaction management are fully
      * delegated.</br>
      * User must no care at all!!.</br>
-     * 
+     *
      * @param storeVO
      *            Object to update
      * @return The same updated object
@@ -1070,7 +1070,7 @@ public interface DAO {
      * will this method will act as update or insert depending by if the value
      * object already exists or not in the datastore. The value object of the
      * collection must not necessarily be instance of the same class. <br/>
-     * 
+     *
      * @param storeVOs
      *            objects to be updated or inserted
      * @throws DataAccessException
@@ -1106,7 +1106,7 @@ public interface DAO {
      * Connection management and transaction management are fully
      * delegated.</br>
      * User must no care at all!!.
-     * 
+     *
      * @param storeVO
      *            Object to update
      * @return storeVO
@@ -1122,7 +1122,7 @@ public interface DAO {
      * input parameter <code>paths</code>, and where
      * <code>pathsHasToBeSorted</code> and <code>storeVOHasToBeStored</code> are
      * both true
-     * 
+     *
      * @param storeVO
      *            root of <code>path</code>
      * @param path
@@ -1168,7 +1168,7 @@ public interface DAO {
      * will be related to its father: concretely if the elements of the current
      * level belong to a collection they will be linked to the father, while if
      * are a simple valueobject, its father will be linked to it.</br>
-     * 
+     *
      *
      *
      * @param storeVO
@@ -1200,7 +1200,7 @@ public interface DAO {
      * but it gives the possibility to specify if the root <code>storeVO</code>
      * has to be updated too or not, through the input Boolean parameter
      * <code>storeVOHasToBeUpdated</code>.</br>
-     * 
+     *
      * @param storeVO:
      *            common root of trees
      * @param trees:
@@ -1280,7 +1280,7 @@ public interface DAO {
      * If <code>path<code> leads to a collection of value objects, the class of
      * the elements of the collection is returned, and not the implementation
      * class of the collection </br>
-     * 
+     *
      * @param realClass
      *            Class where the <code>path<code> starts from to leave to the
      *            class to return.
@@ -1390,5 +1390,9 @@ public interface DAO {
     public void updateByNativeQueryString(String queryString) throws DataAccessException;
 
     public void updateByNativeQueryString(String queryString, Map parameters) throws DataAccessException;
+
+    public Object findObjectByNativeQueryString(String queryString, Map parameters) throws DataAccessException;
+
+    public Object findObjectByNativeQueryString(String queryString, String parameterName, Object parameterValue) throws DataAccessException;
 
 }

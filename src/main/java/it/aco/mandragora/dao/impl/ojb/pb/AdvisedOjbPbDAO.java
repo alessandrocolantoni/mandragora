@@ -56,7 +56,7 @@
  *
  *     The precise terms and conditions for copying, distribution and
  *  modification follow.
- *  
+ *
  *	                	    GNU GENERAL PUBLIC LICENSE
  *       TERMS AND CONDITIONS FOR COPYING, DISTRIBUTION AND MODIFICATION
  *
@@ -111,7 +111,7 @@
  *     License.  (Exception: if the Program itself is interactive but
  *     does not normally print such an announcement, your work based on
  *     the Program is not required to print an announcement.)
- *     
+ *
  *     These requirements apply to the modified work as a whole.  If
  *  identifiable sections of that work are not derived from the Program,
  *  and can be reasonably considered independent and separate works in
@@ -169,7 +169,7 @@
  *  access to copy the source code from the same place counts as
  *  distribution of the source code, even though third parties are not
  *  compelled to copy the source along with the object code.
- *  
+ *
  *     4. You may not copy, modify, sublicense, or distribute the Program
  *  except as expressly provided under this License.  Any attempt
  *  otherwise to copy, modify, sublicense or distribute the Program is
@@ -226,7 +226,7 @@
 
  *  This section is intended to make thoroughly clear what is believed to
  *  be a consequence of the rest of this License.
- *  
+ *
  *    8. If the distribution and/or use of the Program is restricted in
  *  certain countries either by patents or by copyrighted interfaces, the
  *  original copyright holder who places the Program under this License
@@ -279,7 +279,7 @@
  *  POSSIBILITY OF SUCH DAMAGES.
  *
  *  		     END OF TERMS AND CONDITIONS
- *  
+ *
  *  	    How to Apply These Terms to Your New Programs
  *    If you develop a new program, and you want it to be of the greatest
  *  possible use to the public, the best way to achieve this is to make it
@@ -342,244 +342,329 @@
 */
 package it.aco.mandragora.dao.impl.ojb.pb;
 
-import it.aco.mandragora.dao.impl.ojb.pb.support.PersistenceBrokerSupport;
-import it.aco.mandragora.dao.impl.ojb.pb.core.OjbPbCore;
-import it.aco.mandragora.dao.DAO;
-import it.aco.mandragora.dao.annotation.Read;
-import it.aco.mandragora.dao.annotation.CreateUpdateDelete;
-import it.aco.mandragora.exception.DataAccessException;
-import it.aco.mandragora.exception.PersistenceBrokerSupportException;
-import it.aco.mandragora.exception.OjbPbCoreException;
-import it.aco.mandragora.exception.DataOptimisticLockException;
-import it.aco.mandragora.query.LogicCondition;
-import org.apache.ojb.broker.PersistenceBroker;
-import org.apache.ojb.broker.OptimisticLockException;
-import org.apache.ojb.broker.util.ObjectModification;
-
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Vector;
 
+import it.aco.mandragora.dao.DAO;
+import it.aco.mandragora.dao.annotation.CreateUpdateDelete;
+import it.aco.mandragora.dao.annotation.Read;
+import it.aco.mandragora.dao.impl.ojb.pb.core.OjbPbCore;
+import it.aco.mandragora.dao.impl.ojb.pb.support.PersistenceBrokerSupport;
+import it.aco.mandragora.exception.DataAccessException;
+import it.aco.mandragora.exception.DataOptimisticLockException;
+import it.aco.mandragora.query.LogicCondition;
 
 public class AdvisedOjbPbDAO extends BaseOjbPbDAO implements DAO {
 
-    //private PersistenceBrokerSupport persistenceBrokerSupport;
-    //private OjbPbCore ojbPbCore;
+    // private PersistenceBrokerSupport persistenceBrokerSupport;
+    // private OjbPbCore ojbPbCore;
 
     static private org.apache.log4j.Category log = org.apache.log4j.Logger.getLogger(AdvisedOjbPbDAO.class.getName());
 
-
-
     public PersistenceBrokerSupport getPersistenceBrokerSupport() {
-        return persistenceBrokerSupport;
+	return persistenceBrokerSupport;
     }
 
     public void setPersistenceBrokerSupport(PersistenceBrokerSupport persistenceBrokerSupport) {
-        this.persistenceBrokerSupport = persistenceBrokerSupport;
+	this.persistenceBrokerSupport = persistenceBrokerSupport;
     }
 
     public OjbPbCore getOjbPbCore() {
-        return ojbPbCore;
+	return ojbPbCore;
     }
 
     public void setOjbPbCore(OjbPbCore ojbPbCore) {
-        this.ojbPbCore = ojbPbCore;
+	this.ojbPbCore = ojbPbCore;
     }
 
+    @Override
     @Read
-    public Object findByPrimaryKey(Class realClass,Object[] pkValues)throws DataAccessException {return null;}
+    public Object findByPrimaryKey(Class realClass, Object[] pkValues) throws DataAccessException {
+	return null;
+    }
 
+    @Override
     @Read
-    public Object findByPrimaryKey(Class realClass,String[] pkFieldNames, Object[] pkValues)throws DataAccessException{return null;}
+    public Object findByPrimaryKey(Class realClass, String[] pkFieldNames, Object[] pkValues) throws DataAccessException {
+	return null;
+    }
 
+    @Override
     @Read
-    public Object findByPrimaryKey(Class realClass, Object pkValue)throws DataAccessException{return null;}
+    public Object findByPrimaryKey(Class realClass, Object pkValue) throws DataAccessException {
+	return null;
+    }
 
+    @Override
     @Read
-    public Object findObjectByTemplate(Object templateVO) throws DataAccessException{return null;}
+    public Object findObjectByTemplate(Object templateVO) throws DataAccessException {
+	return null;
+    }
 
+    @Override
     @Read
-    public Collection findCollectionByNullFields(Class realClass, String[] nullFields) throws DataAccessException{return null;}
+    public Collection findCollectionByNullFields(Class realClass, String[] nullFields) throws DataAccessException {
+	return null;
+    }
 
+    @Override
     @Read
-    public Collection findCollectionByTemplate(Object templateVO) throws DataAccessException{return null;}
+    public Collection findCollectionByTemplate(Object templateVO) throws DataAccessException {
+	return null;
+    }
 
+    @Override
     @Read
-    public Collection findCollectionByTemplate(Object templateVO, String orderingField, Boolean asc) throws DataAccessException{return null;}
+    public Collection findCollectionByTemplate(Object templateVO, String orderingField, Boolean asc) throws DataAccessException {
+	return null;
+    }
 
-
-
+    @Override
     @Read
-    public Collection findCollectionByLogicCondition(Class realClass, LogicCondition logicCondition) throws DataAccessException{return null;}
+    public Collection findCollectionByLogicCondition(Class realClass, LogicCondition logicCondition) throws DataAccessException {
+	return null;
+    }
 
+    @Override
     @Read
-    public Collection findCollectionByLogicCondition(Class realClass,LogicCondition logicCondition,String orderingField, Boolean asc,Integer startAtIndex, Integer endAtIndex) throws DataAccessException{return null;}
+    public Collection findCollectionByLogicCondition(Class realClass, LogicCondition logicCondition, String orderingField, Boolean asc, Integer startAtIndex, Integer endAtIndex)
+	    throws DataAccessException {
+	return null;
+    }
 
-
-
-
-
-
-
+    @Override
     @Read
-    public Collection findCollectionByOrValues(Class realClass,String pAttributeName,Collection valuesCollection) throws DataAccessException{return null;}
+    public Collection findCollectionByOrValues(Class realClass, String pAttributeName, Collection valuesCollection) throws DataAccessException {
+	return null;
+    }
 
+    @Override
     @Read
-    public Collection findCollectionByFieldsNotEqualsToValues(Class realClass,String[] pAttributeNames,Object[] valuesArray) throws DataAccessException{return null;}
+    public Collection findCollectionByFieldsNotEqualsToValues(Class realClass, String[] pAttributeNames, Object[] valuesArray) throws DataAccessException {
+	return null;
+    }
 
+    @Override
     @Read
-    public Collection findCollectionByAndFieldsOperatorValues(Class realClass,String[] pAttributeNames, String[] operators,Object[] valuesArray) throws DataAccessException{return null;}
+    public Collection findCollectionByAndFieldsOperatorValues(Class realClass, String[] pAttributeNames, String[] operators, Object[] valuesArray) throws DataAccessException {
+	return null;
+    }
 
+    @Override
     @Read
-    public Collection findCollectionByArrayOfFieldsOperatorsMatrixAndOrValues(Class realClass,String[] pAttributeNames, String[] operators, Object[][] valuesMatrix) throws DataAccessException{return null;}
+    public Collection findCollectionByArrayOfFieldsOperatorsMatrixAndOrValues(Class realClass, String[] pAttributeNames, String[] operators, Object[][] valuesMatrix) throws DataAccessException {
+	return null;
+    }
 
-
+    @Override
     @Read
-    public Collection findCollectionByFieldInCollection(Class realClass,String pAttributeName,Collection valuesCollection) throws DataAccessException{return null;}
+    public Collection findCollectionByFieldInCollection(Class realClass, String pAttributeName, Collection valuesCollection) throws DataAccessException {
+	return null;
+    }
 
+    @Override
     @Read
-    public Collection searchValueInFields(Class realClass, String[] pAttributeNames, Object value) throws DataAccessException{return null;}
+    public Collection searchValueInFields(Class realClass, String[] pAttributeNames, Object value) throws DataAccessException {
+	return null;
+    }
 
+    @Override
     @Read
-    public Collection getCollectionOfStoredItemsNotInBean(Object pInstance, String pAttributeName) throws DataAccessException{return null;}
+    public Collection getCollectionOfStoredItemsNotInBean(Object pInstance, String pAttributeName) throws DataAccessException {
+	return null;
+    }
 
+    @Override
     @Read
-    public Collection getStoredCollection(Object pInstance, String pAttributeName) throws DataAccessException{return null;}
+    public Collection getStoredCollection(Object pInstance, String pAttributeName) throws DataAccessException {
+	return null;
+    }
 
-
-
-
+    @Override
     @Read
-    public Iterator getReportQueryIterator(Class realClass, LogicCondition logicCondition, String[] pAttributeNames, String[] groupBy) throws DataAccessException{return null;}
+    public Iterator getReportQueryIterator(Class realClass, LogicCondition logicCondition, String[] pAttributeNames, String[] groupBy) throws DataAccessException {
+	return null;
+    }
 
+    @Override
     @Read
-    public void retrieveReference(Object pInstance, String pAttributeName) throws DataAccessException{}
+    public void retrieveReference(Object pInstance, String pAttributeName) throws DataAccessException {
+    }
 
+    @Override
     @Read
-    public void retrieveAllReferences(Object pInstance) throws DataAccessException{}
+    public void retrieveAllReferences(Object pInstance) throws DataAccessException {
+    }
 
-
-
-
+    @Override
     @Read
-    public void retrieveAllReferencesInCollection(Collection valueObjectsCollection) throws DataAccessException{}
+    public void retrieveAllReferencesInCollection(Collection valueObjectsCollection) throws DataAccessException {
+    }
 
-
-
+    @Override
     @Read
-    public void retrieveReferenceInCollection(Collection valueObjectsCollection, String pAttributeName) throws DataAccessException{}
+    public void retrieveReferenceInCollection(Collection valueObjectsCollection, String pAttributeName) throws DataAccessException {
+    }
 
+    @Override
     @Read
-    public void retrieveNullReference(Object pInstance, String pAttributeName) throws DataAccessException{}
+    public void retrieveNullReference(Object pInstance, String pAttributeName) throws DataAccessException {
+    }
 
+    @Override
     @Read
-    public void retrieveAllNullReferences(Object pInstance) throws DataAccessException{}
+    public void retrieveAllNullReferences(Object pInstance) throws DataAccessException {
+    }
 
+    @Override
     @Read
-    public void retrievePathReference(Object valueobjectOrCollection, String path) throws DataAccessException{}
+    public void retrievePathReference(Object valueobjectOrCollection, String path) throws DataAccessException {
+    }
 
-
+    @Override
     @Read
-    public void retrieveNullPathReference(Object valueobjectOrCollection, String path) throws DataAccessException{}
+    public void retrieveNullPathReference(Object valueobjectOrCollection, String path) throws DataAccessException {
+    }
 
+    @Override
     @CreateUpdateDelete
-    public void delete(Object deleteVO) throws DataAccessException, DataOptimisticLockException {}
+    public void delete(Object deleteVO) throws DataAccessException, DataOptimisticLockException {
+    }
 
-
+    @Override
     @CreateUpdateDelete
-    public void deleteCollection(Collection deleteVOs) throws DataAccessException, DataOptimisticLockException{}
+    public void deleteCollection(Collection deleteVOs) throws DataAccessException, DataOptimisticLockException {
+    }
 
+    @Override
     @CreateUpdateDelete
-    public void deleteMToNRelationshipCollection(Object left, String leftFieldName, Collection rightCollection) throws DataAccessException{}
+    public void deleteMToNRelationshipCollection(Object left, String leftFieldName, Collection rightCollection) throws DataAccessException {
+    }
 
+    @Override
     @CreateUpdateDelete
-    public void deleteItemsNotInCollectionsInPath(Object rootVO, String path, Boolean applyDeletePathCascade, Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) throws DataAccessException{}
+    public void deleteItemsNotInCollectionsInPath(Object rootVO, String path, Boolean applyDeletePathCascade, Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) throws DataAccessException {
+    }
 
+    @Override
     @CreateUpdateDelete
-    public void deleteItemsNotInCollectionsInPath(Object rootVO, String path) throws DataAccessException{}
+    public void deleteItemsNotInCollectionsInPath(Object rootVO, String path) throws DataAccessException {
+    }
 
+    @Override
     @CreateUpdateDelete
-    public void deleteItemsNotInCollectionsInPath(Object rootVO, String path,Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) throws DataAccessException{}
+    public void deleteItemsNotInCollectionsInPath(Object rootVO, String path, Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) throws DataAccessException {
+    }
 
+    @Override
     @CreateUpdateDelete
-    public void deleteItemsNotInCollectionsInPaths(Object rootVO, Collection paths,  Boolean applyDeletePathCascade, Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) throws DataAccessException{}
+    public void deleteItemsNotInCollectionsInPaths(Object rootVO, Collection paths, Boolean applyDeletePathCascade, Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne)
+	    throws DataAccessException {
+    }
 
+    @Override
     @CreateUpdateDelete
-    public void deletePathCascade(Object parentVO,String path,Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) throws DataAccessException{}
+    public void deletePathCascade(Object parentVO, String path, Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) throws DataAccessException {
+    }
 
+    @Override
     @CreateUpdateDelete
-    public void deletePathsCascade(Object parentVO,Collection paths,Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) throws DataAccessException{}
+    public void deletePathsCascade(Object parentVO, Collection paths, Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) throws DataAccessException {
+    }
 
-
-
-
-
-
-
-
-
-
-
+    @Override
     @CreateUpdateDelete
-    public Object updateCollectionReference(Object storeVO, String pAttributeName) throws DataAccessException, DataOptimisticLockException{return null;}
+    public Object updateCollectionReference(Object storeVO, String pAttributeName) throws DataAccessException, DataOptimisticLockException {
+	return null;
+    }
 
+    @Override
     @CreateUpdateDelete
-    public Object updateCollectionReferences(Object storeVO) throws DataAccessException, DataOptimisticLockException{return null;}
+    public Object updateCollectionReferences(Object storeVO) throws DataAccessException, DataOptimisticLockException {
+	return null;
+    }
 
-
+    @Override
     @CreateUpdateDelete
-    public void storePathCascade(Object storeVO, String path) throws DataAccessException, DataOptimisticLockException{}
+    public void storePathCascade(Object storeVO, String path) throws DataAccessException, DataOptimisticLockException {
+    }
 
+    @Override
     @CreateUpdateDelete
-    public void storePathsCascade(Object storeVO, Collection paths, Boolean pathsHasToBeSorted, Boolean  storeVOHasToBeStored) throws DataAccessException, DataOptimisticLockException{}
+    public void storePathsCascade(Object storeVO, Collection paths, Boolean pathsHasToBeSorted, Boolean storeVOHasToBeStored) throws DataAccessException, DataOptimisticLockException {
+    }
 
     // todo put in dao and until BD
+    @Override
     @CreateUpdateDelete
-    public Object updateCreateTrees(Object storeVO,Collection<String> trees, Boolean storeVOHasToBeUpdated, Boolean deleteChangedOneToOne, Boolean applyDeletePathCascade, Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) throws DataAccessException, DataOptimisticLockException{return null;}
+    public Object updateCreateTrees(Object storeVO, Collection<String> trees, Boolean storeVOHasToBeUpdated, Boolean deleteChangedOneToOne, Boolean applyDeletePathCascade,
+	    Boolean ifM2NDeleteOnlyRelationship, Boolean deleteOneToOne) throws DataAccessException, DataOptimisticLockException {
+	return null;
+    }
 
-
-
-
-
+    @Override
     @CreateUpdateDelete
-    public Object updateCreateTrees(Object storeVO,Collection trees, Boolean storeVOHasToBeUpdated) throws DataAccessException, DataOptimisticLockException{return null;}
+    public Object updateCreateTrees(Object storeVO, Collection trees, Boolean storeVOHasToBeUpdated) throws DataAccessException, DataOptimisticLockException {
+	return null;
+    }
 
+    @Override
     @CreateUpdateDelete
-    public Object updateCreateTrees(Object storeVO,Collection trees) throws DataAccessException, DataOptimisticLockException{return null;}
+    public Object updateCreateTrees(Object storeVO, Collection trees) throws DataAccessException, DataOptimisticLockException {
+	return null;
+    }
 
+    /***************************************/
 
-
-     /***************************************/
-
+    @Override
     @Read
-    public Class getClassFromPath(Class realClass, String path) throws DataAccessException{return null;}
+    public Class getClassFromPath(Class realClass, String path) throws DataAccessException {
+	return null;
+    }
 
+    @Override
     @Read
-    public Class getCollectionClassFromPath(Class realClass, String path) throws DataAccessException{return null;}
+    public Class getCollectionClassFromPath(Class realClass, String path) throws DataAccessException {
+	return null;
+    }
 
-
+    @Override
     @Read
-    public Vector getFksToItemClassInDecomposedRelationship(Class realClass, String oneToN, String mToOne) throws DataAccessException{return null;}
+    public Vector getFksToItemClassInDecomposedRelationship(Class realClass, String oneToN, String mToOne) throws DataAccessException {
+	return null;
+    }
 
-
-
-
-
+    @Override
     @Read
-    public Object[] getKeyValues(Object pInstance) throws DataAccessException{return null;}
+    public Object[] getKeyValues(Object pInstance) throws DataAccessException {
+	return null;
+    }
 
+    @Override
     @Read
-    public String[] getPkNames(Class realClass) throws DataAccessException{return null;}
+    public String[] getPkNames(Class realClass) throws DataAccessException {
+	return null;
+    }
 
-
+    @Override
     @Read
-    public String[] getFksToThisClass(Class realClass, String oneToN) throws DataAccessException{return null;}
+    public String[] getFksToThisClass(Class realClass, String oneToN) throws DataAccessException {
+	return null;
+    }
 
+    @Override
     @Read
-    public Vector getForeignKeyFields(Class realClass, String pAttributeName) throws DataAccessException{return null;}
+    public Vector getForeignKeyFields(Class realClass, String pAttributeName) throws DataAccessException {
+	return null;
+    }
 
+    @Override
     @Read
-    public Vector getInverseForeignKeyFields(Class realClass, String pAttributeName) throws DataAccessException{return null;}
+    public Vector getInverseForeignKeyFields(Class realClass, String pAttributeName) throws DataAccessException {
+	return null;
+    }
 
     /**
      *
@@ -587,6 +672,18 @@ public class AdvisedOjbPbDAO extends BaseOjbPbDAO implements DAO {
      * @param pAttributeName
      * @throws DataAccessException
      */
+    @Override
     @Read
-    public void setInverseForeignKeyFields(Object pInstance, String pAttributeName) throws DataAccessException{}
+    public void setInverseForeignKeyFields(Object pInstance, String pAttributeName) throws DataAccessException {
+    }
+
+    public Object findObjectByNativeQueryString(String queryString, Map parameters) throws DataAccessException {
+	// TODO Auto-generated method stub
+	return null;
+    }
+
+    public Object findObjectByNativeQueryString(String queryString, String parameterName, Object parameterValue) {
+	// TODO Auto-generated method stub
+	return null;
+    }
 }

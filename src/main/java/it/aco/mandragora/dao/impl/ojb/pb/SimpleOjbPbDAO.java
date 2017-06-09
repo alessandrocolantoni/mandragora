@@ -56,7 +56,7 @@
  *
  *     The precise terms and conditions for copying, distribution and
  *  modification follow.
- *  
+ *
  *	                	    GNU GENERAL PUBLIC LICENSE
  *       TERMS AND CONDITIONS FOR COPYING, DISTRIBUTION AND MODIFICATION
  *
@@ -111,7 +111,7 @@
  *     License.  (Exception: if the Program itself is interactive but
  *     does not normally print such an announcement, your work based on
  *     the Program is not required to print an announcement.)
- *     
+ *
  *     These requirements apply to the modified work as a whole.  If
  *  identifiable sections of that work are not derived from the Program,
  *  and can be reasonably considered independent and separate works in
@@ -169,7 +169,7 @@
  *  access to copy the source code from the same place counts as
  *  distribution of the source code, even though third parties are not
  *  compelled to copy the source along with the object code.
- *  
+ *
  *     4. You may not copy, modify, sublicense, or distribute the Program
  *  except as expressly provided under this License.  Any attempt
  *  otherwise to copy, modify, sublicense or distribute the Program is
@@ -226,7 +226,7 @@
 
  *  This section is intended to make thoroughly clear what is believed to
  *  be a consequence of the rest of this License.
- *  
+ *
  *    8. If the distribution and/or use of the Program is restricted in
  *  certain countries either by patents or by copyrighted interfaces, the
  *  original copyright holder who places the Program under this License
@@ -279,7 +279,7 @@
  *  POSSIBILITY OF SUCH DAMAGES.
  *
  *  		     END OF TERMS AND CONDITIONS
- *  
+ *
  *  	    How to Apply These Terms to Your New Programs
  *    If you develop a new program, and you want it to be of the greatest
  *  possible use to the public, the best way to achieve this is to make it
@@ -344,29 +344,26 @@
 package it.aco.mandragora.dao.impl.ojb.pb;
 
 import it.aco.mandragora.dao.DAO;
-import it.aco.mandragora.dao.impl.ojb.pb.support.PersistenceBrokerSupport;
 import it.aco.mandragora.dao.impl.ojb.pb.core.OjbPbCore;
-
+import it.aco.mandragora.dao.impl.ojb.pb.support.PersistenceBrokerSupport;
 
 public class SimpleOjbPbDAO extends BaseOjbPbDAO implements DAO {
 
     private static org.apache.log4j.Category log = org.apache.log4j.Logger.getLogger(SimpleOjbPbDAO.class.getName());
 
-    
-
     public PersistenceBrokerSupport getPersistenceBrokerSupport() {
-        return persistenceBrokerSupport;
+	return persistenceBrokerSupport;
     }
 
     public void setPersistenceBrokerSupport(PersistenceBrokerSupport persistenceBrokerSupport) {
-        this.persistenceBrokerSupport = persistenceBrokerSupport;
+	this.persistenceBrokerSupport = persistenceBrokerSupport;
     }
 
     public OjbPbCore getOjbPbCore() {
-        return ojbPbCore;
+	return ojbPbCore;
     }
 
     public void setOjbPbCore(OjbPbCore ojbPbCore) {
-        this.ojbPbCore = ojbPbCore;
+	this.ojbPbCore = ojbPbCore;
     }
 }
